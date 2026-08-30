@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual UPI</title>
+    <title>RPAY</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
@@ -59,7 +59,7 @@
     <!-- AUTHENTICATION -->
     <div id="auth-screen" class="auth-container">
         <div id="login-section" class="card">
-            <h2>Virtual UPI</h2>
+            <h2>RPAY</h2>
             <input type="text" id="log-upi" placeholder="Enter UPI ID (e.g. name@upi)">
             <input type="password" id="log-pin" placeholder="Enter 4-Digit PIN" maxlength="4">
             <button class="btn-primary" onclick="login()">Login</button>
@@ -363,5 +363,9 @@
             `).join('');
         }
     </script>
+        <div style="text-align: center; padding: 15px 0 30px 0; font-size: 12px; font-weight: 600; color: var(--text-muted); position: relative; z-index: 10;">
+        Made by Rocket
+    </div>
+
 </body>
 </html>

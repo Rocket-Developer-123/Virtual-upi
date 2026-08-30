@@ -347,23 +347,32 @@
             document.getElementById('auth-screen').classList.remove('hidden');
         }
 
-        async function register() {
-            const name = document.getElementById('reg-name').value;
+                async function register() {
+            const name = document.getElementById('reg-name').value.trim();
             const manualUpi = document.getElementById('reg-upi').value.trim();
-            const upi_id = manualUpi ? (manualUpi.includes('@') ? manualUpi : manualUpi + '@rpay') : name.toLowerCase().replace(/[^a-z0-9]/g, '') + '@rpay';
             const pin = document.getElementById('reg-pin').value;
             
-            if(!name || !pin) return alert("Please fill name and PIN.");
+            if(!name || !pin) return alert("Please fill in your name and a 4-digit PIN.");
 
-            const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
+            // Generate clean handle: lowercase, remove spaces and special characters
+            const cleanNamePart = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const upi_id = manualUpi ? (manualUpi.includes('@') ? manualUpi : manualUpi + '@rpay') : cleanNamePart + '@rpay';
+
+            const res = await fetch('/register', { 
+                method: 'POST', 
+                headers: {'Content-Type':'application/json'}, 
+                body: JSON.stringify({upi_id, name, pin}) 
+            });
             const data = await res.json();
+            
             if(data.success) { 
-                alert("Account Created! Your UPI ID is: " + upi_id); 
+                alert("Account Created Successfully!\nYour UPI ID is: " + upi_id); 
                 toggleAuth('login'); 
             } else {
-                alert(data.error);
+                alert("Registration Failed: " + (data.error || "UPI ID may already exist."));
             }
         }
+
 
         async function login() {
             const upi_id = document.getElementById('log-upi').value;

@@ -52,6 +52,15 @@
         
         .txn-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
         .hidden { display: none !important; }
+                /* Loading & Success Screens */
+        .fullscreen-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #e5e7eb; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .success-card { background: var(--card-bg); width: 90%; max-width: 350px; border-radius: 16px; padding: 30px 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .check-circle { width: 70px; height: 70px; background: #22c55e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px; }
+        .receipt-detail { display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: var(--text-muted); border-bottom: 1px dashed #e5e7eb; padding-bottom: 8px; }
+
     </style>
 </head>
 <body>
@@ -363,6 +372,30 @@
             `).join('');
         }
     </script>
+        <!-- Processing Screen -->
+    <div id="loading-screen" class="fullscreen-overlay hidden">
+        <div class="spinner"></div>
+        <h3 style="color: var(--primary);">Processing Payment...</h3>
+        <p style="color: var(--text-muted); font-size: 13px;">Securely connecting to RPAY servers</p>
+    </div>
+
+    <!-- Payment Successful Screen -->
+    <div id="success-screen" class="fullscreen-overlay hidden">
+        <div class="success-card">
+            <div class="check-circle">✓</div>
+            <h2 style="color: #22c55e; margin-bottom: 5px;">Payment Successful</h2>
+            <h1 id="receipt-amount" style="font-size: 36px; color: var(--text-dark); margin: 15px 0;">₹0.00</h1>
+            
+            <div style="text-align: left; margin-top: 25px;">
+                <div class="receipt-detail"><span>Paid to</span> <strong id="receipt-receiver" style="color: var(--text-dark);">Name</strong></div>
+                <div class="receipt-detail"><span>From</span> <strong id="receipt-sender" style="color: var(--text-dark);">My Account</strong></div>
+                <div class="receipt-detail"><span>Date & Time</span> <strong id="receipt-time" style="color: var(--text-dark);">Time</strong></div>
+            </div>
+            
+            <button class="btn-primary" onclick="closeSuccess()" style="margin-top: 30px;">Done</button>
+        </div>
+    </div>
+
         <div style="text-align: center; padding: 15px 0 30px 0; font-size: 12px; font-weight: 600; color: var(--text-muted); position: relative; z-index: 10;">
         Made by Rocket
     </div>

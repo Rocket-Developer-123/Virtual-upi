@@ -52,7 +52,8 @@
         
         .txn-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
         .hidden { display: none !important; }
-                /* Loading & Success Screens */
+        
+        /* Loading & Success Screens */
         .fullscreen-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; }
         .spinner { width: 50px; height: 50px; border: 5px solid #e5e7eb; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -60,7 +61,8 @@
         .success-card { background: var(--card-bg); width: 90%; max-width: 350px; border-radius: 16px; padding: 30px 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .check-circle { width: 70px; height: 70px; background: #22c55e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px; }
         .receipt-detail { display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: var(--text-muted); border-bottom: 1px dashed #e5e7eb; padding-bottom: 8px; }
-                /* Custom Numpad Screen */
+        
+        /* Custom Numpad Screen */
         .scan-payment-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; z-index: 250; }
         .scan-header { padding: 20px; text-align: center; position: relative; border-bottom: 1px solid #e5e7eb; background: white; }
         .back-btn { position: absolute; left: 20px; top: 22px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-dark); }
@@ -71,7 +73,8 @@
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
         .num-key { background: #f3f4f6; border: none; border-radius: 12px; font-size: 26px; font-weight: 600; color: var(--text-dark); padding: 18px 0; cursor: pointer; transition: 0.1s; }
         .num-key:active { background: #e5e7eb; transform: scale(0.95); }
-                /* Profile & Contact Styles */
+        
+        /* Profile & Contact Styles */
         .profile-sheet { padding: 10px 0; }
         .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
         .contact-avatar { width: 38px; height: 38px; border-radius: 50%; background: #e0f2fe; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; }
@@ -82,22 +85,19 @@
 
         /* System Notice Banner */
         .notice-banner { background: #fef3c7; color: #92400e; padding: 10px 15px; font-size: 13px; font-weight: 600; text-align: center; border-bottom: 1px solid #fde68a; display: flex; justify-content: space-between; align-items: center; }
-
-
     </style>
 </head>
 <body>
-        <div id="system-notice" class="notice-banner hidden">
+
+    <div id="system-notice" class="notice-banner hidden">
         <span id="notice-text"></span>
         <span onclick="dismissNotice()" style="cursor:pointer; font-weight:bold;">✕</span>
     </div>
 
-
-    <!-- AUTHENTICATION -->
     <div id="auth-screen" class="auth-container">
         <div id="login-section" class="card">
             <h2>RPAY</h2>
-            <input type="text" id="log-upi" placeholder="Enter UPI ID (e.g. name@upi)">
+            <input type="text" id="log-upi" placeholder="Enter UPI ID (e.g. name@rpay)">
             <input type="password" id="log-pin" placeholder="Enter 4-Digit PIN" maxlength="4">
             <button class="btn-primary" onclick="login()">Login</button>
             <p style="font-size: 13px; text-align: center; margin-top: 15px;">
@@ -108,7 +108,7 @@
         <div id="register-section" class="card hidden">
             <h2>Create UPI Account</h2>
             <input type="text" id="reg-name" placeholder="Full Name">
-            <input type="text" id="reg-upi" placeholder="Create UPI ID">
+            <input type="text" id="reg-upi" placeholder="Create Custom UPI ID (optional)">
             <input type="password" id="reg-pin" placeholder="Create 4-Digit PIN" maxlength="4">
             <button class="btn-primary" onclick="register()">Sign Up (₹10,000 Bonus)</button>
             <p style="font-size: 13px; text-align: center; margin-top: 15px;">
@@ -117,9 +117,8 @@
         </div>
     </div>
 
-    <!-- STANDARD USER DASHBOARD -->
     <div id="dashboard-screen" class="hidden">
-            <header class="top-header">
+        <header class="top-header">
             <div class="profile-badge">
                 <div class="avatar" id="avatar-initial" onclick="openProfileModal()" style="cursor:pointer;">U</div>
                 <div>
@@ -129,7 +128,6 @@
             </div>
             <button onclick="logout()" style="background: none; border: 1px solid #d1d5db; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">Logout</button>
         </header>
-
 
         <main class="dashboard-content">
             <div class="balance-banner">
@@ -153,9 +151,8 @@
                         <div class="icon-circle">🔄</div><span class="action-label">Check Bal</span>
                     </div>
                     <div class="action-item" onclick="openContactsModal()">
-    <div class="icon-circle">📇</div><span class="action-label">Contacts</span>
-</div>
-
+                        <div class="icon-circle">📇</div><span class="action-label">Contacts</span>
+                    </div>
                 </div>
             </div>
 
@@ -172,7 +169,6 @@
         </nav>
     </div>
 
-    <!-- SYSTEM OWNER PANEL (BOSS0) -->
     <div id="owner-screen" class="hidden">
         <header class="top-header" style="background: #1f2937; color: white;">
             <div><h3 style="margin:0; color:#00b9f5; font-size:16px;">SYSTEM OPERATOR</h3><p style="font-size: 12px;">Boss0</p></div>
@@ -181,7 +177,7 @@
         <div class="dashboard-content">
             <div class="card">
                 <h3>Account Management</h3>
-                <input type="text" id="admin-target" placeholder="Target UPI ID (e.g., friend@upi)">
+                <input type="text" id="admin-target" placeholder="Target UPI ID (e.g., friend@rpay)">
                 <input type="number" id="admin-amount" placeholder="Amount (₹)">
                 <div style="display: flex; gap: 10px;">
                     <button class="btn-primary btn-success" onclick="adminAdjust('add')">+ Inject Funds</button>
@@ -198,7 +194,6 @@
         </div>
     </div>
 
-    <!-- MODALS -->
     <div id="sendModal" class="modal hidden">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('sendModal')">✕</button>
@@ -234,18 +229,16 @@
             <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden;"></div>
         </div>
     </div>
-        <!-- 1. Dedicated Scan Payment Screen -->
+
     <div id="scan-pay-screen" class="scan-payment-screen hidden">
         <div class="scan-header">
             <button class="back-btn" onclick="closeScanPay()">←</button>
             <p style="font-size: 13px; color: var(--text-muted);">Paying to</p>
             <h3 id="scan-target-upi" style="color: var(--primary); font-size: 16px; margin-top: 2px;"></h3>
         </div>
-
         <div class="amount-display-container">
             <h1 class="amount-text">₹<span id="scan-amount-display">0</span></h1>
         </div>
-
         <div class="numpad-container">
             <button class="btn-primary" onclick="proceedToPin()" style="font-size: 18px; padding: 16px; border-radius: 12px;">Proceed to Pay</button>
             <div class="numpad">
@@ -265,7 +258,6 @@
         </div>
     </div>
 
-    <!-- 2. PIN Confirmation Modal -->
     <div id="pinConfirmModal" class="modal hidden" style="z-index: 300;">
         <div class="modal-content" style="text-align: center;">
             <button class="modal-close" onclick="closeModal('pinConfirmModal')">✕</button>
@@ -275,8 +267,60 @@
             <button class="btn-primary" onclick="executeScanPay()">Pay Now</button>
         </div>
     </div>
-    
 
+    <div id="loading-screen" class="fullscreen-overlay hidden">
+        <div class="spinner"></div>
+        <h3 style="color: var(--primary);">Processing Payment...</h3>
+        <p style="color: var(--text-muted); font-size: 13px;">Securely connecting to RPAY servers</p>
+    </div>
+
+    <div id="success-screen" class="fullscreen-overlay hidden">
+        <div class="success-card">
+            <div class="check-circle">✓</div>
+            <h2 style="color: #22c55e; margin-bottom: 5px;">Payment Successful</h2>
+            <h1 id="receipt-amount" style="font-size: 36px; color: var(--text-dark); margin: 15px 0;">₹0.00</h1>
+            
+            <div style="text-align: left; margin-top: 25px;">
+                <div class="receipt-detail"><span>Paid to</span> <strong id="receipt-receiver" style="color: var(--text-dark);">Name</strong></div>
+                <div class="receipt-detail"><span>From</span> <strong id="receipt-sender" style="color: var(--text-dark);">My Account</strong></div>
+                <div class="receipt-detail"><span>Date & Time</span> <strong id="receipt-time" style="color: var(--text-dark);">Time</strong></div>
+            </div>
+            
+            <button class="btn-primary" onclick="closeSuccess()" style="margin-top: 30px;">Done</button>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
+            <h3>My Profile & Settings</h3>
+            <div style="text-align: center; margin: 15px 0;">
+                <div class="avatar" id="profile-modal-avatar" style="width: 60px; height: 60px; font-size: 24px; margin: 0 auto 10px;">U</div>
+                <h4 id="profile-modal-name" style="font-size: 18px; color: var(--primary);">User</h4>
+                <p id="profile-modal-upi" style="color: var(--text-muted); font-size: 13px;"></p>
+                <p style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Member Since: <span id="profile-modal-date">2026</span></p>
+            </div>
+            <hr style="border:0; border-top:1px solid #f3f4f6; margin: 15px 0;">
+            <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-dark);">Change Password / PIN</h4>
+            <input type="password" id="old-pin" placeholder="Current 4-Digit PIN" maxlength="4">
+            <input type="password" id="new-pin" placeholder="New 4-Digit PIN" maxlength="4">
+            <button class="btn-primary" onclick="changePin()">Update PIN</button>
+        </div>
+    </div>
+
+    <div id="contactsModal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('contactsModal')">✕</button>
+            <h3>Saved Contacts</h3>
+            <div id="contacts-list" style="margin-top: 15px; max-height: 300px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <audio id="success-audio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+    <div style="text-align: center; padding: 15px 0 30px 0; font-size: 12px; font-weight: 600; color: var(--text-muted); position: relative; z-index: 10;">
+        Made by Rocket
+    </div>
 
     <script>
         let currentUser = "";
@@ -292,29 +336,33 @@
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-                function logout() {
-            // Clear backend variables
+        function logout() {
             currentUser = ""; 
             currentPin = ""; 
             currentName = "";
-            
-            // Clear the input fields on the screen
             document.getElementById('log-upi').value = "";
             document.getElementById('log-pin').value = "";
-            
-            // Switch screens
             document.getElementById('dashboard-screen').classList.add('hidden');
             document.getElementById('owner-screen').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
         }
 
-
         async function register() {
             const name = document.getElementById('reg-name').value;
-            const upi_id = document.getElementById('reg-upi').value;
+            const manualUpi = document.getElementById('reg-upi').value.trim();
+            const upi_id = manualUpi ? (manualUpi.includes('@') ? manualUpi : manualUpi + '@rpay') : name.toLowerCase().replace(/[^a-z0-9]/g, '') + '@rpay';
             const pin = document.getElementById('reg-pin').value;
+            
+            if(!name || !pin) return alert("Please fill name and PIN.");
+
             const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
-            if((await res.json()).success) { alert("Account Created! Please log in."); toggleAuth('login'); }
+            const data = await res.json();
+            if(data.success) { 
+                alert("Account Created! Your UPI ID is: " + upi_id); 
+                toggleAuth('login'); 
+            } else {
+                alert(data.error);
+            }
         }
 
         async function login() {
@@ -324,6 +372,10 @@
             const data = await res.json();
             
             if(data.success) {
+                if(data.user.status === 'FROZEN') {
+                    return alert("Your account is temporarily frozen by security. Contact support.");
+                }
+
                 currentUser = upi_id;
                 currentPin = pin;
                 document.getElementById('auth-screen').classList.add('hidden');
@@ -344,22 +396,21 @@
                     
                     updateBalance();
                     loadHistory();
+                    checkSystemNotices();
                 }
             } else alert(data.error);
         }
 
-                async function pay() {
+        async function pay() {
             const receiver = document.getElementById('pay-receiver').value;
             const amount = document.getElementById('pay-amount').value;
             const pin = document.getElementById('pay-pin').value;
             
             if(!receiver || !amount || !pin) return alert("Please fill all fields.");
 
-            // 1. Close modal and show loading spinner immediately
             closeModal('sendModal');
             document.getElementById('loading-screen').classList.remove('hidden');
 
-            // 2. Process the actual payment via the server
             const res = await fetch('/pay', { 
                 method: 'POST', 
                 headers:{'Content-Type':'application/json'}, 
@@ -367,31 +418,26 @@
             });
             const data = await res.json();
 
-            // 3. Add a simulated 1.5 second delay for a realistic banking feel
             setTimeout(() => {
                 document.getElementById('loading-screen').classList.add('hidden');
                 
                 if(data.success) {
-                    // Populate Receipt Data
+                    playSuccessSound(); // Play audio effect on success
                     document.getElementById('receipt-amount').innerText = "₹" + amount;
                     document.getElementById('receipt-receiver').innerText = receiver;
                     document.getElementById('receipt-sender').innerText = currentUser;
                     document.getElementById('receipt-time').innerText = new Date().toLocaleString();
-                    
-                    // Show Success Screen
                     document.getElementById('success-screen').classList.remove('hidden');
                 } else {
                     alert("Payment Failed: " + data.error);
                 }
                 
-                // Clear input fields
                 document.getElementById('pay-receiver').value = "";
                 document.getElementById('pay-amount').value = "";
                 document.getElementById('pay-pin').value = "";
             }, 1500);
         }
 
-        // 4. Function to dismiss the receipt and refresh dashboard
         function closeSuccess() {
             document.getElementById('success-screen').classList.add('hidden');
             updateBalance(); 
@@ -425,7 +471,6 @@
             </div>`;
         }
 
-                // 1. Update the Scanner to open the Numpad Screen
         function startScanner() {
             openModal('scannerModal');
             if (!html5QrcodeScanner) {
@@ -442,7 +487,6 @@
             closeModal('scannerModal');
         }
 
-        // 2. Variables & Functions for the Numpad Interface
         let currentScanAmount = "0";
         let currentScanReceiver = "";
 
@@ -477,7 +521,6 @@
             openModal('pinConfirmModal');
         }
 
-        // 3. Execute the Scan Payment
         async function executeScanPay() {
             const pin = document.getElementById('scan-pay-pin').value;
             if(!pin) return alert("Enter your 4-digit PIN.");
@@ -497,6 +540,7 @@
                 document.getElementById('loading-screen').classList.add('hidden');
                 
                 if(data.success) {
+                    playSuccessSound(); // Play audio effect on success
                     document.getElementById('receipt-amount').innerText = "₹" + currentScanAmount;
                     document.getElementById('receipt-receiver').innerText = currentScanReceiver;
                     document.getElementById('receipt-sender').innerText = currentUser;
@@ -547,7 +591,8 @@
                 </div>
             `).join('');
         }
-                // 1. Audio Effect Trigger
+
+        // --- NEW FEATURES JAVASCRIPT ---
         function playSuccessSound() {
             const audio = document.getElementById('success-audio');
             if(audio) {
@@ -556,7 +601,6 @@
             }
         }
 
-        // 2. Profile Screen Logic
         function openProfileModal() {
             document.getElementById('profile-modal-name').innerText = currentName;
             document.getElementById('profile-modal-upi').innerText = currentUser;
@@ -584,7 +628,6 @@
             }
         }
 
-        // 3. Contacts Logic
         async function openContactsModal() {
             openModal('contactsModal');
             const res = await fetch('/contacts/' + currentUser);
@@ -611,10 +654,9 @@
 
         function selectContact(upi) {
             closeModal('contactsModal');
-            openScanPayScreen(upi); // Opens numpad to pay instantly
+            openScanPayScreen(upi);
         }
 
-        // 4. System Notices Loader
         async function checkSystemNotices() {
             try {
                 const res = await fetch('/notices/active');
@@ -625,66 +667,10 @@
                 }
             } catch(e) {}
         }
+
         function dismissNotice() {
             document.getElementById('system-notice').classList.add('hidden');
         }
-
     </script>
-        <!-- Processing Screen -->
-    <div id="loading-screen" class="fullscreen-overlay hidden">
-        <div class="spinner"></div>
-        <h3 style="color: var(--primary);">Processing Payment...</h3>
-        <p style="color: var(--text-muted); font-size: 13px;">Securely connecting to RPAY servers</p>
-    </div>
-
-    <!-- Payment Successful Screen -->
-    <div id="success-screen" class="fullscreen-overlay hidden">
-        <div class="success-card">
-            <div class="check-circle">✓</div>
-            <h2 style="color: #22c55e; margin-bottom: 5px;">Payment Successful</h2>
-            <h1 id="receipt-amount" style="font-size: 36px; color: var(--text-dark); margin: 15px 0;">₹0.00</h1>
-            
-            <div style="text-align: left; margin-top: 25px;">
-                <div class="receipt-detail"><span>Paid to</span> <strong id="receipt-receiver" style="color: var(--text-dark);">Name</strong></div>
-                <div class="receipt-detail"><span>From</span> <strong id="receipt-sender" style="color: var(--text-dark);">My Account</strong></div>
-                <div class="receipt-detail"><span>Date & Time</span> <strong id="receipt-time" style="color: var(--text-dark);">Time</strong></div>
-            </div>
-            
-            <button class="btn-primary" onclick="closeSuccess()" style="margin-top: 30px;">Done</button>
-        </div>
-    </div>
-
-        <div style="text-align: center; padding: 15px 0 30px 0; font-size: 12px; font-weight: 600; color: var(--text-muted); position: relative; z-index: 10;">
-        Made by Rocket
-    </div>
-        <audio id="success-audio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
-    <div id="profileModal" class="modal hidden">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
-            <h3>My Profile & Settings</h3>
-            <div style="text-align: center; margin: 15px 0;">
-                <div class="avatar" id="profile-modal-avatar" style="width: 60px; height: 60px; font-size: 24px; margin: 0 auto 10px;">U</div>
-                <h4 id="profile-modal-name" style="font-size: 18px; color: var(--primary);">User</h4>
-                <p id="profile-modal-upi" style="color: var(--text-muted); font-size: 13px;"></p>
-                <p style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Member Since: <span id="profile-modal-date">2026</span></p>
-            </div>
-            <hr style="border:0; border-top:1px solid #f3f4f6; margin: 15px 0;">
-            <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-dark);">Change Password / PIN</h4>
-            <input type="password" id="old-pin" placeholder="Current 4-Digit PIN" maxlength="4">
-            <input type="password" id="new-pin" placeholder="New 4-Digit PIN" maxlength="4">
-            <button class="btn-primary" onclick="changePin()">Update PIN</button>
-        </div>
-    </div>
-
-    <div id="contactsModal" class="modal hidden">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('contactsModal')">✕</button>
-            <h3>Saved Contacts</h3>
-            <div id="contacts-list" style="margin-top: 15px; max-height: 300px; overflow-y: auto;"></div>
-        </div>
-    </div>
-
-
 </body>
 </html>

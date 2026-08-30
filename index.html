@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual UPI Network</title>
+    <!-- Library to generate QR Codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: white; padding: 20px; max-width: 400px; margin: auto; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: none; box-sizing: border-box; }
+        button { background: #3b82f6; color: white; font-weight: bold; cursor: pointer; }
+        .hidden { display: none; }
+        .card { background: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        #qrcode { margin: 15px auto; background: white; padding: 10px; display: inline-block; border-radius: 5px; }
+        .txn { border-bottom: 1px solid #334155; padding: 8px 0; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div id="auth-screen">
+        <h2>Virtual UPI</h2>
+        <div class="card">
+            <h3>Login</h3>
+            <input type="text" id="log-upi" placeholder="UPI ID">
+            <input type="password" id="log-pin" placeholder="4-Digit PIN" maxlength="4">
+            <button onclick="login()">Login</button>
+        </div>
+        <div class="card">
+            <h3>Create Account</h3>
+            <input type="text" id="reg-name" placeholder="Full Name">
+            <input type="text" id="reg-upi" placeholder="Choose UPI ID (e.g., name@upi)">
+            <input type="password" id="reg-pin" placeholder="Set 4-Digit PIN" maxlength="4">
+            <button onclick="register()">Sign Up (Receive ₹10,000 Demo Cash)</button>
+        </div>
+    </div>
+
+    <div id="dashboard-screen" class="hidden">
+        <h2 id="greet-name"></h2>
+        <div class="card">
+            <p>Available Balance</p>
+            <h1 style="margin:0; color:#22c55e;">₹<span id="live-balance">0.00</span></h1>
+            <p style="color:#94a3b8; font-size:12px;">Account No (UPI): <span id="my-upi"></span></p>
+        </div>
+
+        <div class="card">
+            <h3>Send Money</h3>
+            <input type="text" id="pay-receiver" placeholder="Receiver UPI ID">
+            <input type="number" id="pay-amount" placeholder="Amount (₹)">
+            <input type="password" id="pay-pin" placeholder="Enter PIN to Confirm" maxlength="4">
+            <button onclick="pay()">Send Securely</button>
+        </div>
+
+        <div class="card" style="text-align: center;">
+            <h3>Receive Money</h3>
+            <div id="qrcode"></div>
+            <p style="font-size:12px; color:#94a3b8;">Scan this code to capture UPI ID.</p>
+        </div>
+
+        <div class="card">
+            <h3>Transaction Ledger</h3>
+            <button onclick="loadHistory()" style="background:#475569;">Refresh Ledger</button>
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = "";
+        let currentName = "";
+
+        async function register() {
+            const name = document.getElementById('reg-name').value;
+            const upi_id = document.getElementById('reg-upi').value;
+            const pin = document.getElementById('reg-pin').value;
+            const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
+            const data = await res.json();
+            if(data.success) alert("Account Created! You can now log in.");
+            else alert(data.error);
+        }
+
+        async function login() {
+            const upi_id = document.getElementById('log-upi').value;
+            const pin = document.getElementById('log-pin').value;
+            const res = await fetch('/login', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, pin}) });
+            const data = await res.json();
+            
+            if(data.success) {
+                currentUser = upi_id;
+                currentName = data.user.name;
+                
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+                
+                document.getElementById('greet-name').innerText = "Hi, " + currentName;
+                document.getElementById('my-upi').innerText = currentUser;
+                
+                // Generate QR Code dynamically based on logged-in user
+                document.getElementById("qrcode").innerHTML = "";
+                new QRCode(document.getElementById("qrcode"), currentUser);
+                
+                updateBalance();
+                loadHistory();
+            } else alert(data.error);
+        }
+
+        async function pay() {
+            const receiver = document.getElementById('pay-receiver').value;
+            const amount = document.getElementById('pay-amount').value;
+            const pin = document.getElementById('pay-pin').value;
+            const res = await fetch('/pay', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({sender: currentUser, receiver, pin, amount}) });
+            const data = await res.json();
+            if(data.success) {
+                alert("Transfer Successful!");
+                document.getElementById('pay-receiver').value = "";
+                document.getElementById('pay-amount').value = "";
+                document.getElementById('pay-pin').value = "";
+                updateBalance();
+                loadHistory();
+            } else alert(data.error);
+        }
+
+        async function updateBalance() {
+            const res = await fetch('/balance/' + currentUser);
+            const data = await res.json();
+            document.getElementById('live-balance').innerText = data.balance.toFixed(2);
+        }
+
+        async function loadHistory() {
+            const res = await fetch('/history/' + currentUser);
+            const data = await res.json();
+            const list = document.getElementById('history-list');
+            list.innerHTML = data.map(t => {
+                const isSender = t.sender === currentUser;
+                const color = isSender ? "#ef4444" : "#22c55e";
+                const prefix = isSender ? "-" : "+";
+                const counterpart = isSender ? "To: " + t.receiver : "From: " + t.sender;
+                return `<div class="txn">
+                    <span style="color:${color}; font-weight:bold;">${prefix}₹${t.amount}</span>
+                    <span style="float:right; color:#94a3b8;">${counterpart}</span>
+                </div>`;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

@@ -114,5 +114,47 @@ app.post('/admin/transactions', async (req, res) => {
         res.status(400).json({ success: false, error: "Error fetching data." });
     }
 });
+// Save a contact
+app.post('/contacts/add', async (req, res) => {
+    const { owner_upi, contact_name, contact_upi } = req.body;
+    try {
+        await pool.query('INSERT INTO contacts (owner_upi, contact_name, contact_upi) VALUES ($1, $2, $3)', [owner_upi, contact_name, contact_upi]);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(400).json({ success: false, error: "Could not save contact." });
+    }
+});
+
+// Fetch contacts
+app.get('/contacts/:upi', async (req, res) => {
+    const result = await pool.query('SELECT * FROM contacts WHERE owner_upi = $1', [req.params.upi]);
+    res.json(result.rows);
+});
+
+// Admin: Freeze / Unfreeze Account
+app.post('/admin/freeze', async (req, res) => {
+    const { admin_id, admin_pin, target_id, status } = req.body;
+    if (admin_id !== 'Boss0' || admin_pin !== '5555') return res.status(401).json({ success: false });
+    
+    await pool.query('UPDATE accounts SET status = $1 WHERE upi_id = $2', [status, target_id]);
+    res.json({ success: true });
+});
+
+// Admin: Broadcast Notice
+app.post('/admin/broadcast', async (req, res) => {
+    const { admin_id, admin_pin, message } = req.body;
+    if (admin_id !== 'Boss0' || admin_pin !== '5555') return res.status(401).json({ success: false });
+    
+    await pool.query('UPDATE system_notices SET is_active = FALSE'); // Disable old notices
+    await pool.query('INSERT INTO system_notices (message, is_active) VALUES ($1, TRUE)', [message]);
+    res.json({ success: true });
+});
+
+// Fetch active notice for users
+app.get('/notices/active', async (req, res) => {
+    const result = await pool.query('SELECT message FROM system_notices WHERE is_active = TRUE LIMIT 1');
+    res.json(result.rows[0] || { message: null });
+});
+
 
 app.listen(process.env.PORT || 3000, () => console.log('API live'));

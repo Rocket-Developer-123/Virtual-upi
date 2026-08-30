@@ -15,209 +15,117 @@
             --text-dark: #1f2937;
             --text-muted: #6b7280;
         }
-
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; }
         body { background: var(--bg); color: var(--text-dark); padding-bottom: 90px; }
-
-        /* Auth Screen */
-        .auth-container { max-width: 400px; margin: 40px auto; padding: 20px; }
-        .auth-card { background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .auth-card h2 { color: var(--primary); margin-bottom: 15px; font-size: 22px; text-align: center; }
+        .container { max-width: 450px; margin: auto; padding: 15px; }
+        .card { background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        h2, h3 { color: var(--primary); margin-bottom: 15px; }
         input { width: 100%; padding: 14px; margin: 8px 0; border-radius: 8px; border: 1px solid #d1d5db; font-size: 15px; }
-        input:focus { outline: none; border-color: var(--accent); }
-        .btn-primary { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .link-text { color: var(--accent); font-weight: 600; cursor: pointer; }
-
-        /* Dashboard Top Header */
-        .top-header { background: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; }
-        .profile-badge { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #e0f2fe; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
-        .upi-badge { font-size: 11px; color: var(--text-muted); }
-
-        /* Dashboard Sections */
-        .dashboard-content { max-width: 450px; margin: auto; padding: 15px; }
-        .section-card { background: var(--card-bg); border-radius: 16px; padding: 18px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .section-title { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
-
-        /* Grid Action Buttons */
-        .grid-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
-        .action-item { cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .icon-circle { width: 52px; height: 52px; border-radius: 14px; background: #f0f9ff; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 6px; border: 1px solid #e0f2fe; transition: 0.2s; }
-        .action-item:active .icon-circle { transform: scale(0.95); background: #e0f2fe; }
-        .action-label { font-size: 11px; font-weight: 600; color: var(--text-dark); line-height: 1.2; }
-
-        /* Balance Banner */
-        .balance-banner { background: linear-gradient(135deg, #002970, #0056b3); color: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; position: relative; }
-        .balance-label { font-size: 12px; color: #bae6fd; font-weight: 600; text-transform: uppercase; }
-        .balance-val { font-size: 28px; font-weight: 800; margin: 5px 0; }
-
-        /* Floating Bottom Bar with Center Scan Button */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 75px; background: #ffffff; display: flex; justify-content: center; align-items: center; border-top: 1px solid #e5e7eb; z-index: 100; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); }
-        .scan-pill-btn { background: linear-gradient(135deg, #00b9f5, #002970); color: white; display: flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 50px; font-weight: 700; font-size: 15px; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(0,185,245,0.4); }
-        .scan-pill-btn:active { transform: scale(0.96); }
-
-        /* Modals (Sheets) */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; justify-content: center; z-index: 200; backdrop-filter: blur(4px); }
-        .modal-content { background: #ffffff; width: 100%; max-width: 450px; border-radius: 20px 20px 0 0; padding: 24px; position: relative; max-height: 85vh; overflow-y: auto; animation: slideUp 0.25s ease-out; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .modal-close { position: absolute; top: 15px; right: 15px; background: #f3f4f6; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; cursor: pointer; color: #4b5563; }
-
-        /* QR & Ledger */
-        #qrcode { margin: 15px auto; display: flex; justify-content: center; }
-        .txn-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
-        .txn-info { font-size: 14px; font-weight: 600; }
-        .txn-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .txn-amt { font-size: 15px; font-weight: 800; }
+        .btn-primary { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-danger { background: #ef4444; }
+        .btn-success { background: #22c55e; }
+        .btn-dark { background: #1f2937; }
+        .link-text { color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; }
+        
+        .top-header { background: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; }
+        .balance-banner { background: linear-gradient(135deg, #002970, #0056b3); color: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+        .txn-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px;}
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- 1. AUTHENTICATION SECTION -->
-    <div id="auth-screen" class="auth-container">
-        <div id="login-section" class="auth-card">
-            <h2>Virtual UPI</h2>
-            <input type="text" id="log-upi" placeholder="Enter UPI ID (e.g. name@upi)">
+    <!-- AUTHENTICATION -->
+    <div id="auth-screen" class="container" style="margin-top: 40px;">
+        <div id="login-section" class="card">
+            <h2 style="text-align: center;">Virtual UPI</h2>
+            <input type="text" id="log-upi" placeholder="Enter UPI ID">
             <input type="password" id="log-pin" placeholder="Enter 4-Digit PIN" maxlength="4">
             <button class="btn-primary" onclick="login()">Login</button>
-            <p style="font-size: 13px; text-align: center; color: var(--text-muted); margin-top: 15px;">
-                Don't have an account? <span class="link-text" onclick="toggleAuth('register')">Create Account</span>
+            <p style="font-size: 13px; text-align: center; margin-top: 15px;">
+                <span class="link-text" onclick="toggleAuth('register')">Create Account</span>
             </p>
         </div>
 
-        <div id="register-section" class="auth-card hidden">
-            <h2>Create UPI Account</h2>
+        <div id="register-section" class="card hidden">
+            <h2 style="text-align: center;">Create Account</h2>
             <input type="text" id="reg-name" placeholder="Full Name">
-            <input type="text" id="reg-upi" placeholder="Create UPI ID (e.g. yourname@upi)">
+            <input type="text" id="reg-upi" placeholder="Create UPI ID">
             <input type="password" id="reg-pin" placeholder="Create 4-Digit PIN" maxlength="4">
-            <button class="btn-primary" onclick="register()">Sign Up (₹10,000 Demo Bonus)</button>
-            <p style="font-size: 13px; text-align: center; color: var(--text-muted); margin-top: 15px;">
-                Already registered? <span class="link-text" onclick="toggleAuth('login')">Login</span>
+            <button class="btn-primary" onclick="register()">Sign Up</button>
+            <p style="font-size: 13px; text-align: center; margin-top: 15px;">
+                <span class="link-text" onclick="toggleAuth('login')">Back to Login</span>
             </p>
         </div>
     </div>
 
-    <!-- 2. HOME DASHBOARD -->
+    <!-- STANDARD USER DASHBOARD -->
     <div id="dashboard-screen" class="hidden">
         <header class="top-header">
-            <div class="profile-badge">
-                <div class="avatar" id="avatar-initial">U</div>
-                <div>
-                    <h4 id="user-display-name" style="font-size: 15px; font-weight: 700;">User</h4>
-                    <p class="upi-badge" id="my-upi"></p>
-                </div>
-            </div>
-            <button onclick="logout()" style="background: none; border: 1px solid #d1d5db; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">Logout</button>
+            <div><h3 id="user-display-name" style="margin:0;">User</h3><p id="my-upi" style="font-size: 12px;"></p></div>
+            <button class="btn-dark" style="padding: 6px 12px; width: auto;" onclick="logout()">Logout</button>
         </header>
-
-        <main class="dashboard-content">
-            <!-- Account Balance Header Card -->
+        <div class="container">
             <div class="balance-banner">
-                <p class="balance-label">Primary Account Balance</p>
-                <div class="balance-val">₹<span id="live-balance">0.00</span></div>
-                <p style="font-size: 11px; opacity: 0.85;">Virtual Reserve Bank of India • Simulated</p>
+                <p>Available Balance</p>
+                <h1 style="margin: 5px 0;">₹<span id="live-balance">0.00</span></h1>
             </div>
+            <div class="card">
+                <h3>Send Money</h3>
+                <input type="text" id="pay-receiver" placeholder="Receiver UPI ID">
+                <input type="number" id="pay-amount" placeholder="Amount (₹)">
+                <input type="password" id="pay-pin" placeholder="Enter PIN" maxlength="4">
+                <button class="btn-primary" onclick="pay()">Pay Securely</button>
+            </div>
+            <div class="card">
+                <h3>Passbook <button onclick="loadHistory()" style="float:right; font-size:12px; padding:4px;">Refresh</button></h3>
+                <div id="history-list"></div>
+            </div>
+        </div>
+    </div>
 
-            <!-- Money Transfers Section -->
-            <div class="section-card">
-                <div class="section-title">Money Transfers</div>
-                <div class="grid-actions">
-                    <div class="action-item" onclick="openModal('sendModal')">
-                        <div class="icon-circle">💸</div>
-                        <span class="action-label">To UPI ID</span>
-                    </div>
-                    <div class="action-item" onclick="openModal('qrModal')">
-                        <div class="icon-circle">📱</div>
-                        <span class="action-label">My QR</span>
-                    </div>
-                    <div class="action-item" onclick="openModal('historyModal')">
-                        <div class="icon-circle">📑</div>
-                        <span class="action-label">Passbook</span>
-                    </div>
-                    <div class="action-item" onclick="updateBalance()">
-                        <div class="icon-circle">🔄</div>
-                        <span class="action-label">Check Bal</span>
-                    </div>
+    <!-- SYSTEM OWNER PANEL (BOSS0) -->
+    <div id="owner-screen" class="hidden">
+        <header class="top-header" style="background: #1f2937; color: white;">
+            <div><h3 style="margin:0; color:#00b9f5;">SYSTEM OPERATOR</h3><p style="font-size: 12px;">Boss0</p></div>
+            <button class="btn-danger" style="padding: 6px 12px; width: auto; color: white;" onclick="logout()">Exit</button>
+        </header>
+        <div class="container">
+            <!-- Fund Management -->
+            <div class="card">
+                <h3>Account Management</h3>
+                <input type="text" id="admin-target" placeholder="Target UPI ID (e.g., friend@upi)">
+                <input type="number" id="admin-amount" placeholder="Amount (₹)">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary btn-success" onclick="adminAdjust('add')">+ Inject Funds</button>
+                    <button class="btn-primary btn-danger" onclick="adminAdjust('deduct')">- Deduct Funds</button>
                 </div>
+                <button class="btn-primary btn-dark" onclick="adminDelete()" style="margin-top: 15px;">⚠ Terminate Account</button>
             </div>
 
-            <!-- Manage & History Quick Section -->
-            <div class="section-card">
-                <div class="section-title">Recent Activity</div>
-                <div id="mini-history-list" style="font-size: 13px; color: var(--text-muted);">
-                    No recent transactions.
-                </div>
+            <!-- Spy / Ledger Access -->
+            <div class="card">
+                <h3>Transaction Surveillance</h3>
+                <input type="text" id="admin-spy-target" placeholder="UPI ID (Leave blank for ALL network data)">
+                <button class="btn-primary" onclick="adminViewTransactions()">View Records</button>
+                <div id="admin-ledger" style="margin-top: 15px; max-height: 400px; overflow-y: auto;"></div>
             </div>
-        </main>
-
-        <!-- Fixed Bottom Center Scan Button -->
-        <nav class="bottom-nav">
-            <button class="scan-pill-btn" onclick="startScanner()">
-                <span style="font-size: 18px;">⛶</span> Scan Any QR
-            </button>
-        </nav>
-    </div>
-
-    <!-- 3. MODALS / POPUP SCREENS -->
-
-    <!-- Send Money Modal -->
-    <div id="sendModal" class="modal hidden">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('sendModal')">✕</button>
-            <h3 style="margin-bottom: 12px; font-size: 18px;">Send Money</h3>
-            <input type="text" id="pay-receiver" placeholder="Enter Receiver UPI ID">
-            <input type="number" id="pay-amount" placeholder="Amount (₹)">
-            <input type="password" id="pay-pin" placeholder="Enter 4-Digit UPI PIN" maxlength="4">
-            <button class="btn-primary" onclick="pay()">Pay Securely</button>
-        </div>
-    </div>
-
-    <!-- My QR Code Modal -->
-    <div id="qrModal" class="modal hidden">
-        <div class="modal-content" style="text-align: center;">
-            <button class="modal-close" onclick="closeModal('qrModal')">✕</button>
-            <h3 style="font-size: 18px;">Receive Money</h3>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Show this QR code to get paid</p>
-            <div id="qrcode"></div>
-            <p id="qr-upi-label" style="font-size: 13px; font-weight: 700; color: var(--primary); margin-top: 10px;"></p>
-        </div>
-    </div>
-
-    <!-- Full Passbook History Modal -->
-    <div id="historyModal" class="modal hidden">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('historyModal')">✕</button>
-            <h3 style="margin-bottom: 12px; font-size: 18px;">Passbook & History</h3>
-            <div id="full-history-list"></div>
-        </div>
-    </div>
-
-    <!-- Live Scanner Modal -->
-    <div id="scannerModal" class="modal hidden">
-        <div class="modal-content" style="text-align: center;">
-            <button class="modal-close" onclick="stopScanner()">✕</button>
-            <h3 style="margin-bottom: 10px;">Scan QR Code</h3>
-            <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden;"></div>
         </div>
     </div>
 
     <script>
         let currentUser = "";
-        let currentName = "";
-        let html5QrcodeScanner;
+        let currentPin = "";
 
         function toggleAuth(view) {
             document.getElementById('login-section').classList.toggle('hidden', view === 'register');
             document.getElementById('register-section').classList.toggle('hidden', view === 'login');
         }
 
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
         function logout() {
-            currentUser = "";
-            currentName = "";
+            currentUser = ""; currentPin = "";
             document.getElementById('dashboard-screen').classList.add('hidden');
+            document.getElementById('owner-screen').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
         }
 
@@ -226,11 +134,7 @@
             const upi_id = document.getElementById('reg-upi').value;
             const pin = document.getElementById('reg-pin').value;
             const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
-            const data = await res.json();
-            if(data.success) {
-                alert("Account Created! Please log in.");
-                toggleAuth('login');
-            } else alert(data.error);
+            if((await res.json()).success) { alert("Account Created!"); toggleAuth('login'); }
         }
 
         async function login() {
@@ -241,101 +145,83 @@
             
             if(data.success) {
                 currentUser = upi_id;
-                currentName = data.user.name;
-                
+                currentPin = pin;
                 document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('dashboard-screen').classList.remove('hidden');
                 
-                document.getElementById('user-display-name').innerText = currentName;
-                document.getElementById('avatar-initial').innerText = currentName.charAt(0).toUpperCase();
-                document.getElementById('my-upi').innerText = currentUser;
-                document.getElementById('qr-upi-label').innerText = currentUser;
-                
-                // Build dynamic QR Code
-                document.getElementById("qrcode").innerHTML = "";
-                new QRCode(document.getElementById("qrcode"), { text: currentUser, width: 200, height: 200 });
-                
-                updateBalance();
-                loadHistory();
+                // ROUTING INTERCEPTOR FOR BOSS0
+                if(currentUser === 'Boss0') {
+                    document.getElementById('owner-screen').classList.remove('hidden');
+                    adminViewTransactions(); // Auto-load network history
+                } else {
+                    document.getElementById('dashboard-screen').classList.remove('hidden');
+                    document.getElementById('user-display-name').innerText = data.user.name;
+                    document.getElementById('my-upi').innerText = currentUser;
+                    updateBalance();
+                    loadHistory();
+                }
             } else alert(data.error);
         }
 
+        // --- Standard User Functions ---
         async function pay() {
             const receiver = document.getElementById('pay-receiver').value;
             const amount = document.getElementById('pay-amount').value;
             const pin = document.getElementById('pay-pin').value;
             const res = await fetch('/pay', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({sender: currentUser, receiver, pin, amount}) });
-            const data = await res.json();
-            if(data.success) {
-                alert("₹" + amount + " Sent to " + receiver + "!");
-                document.getElementById('pay-receiver').value = "";
-                document.getElementById('pay-amount').value = "";
-                document.getElementById('pay-pin').value = "";
-                closeModal('sendModal');
-                updateBalance();
-                loadHistory();
-            } else alert(data.error);
+            if((await res.json()).success) { alert("Sent!"); updateBalance(); loadHistory(); } else alert("Failed.");
         }
-
         async function updateBalance() {
             const res = await fetch('/balance/' + currentUser);
-            const data = await res.json();
-            document.getElementById('live-balance').innerText = data.balance.toFixed(2);
+            document.getElementById('live-balance').innerText = (await res.json()).balance.toFixed(2);
         }
-
         async function loadHistory() {
             const res = await fetch('/history/' + currentUser);
             const data = await res.json();
+            document.getElementById('history-list').innerHTML = data.map(t => {
+                const isSender = t.sender === currentUser;
+                return `<div class="txn-row"><span style="color:${isSender?'#ef4444':'#22c55e'}">${isSender?'-':'+'}₹${t.amount}</span><span>${isSender?'To: '+t.receiver:'From: '+t.sender}</span></div>`;
+            }).join('');
+        }
+
+        // --- BOSS0 OWNER FUNCTIONS ---
+        async function adminAdjust(action) {
+            const target_id = document.getElementById('admin-target').value;
+            const amount = document.getElementById('admin-amount').value;
+            if(!target_id || !amount) return alert("Enter target and amount.");
             
-            // Mini history on dashboard (last 2 txns)
-            const mini = document.getElementById('mini-history-list');
-            if(data.length === 0) {
-                mini.innerHTML = "No recent transactions.";
-            } else {
-                mini.innerHTML = data.slice(0, 2).map(renderTxnRow).join('');
-            }
-
-            // Full passbook list inside modal
-            document.getElementById('full-history-list').innerHTML = data.length === 0 
-                ? "<p style='color:#6b7280; text-align:center;'>No transaction records found.</p>" 
-                : data.map(renderTxnRow).join('');
+            const res = await fetch('/admin/adjust', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id, amount, action })
+            });
+            if((await res.json()).success) { alert(`Successfully applied ${action} action to ${target_id}`); adminViewTransactions(); }
         }
 
-        function renderTxnRow(t) {
-            const isSender = t.sender === currentUser;
-            const color = isSender ? "#dc2626" : "#16a34a";
-            const sign = isSender ? "- " : "+ ";
-            const label = isSender ? "To: " + t.receiver : "From: " + t.sender;
-            const time = new Date(t.created_at).toLocaleDateString();
+        async function adminDelete() {
+            const target_id = document.getElementById('admin-target').value;
+            if(!target_id) return;
+            if(!confirm(`PERMANENTLY delete ${target_id} and wipe their history?`)) return;
+            
+            const res = await fetch('/admin/delete', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id })
+            });
+            if((await res.json()).success) alert("Account Terminated.");
+        }
 
-            return `
-            <div class="txn-row">
-                <div>
-                    <div class="txn-info">${label}</div>
-                    <div class="txn-date">${time} • Virtual Transfer</div>
+        async function adminViewTransactions() {
+            const target_id = document.getElementById('admin-spy-target').value;
+            const res = await fetch('/admin/transactions', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id })
+            });
+            const data = await res.json();
+            
+            document.getElementById('admin-ledger').innerHTML = data.data.map(t => `
+                <div class="txn-row" style="background:#f3f4f6; padding:10px; border-radius:6px; margin-bottom:8px;">
+                    <div><b style="color:#002970;">${t.sender}</b> ➔ <b style="color:#00b9f5;">${t.receiver}</b></div>
+                    <div style="font-weight:bold;">₹${t.amount}</div>
                 </div>
-                <div class="txn-amt" style="color: ${color};">${sign}₹${t.amount}</div>
-            </div>`;
-        }
-
-        // Camera Scanner Controls
-        function startScanner() {
-            openModal('scannerModal');
-            if (!html5QrcodeScanner) {
-                html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 220, height: 220 } }, false);
-            }
-            html5QrcodeScanner.render((decodedText) => {
-                stopScanner();
-                document.getElementById('pay-receiver').value = decodedText;
-                openModal('sendModal');
-            }, (error) => {});
-        }
-
-        function stopScanner() {
-            if (html5QrcodeScanner) {
-                html5QrcodeScanner.clear();
-            }
-            closeModal('scannerModal');
+            `).join('');
         }
     </script>
 </body>

@@ -19,10 +19,13 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.post('/register', async (req, res) => {
     const { upi_id, name, pin } = req.body;
     try {
-        await pool.query('INSERT INTO accounts (upi_id, name, pin, balance) VALUES ($1, $2, $3, 10000)', [upi_id, name, pin]);
+        await pool.query(
+            'INSERT INTO accounts (upi_id, name, pin, balance, status) VALUES ($1, $2, $3, 10000, \'ACTIVE\')', 
+            [upi_id, name, pin]
+        );
         res.json({ success: true });
     } catch (e) {
-        res.status(400).json({ success: false, error: "UPI ID already exists." });
+        res.status(400).json({ success: false, error: "UPI ID already exists or invalid format." });
     }
 });
 

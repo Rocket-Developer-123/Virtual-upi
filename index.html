@@ -4,36 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Virtual UPI Network</title>
-    <!-- Library to generate QR Codes -->
+    <!-- Library for generating QR Codes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- NEW: Library for scanning QR Codes via Camera -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         body { font-family: sans-serif; background: #0f172a; color: white; padding: 20px; max-width: 400px; margin: auto; }
         input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: none; box-sizing: border-box; }
         button { background: #3b82f6; color: white; font-weight: bold; cursor: pointer; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .card { background: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
         #qrcode { margin: 15px auto; background: white; padding: 10px; display: inline-block; border-radius: 5px; }
         .txn { border-bottom: 1px solid #334155; padding: 8px 0; font-size: 14px; }
+        .link-text { color: #3b82f6; cursor: pointer; text-decoration: underline; font-weight: bold; }
+        /* Scanner UI tweaks */
+        #reader { background: white; color: black; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+        #reader button { background: #1e293b; color: white; padding: 8px; width: auto; margin: 5px; }
     </style>
 </head>
 <body>
+    <!-- AUTHENTICATION SCREEN -->
     <div id="auth-screen">
-        <h2>Virtual UPI</h2>
-        <div class="card">
+        <h2 style="text-align: center;">Virtual UPI</h2>
+        
+        <!-- Login Card (Visible by default) -->
+        <div id="login-section" class="card">
             <h3>Login</h3>
             <input type="text" id="log-upi" placeholder="UPI ID">
             <input type="password" id="log-pin" placeholder="4-Digit PIN" maxlength="4">
             <button onclick="login()">Login</button>
+            <p style="font-size: 14px; text-align: center; color: #94a3b8; margin-top: 20px;">
+                Don't have an account? <span class="link-text" onclick="toggleAuth('register')">Create an account</span>
+            </p>
         </div>
-        <div class="card">
+
+        <!-- Register Card (Hidden by default) -->
+        <div id="register-section" class="card hidden">
             <h3>Create Account</h3>
             <input type="text" id="reg-name" placeholder="Full Name">
             <input type="text" id="reg-upi" placeholder="Choose UPI ID (e.g., name@upi)">
             <input type="password" id="reg-pin" placeholder="Set 4-Digit PIN" maxlength="4">
-            <button onclick="register()">Sign Up (Receive ₹10,000 Demo Cash)</button>
+            <button onclick="register()">Sign Up (Receive ₹10,000)</button>
+            <p style="font-size: 14px; text-align: center; color: #94a3b8; margin-top: 20px;">
+                Already have an account? <span class="link-text" onclick="toggleAuth('login')">Log in here</span>
+            </p>
         </div>
     </div>
 
+    <!-- DASHBOARD SCREEN -->
     <div id="dashboard-screen" class="hidden">
         <h2 id="greet-name"></h2>
         <div class="card">
@@ -44,6 +62,11 @@
 
         <div class="card">
             <h3>Send Money</h3>
+            
+            <!-- NEW: Scanner Container & Button -->
+            <button onclick="startScanner()" style="background:#8b5cf6; margin-bottom: 15px;">📷 Scan QR to Pay</button>
+            <div id="reader" class="hidden"></div>
+
             <input type="text" id="pay-receiver" placeholder="Receiver UPI ID">
             <input type="number" id="pay-amount" placeholder="Amount (₹)">
             <input type="password" id="pay-pin" placeholder="Enter PIN to Confirm" maxlength="4">
@@ -51,14 +74,14 @@
         </div>
 
         <div class="card" style="text-align: center;">
-            <h3>Receive Money</h3>
+            <h3>My QR Code</h3>
             <div id="qrcode"></div>
-            <p style="font-size:12px; color:#94a3b8;">Scan this code to capture UPI ID.</p>
+            <p style="font-size:12px; color:#94a3b8;">Let others scan this to pay you.</p>
         </div>
 
         <div class="card">
             <h3>Transaction Ledger</h3>
-            <button onclick="loadHistory()" style="background:#475569;">Refresh Ledger</button>
+            <button onclick="loadHistory()" style="background:#475569; padding: 8px;">Refresh Ledger</button>
             <div id="history-list"></div>
         </div>
     </div>
@@ -66,15 +89,50 @@
     <script>
         let currentUser = "";
         let currentName = "";
+        let html5QrcodeScanner;
 
+        // UI Toggle for Login/Register
+        function toggleAuth(view) {
+            if (view === 'register') {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('register-section').classList.remove('hidden');
+            } else {
+                document.getElementById('register-section').classList.add('hidden');
+                document.getElementById('login-section').classList.remove('hidden');
+            }
+        }
+
+        // Camera Scanner Logic
+        function startScanner() {
+            document.getElementById('reader').classList.remove('hidden');
+            
+            if(!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner(
+                    "reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+            }
+            
+            html5QrcodeScanner.render((decodedText) => {
+                // When a QR code is successfully read:
+                document.getElementById('pay-receiver').value = decodedText;
+                html5QrcodeScanner.clear(); // Stops the camera
+                document.getElementById('reader').classList.add('hidden'); // Hides the scanner UI
+                alert("Scanned UPI ID: " + decodedText);
+            }, (error) => {
+                // Ignore background scan errors
+            });
+        }
+
+        // API Calls
         async function register() {
             const name = document.getElementById('reg-name').value;
             const upi_id = document.getElementById('reg-upi').value;
             const pin = document.getElementById('reg-pin').value;
             const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
             const data = await res.json();
-            if(data.success) alert("Account Created! You can now log in.");
-            else alert(data.error);
+            if(data.success) {
+                alert("Account Created! Please log in.");
+                toggleAuth('login');
+            } else alert(data.error);
         }
 
         async function login() {
@@ -93,7 +151,6 @@
                 document.getElementById('greet-name').innerText = "Hi, " + currentName;
                 document.getElementById('my-upi').innerText = currentUser;
                 
-                // Generate QR Code dynamically based on logged-in user
                 document.getElementById("qrcode").innerHTML = "";
                 new QRCode(document.getElementById("qrcode"), currentUser);
                 

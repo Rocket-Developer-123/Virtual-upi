@@ -272,20 +272,54 @@
             } else alert(data.error);
         }
 
-        async function pay() {
+                async function pay() {
             const receiver = document.getElementById('pay-receiver').value;
             const amount = document.getElementById('pay-amount').value;
             const pin = document.getElementById('pay-pin').value;
-            const res = await fetch('/pay', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({sender: currentUser, receiver, pin, amount}) });
-            if((await res.json()).success) { 
-                alert("₹" + amount + " Sent to " + receiver + "!"); 
+            
+            if(!receiver || !amount || !pin) return alert("Please fill all fields.");
+
+            // 1. Close modal and show loading spinner immediately
+            closeModal('sendModal');
+            document.getElementById('loading-screen').classList.remove('hidden');
+
+            // 2. Process the actual payment via the server
+            const res = await fetch('/pay', { 
+                method: 'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify({sender: currentUser, receiver, pin, amount}) 
+            });
+            const data = await res.json();
+
+            // 3. Add a simulated 1.5 second delay for a realistic banking feel
+            setTimeout(() => {
+                document.getElementById('loading-screen').classList.add('hidden');
+                
+                if(data.success) {
+                    // Populate Receipt Data
+                    document.getElementById('receipt-amount').innerText = "₹" + amount;
+                    document.getElementById('receipt-receiver').innerText = receiver;
+                    document.getElementById('receipt-sender').innerText = currentUser;
+                    document.getElementById('receipt-time').innerText = new Date().toLocaleString();
+                    
+                    // Show Success Screen
+                    document.getElementById('success-screen').classList.remove('hidden');
+                } else {
+                    alert("Payment Failed: " + data.error);
+                }
+                
+                // Clear input fields
                 document.getElementById('pay-receiver').value = "";
                 document.getElementById('pay-amount').value = "";
                 document.getElementById('pay-pin').value = "";
-                closeModal('sendModal');
-                updateBalance(); 
-                loadHistory(); 
-            } else alert("Transfer Failed.");
+            }, 1500);
+        }
+
+        // 4. Function to dismiss the receipt and refresh dashboard
+        function closeSuccess() {
+            document.getElementById('success-screen').classList.add('hidden');
+            updateBalance(); 
+            loadHistory(); 
         }
 
         async function updateBalance() {

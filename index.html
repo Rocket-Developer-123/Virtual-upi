@@ -60,6 +60,17 @@
         .success-card { background: var(--card-bg); width: 90%; max-width: 350px; border-radius: 16px; padding: 30px 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .check-circle { width: 70px; height: 70px; background: #22c55e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px; }
         .receipt-detail { display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: var(--text-muted); border-bottom: 1px dashed #e5e7eb; padding-bottom: 8px; }
+                /* Custom Numpad Screen */
+        .scan-payment-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; z-index: 250; }
+        .scan-header { padding: 20px; text-align: center; position: relative; border-bottom: 1px solid #e5e7eb; background: white; }
+        .back-btn { position: absolute; left: 20px; top: 22px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-dark); }
+        .amount-display-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        .amount-text { font-size: 60px; font-weight: 800; color: var(--text-dark); }
+        
+        .numpad-container { background: white; border-radius: 24px 24px 0 0; padding: 25px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
+        .num-key { background: #f3f4f6; border: none; border-radius: 12px; font-size: 26px; font-weight: 600; color: var(--text-dark); padding: 18px 0; cursor: pointer; transition: 0.1s; }
+        .num-key:active { background: #e5e7eb; transform: scale(0.95); }
 
     </style>
 </head>
@@ -201,6 +212,48 @@
             <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden;"></div>
         </div>
     </div>
+        <!-- 1. Dedicated Scan Payment Screen -->
+    <div id="scan-pay-screen" class="scan-payment-screen hidden">
+        <div class="scan-header">
+            <button class="back-btn" onclick="closeScanPay()">←</button>
+            <p style="font-size: 13px; color: var(--text-muted);">Paying to</p>
+            <h3 id="scan-target-upi" style="color: var(--primary); font-size: 16px; margin-top: 2px;"></h3>
+        </div>
+
+        <div class="amount-display-container">
+            <h1 class="amount-text">₹<span id="scan-amount-display">0</span></h1>
+        </div>
+
+        <div class="numpad-container">
+            <button class="btn-primary" onclick="proceedToPin()" style="font-size: 18px; padding: 16px; border-radius: 12px;">Proceed to Pay</button>
+            <div class="numpad">
+                <button class="num-key" onclick="numpad(1)">1</button>
+                <button class="num-key" onclick="numpad(2)">2</button>
+                <button class="num-key" onclick="numpad(3)">3</button>
+                <button class="num-key" onclick="numpad(4)">4</button>
+                <button class="num-key" onclick="numpad(5)">5</button>
+                <button class="num-key" onclick="numpad(6)">6</button>
+                <button class="num-key" onclick="numpad(7)">7</button>
+                <button class="num-key" onclick="numpad(8)">8</button>
+                <button class="num-key" onclick="numpad(9)">9</button>
+                <button class="num-key" style="background: transparent; pointer-events: none;"></button>
+                <button class="num-key" onclick="numpad(0)">0</button>
+                <button class="num-key" onclick="numpad('back')">⌫</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. PIN Confirmation Modal -->
+    <div id="pinConfirmModal" class="modal hidden">
+        <div class="modal-content" style="text-align: center;">
+            <button class="modal-close" onclick="closeModal('pinConfirmModal')">✕</button>
+            <h3 style="margin-bottom: 5px;">Enter UPI PIN</h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Paying ₹<span id="pin-confirm-amt" style="font-weight:bold; color:var(--text-dark);"></span> to <span id="pin-confirm-upi" style="font-weight:bold; color:var(--text-dark);"></span></p>
+            <input type="password" id="scan-pay-pin" placeholder="****" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 20px;">
+            <button class="btn-primary" onclick="executeScanPay()">Pay Now</button>
+        </div>
+    </div>
+
 
     <script>
         let currentUser = "";
@@ -349,6 +402,7 @@
             </div>`;
         }
 
+                // 1. Update the Scanner to open the Numpad Screen
         function startScanner() {
             openModal('scannerModal');
             if (!html5QrcodeScanner) {
@@ -356,14 +410,79 @@
             }
             html5QrcodeScanner.render((decodedText) => {
                 stopScanner();
-                document.getElementById('pay-receiver').value = decodedText;
-                openModal('sendModal');
+                openScanPayScreen(decodedText);
             }, (error) => {});
         }
 
         function stopScanner() {
             if (html5QrcodeScanner) html5QrcodeScanner.clear();
             closeModal('scannerModal');
+        }
+
+        // 2. Variables & Functions for the Numpad Interface
+        let currentScanAmount = "0";
+        let currentScanReceiver = "";
+
+        function openScanPayScreen(upiId) {
+            currentScanReceiver = upiId;
+            currentScanAmount = "0";
+            document.getElementById('scan-target-upi').innerText = upiId;
+            document.getElementById('scan-amount-display').innerText = "0";
+            document.getElementById('scan-pay-screen').classList.remove('hidden');
+        }
+
+        function closeScanPay() {
+            document.getElementById('scan-pay-screen').classList.add('hidden');
+        }
+
+        function numpad(val) {
+            if (val === 'back') {
+                currentScanAmount = currentScanAmount.slice(0, -1);
+                if (currentScanAmount === "") currentScanAmount = "0";
+            } else {
+                if (currentScanAmount === "0") currentScanAmount = val.toString();
+                else if (currentScanAmount.length < 6) currentScanAmount += val.toString();
+            }
+            document.getElementById('scan-amount-display').innerText = currentScanAmount;
+        }
+
+        function proceedToPin() {
+            if (currentScanAmount === "0" || currentScanAmount === "") return alert("Please enter an amount.");
+            document.getElementById('pin-confirm-amt').innerText = currentScanAmount;
+            document.getElementById('pin-confirm-upi').innerText = currentScanReceiver;
+            document.getElementById('scan-pay-pin').value = "";
+            openModal('pinConfirmModal');
+        }
+
+        // 3. Execute the Scan Payment
+        async function executeScanPay() {
+            const pin = document.getElementById('scan-pay-pin').value;
+            if(!pin) return alert("Enter your 4-digit PIN.");
+
+            closeModal('pinConfirmModal');
+            document.getElementById('scan-pay-screen').classList.add('hidden');
+            document.getElementById('loading-screen').classList.remove('hidden');
+
+            const res = await fetch('/pay', { 
+                method: 'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify({sender: currentUser, receiver: currentScanReceiver, pin: pin, amount: currentScanAmount}) 
+            });
+            const data = await res.json();
+
+            setTimeout(() => {
+                document.getElementById('loading-screen').classList.add('hidden');
+                
+                if(data.success) {
+                    document.getElementById('receipt-amount').innerText = "₹" + currentScanAmount;
+                    document.getElementById('receipt-receiver').innerText = currentScanReceiver;
+                    document.getElementById('receipt-sender').innerText = currentUser;
+                    document.getElementById('receipt-time').innerText = new Date().toLocaleString();
+                    document.getElementById('success-screen').classList.remove('hidden');
+                } else {
+                    alert("Payment Failed: " + data.error);
+                }
+            }, 1500);
         }
 
         // --- BOSS0 OWNER FUNCTIONS ---

@@ -55,6 +55,21 @@
         #reader { border: none !important; border-radius: 16px; overflow: hidden; background: #000 !important; }
         #reader video { object-fit: cover; border-radius: 16px; }
         .notice-banner { background: #fef3c7; color: #92400e; padding: 10px 15px; font-size: 13px; font-weight: 600; text-align: center; border-bottom: 1px solid #fde68a; display: flex; justify-content: space-between; align-items: center; }
+                /* Chat UI Styles */
+        .chat-header { background: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; border-radius: 20px 20px 0 0; }
+        .chat-body { padding: 15px; height: 50vh; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 10px; }
+        .chat-footer { padding: 15px; background: #fff; display: flex; gap: 10px; align-items: center; border-top: 1px solid #e5e7eb; }
+        .chat-input { flex-grow: 1; margin: 0; padding: 12px 15px; border-radius: 25px; }
+        
+        .msg-bubble { max-width: 75%; padding: 10px 15px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
+        .msg-sent { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-received { background: #e5e7eb; color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 4px; }
+        
+        .msg-txn { background: #f0fdf4; border: 1px solid #bbf7d0; align-items: center; justify-content: center; text-align: center; font-weight: 700; color: #16a34a; padding: 15px; display: flex; flex-direction: column; gap: 5px; }
+        .msg-txn-sent { align-self: flex-end; }
+        .msg-txn-received { align-self: flex-start; }
+        .txn-label { font-size: 11px; font-weight: 600; color: #15803d; text-transform: uppercase; }
+
     </style>
 </head>
 <body>
@@ -284,11 +299,36 @@
     </div>
 
     <audio id="success-audio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
-    <div style="text-align: center; padding: 15px 0 30px 0; font-size: 12px; font-weight: 600; color: var(--text-muted); position: relative; z-index: 10;">
-        Made by Rocket
+    
+    <!-- 1-on-1 Chat Modal -->
+    <div id="chatModal" class="modal hidden" style="z-index: 220;">
+        <div class="modal-content" style="padding: 0; background: var(--bg);">
+            <div class="chat-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="back-btn" style="position: static; font-size: 20px;" onclick="closeModal('chatModal')">←</button>
+                    <div class="contact-avatar" id="chat-avatar" style="margin: 0; width: 35px; height: 35px;">U</div>
+                    <div>
+                        <div id="chat-target-name" style="font-weight: 700; font-size: 15px; color: var(--text-dark);">Name</div>
+                        <div id="chat-target-upi" style="font-size: 11px; color: var(--text-muted);">upi_id</div>
+                    </div>
+                </div>
+                <!-- Launch Numpad directly from Chat -->
+                <button class="btn-primary" style="width: auto; margin: 0; padding: 6px 16px; border-radius: 20px; font-size: 13px;" onclick="payFromChat()">Pay</button>
+            </div>
+            
+            <div id="chat-window" class="chat-body">
+                <!-- Messages populate here -->
+            </div>
+            
+            <div class="chat-footer">
+                <input type="text" id="chat-input-field" class="chat-input" placeholder="Message..." onkeypress="handleChatEnter(event)">
+                <button class="btn-primary" style="width: auto; margin: 0; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" onclick="sendChatMessage()">➤</button>
+            </div>
+        </div>
     </div>
-
+<div style="text-align: center; padding: 15px 0 30px 0; font-size: 12px; font-weight: 600; color: var(--text-muted); position: relative; z-index: 10;">
+        Made by Rocket
+</div>
     <script>
         // GLOBALS & HELPERS
         let currentUser = ""; let currentPin = ""; let currentName = ""; let html5QrcodeScanner; let globalContacts = [];
@@ -442,7 +482,66 @@
         }
 
         function paySearchedId() { selectContact(document.getElementById('contact-search').value.trim()); }
-        function selectContact(upi) { closeModal('unifiedPayModal'); openScanPayScreen(upi); }
+                // --- SECURE CHAT LOGIC ---
+        let currentChatTarget = "";
+        let currentChatName = "";
+
+        // Update contacts render to pass name
+        function selectContact(upi, name) {
+            closeModal('unifiedPayModal');
+            currentChatTarget = upi;
+            currentChatName = name;
+            document.getElementById('chat-header-name').innerText = escapeHTML(name);
+            document.getElementById('chat-header-upi').innerText = escapeHTML(upi);
+            openModal('chatModal');
+            fetchChatMessages();
+        }
+
+        // Must update your renderContacts mapping to pass the name:
+        // onclick="selectContact('${escapeHTML(c.upi_id)}', '${escapeHTML(c.name)}')"
+
+        function closeChat() { closeModal('chatModal'); openUnifiedPayModal(); }
+        function initiateChatPay() { closeModal('chatModal'); openScanPayScreen(currentChatTarget); }
+
+        async function fetchChatMessages() {
+            const res = await fetch(`/chat/${currentUser}/${currentChatTarget}`);
+            const messages = await res.json();
+            const container = document.getElementById('chat-messages');
+            
+            container.innerHTML = messages.map(m => {
+                const isMe = m.sender === currentUser;
+                const time = new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                if (m.msg_type === 'PAYMENT') {
+                    const action = isMe ? `You paid ₹${parseFloat(m.content).toFixed(2)}` : `Received ₹${parseFloat(m.content).toFixed(2)}`;
+                    return `<div class="msg-payment">💸 ${action} <div style="font-size:10px; font-weight:normal; margin-top:2px;">${time}</div></div>`;
+                }
+                
+                return `
+                <div class="msg-bubble ${isMe ? 'msg-sent' : 'msg-recv'}">
+                    ${escapeHTML(m.content)}
+                    <div class="msg-time" style="color: ${isMe ? '#e0e7ff' : '#94a3b8'};">${time}</div>
+                </div>`;
+            }).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input-text');
+            const content = input.value.trim();
+            if(!content) return;
+            
+            // Optimistic UI update (Sanitized)
+            const container = document.getElementById('chat-messages');
+            container.innerHTML += `<div class="msg-bubble msg-sent">${escapeHTML(content)}<div class="msg-time" style="color: #e0e7ff;">Now</div></div>`;
+            container.scrollTop = container.scrollHeight;
+            input.value = "";
+
+            await fetch('/chat/send', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ sender: currentUser, receiver: currentChatTarget, content })
+            });
+        }
 
         // SCAN & NUMPAD EXECUTION
         let currentScanAmount = "0"; let currentScanReceiver = "";

@@ -458,16 +458,22 @@
             renderContacts(globalContacts);
         }
 
-        function renderContacts(contactArray) {
+                function renderContacts(contactArray) {
             const container = document.getElementById('contacts-list');
-            if(contactArray.length === 0) { container.innerHTML = "<p style='color:var(--text-muted); text-align:center; font-size:13px;'>No users found.</p>"; return; }
+            if(contactArray.length === 0) { 
+                container.innerHTML = "<p style='color:var(--text-muted); text-align:center; font-size:13px;'>No users found.</p>"; 
+                return; 
+            }
             container.innerHTML = contactArray.map(c => `
                 <div class="contact-row">
-                    <div style="display:flex; align-items:center; cursor:pointer;" onclick="selectContact('${escapeHTML(c.upi_id)}')">
+                    <div style="display:flex; align-items:center; cursor:pointer;" onclick="selectContact('${escapeHTML(c.upi_id)}', '${escapeHTML(c.name)}')">
                         <div class="contact-avatar">${escapeHTML(c.name).charAt(0).toUpperCase()}</div>
-                        <div><div style="font-weight:600; font-size:14px; color:var(--text-dark);">${escapeHTML(c.name)}</div><div style="font-size:11px; color:var(--text-muted);">${escapeHTML(c.upi_id)}</div></div>
+                        <div>
+                            <div style="font-weight:600; font-size:14px; color:var(--text-dark);">${escapeHTML(c.name)}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${escapeHTML(c.upi_id)}</div>
+                        </div>
                     </div>
-                    <button class="btn-primary" style="padding: 6px 12px; margin:0; font-size:12px; width:auto;" onclick="selectContact('${escapeHTML(c.upi_id)}')">Pay</button>
+                    <button class="btn-primary" style="padding: 6px 12px; margin:0; font-size:12px; width:auto;" onclick="selectContact('${escapeHTML(c.upi_id)}', '${escapeHTML(c.name)}')">Chat</button>
                 </div>
             `).join('');
         }

@@ -46,15 +46,19 @@ app.post('/pay', async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+        
+        // 1. Check Sender Status
         const auth = await client.query('SELECT balance, status FROM accounts WHERE upi_id = $1 AND pin = $2', [sender, pin]);
         if (auth.rows.length === 0) throw new Error("Invalid PIN.");
-        if (auth.rows[0].status === 'FROZEN') throw new Error("Account is frozen.");
+        if (auth.rows[0].status === 'FROZEN') throw new Error("Your account is frozen.");
         if (auth.rows[0].balance < amount) throw new Error("Insufficient Funds.");
         
+        // 2. Check Receiver Status
         const receiverCheck = await client.query('SELECT status FROM accounts WHERE upi_id = $1', [receiver]);
         if (receiverCheck.rows.length === 0) throw new Error("Receiver does not exist.");
+        if (receiverCheck.rows[0].status === 'FROZEN') throw new Error("Receiver account is currently frozen and cannot accept funds.");
         
-        // Process transfer
+        // 3. Process Transfer
         await client.query('UPDATE accounts SET balance = balance - $1 WHERE upi_id = $2', [amount, sender]);
         await client.query('UPDATE accounts SET balance = balance + $1 WHERE upi_id = $2', [amount, receiver]);
         await client.query('INSERT INTO transactions (sender, receiver, amount) VALUES ($1, $2, $3)', [sender, receiver, amount]);
@@ -68,6 +72,7 @@ app.post('/pay', async (req, res) => {
         client.release();
     }
 });
+
 
 app.get('/history/:upi', async (req, res) => {
     const result = await pool.query('SELECT * FROM transactions WHERE sender = $1 OR receiver = $1 ORDER BY created_at DESC', [req.params.upi]);

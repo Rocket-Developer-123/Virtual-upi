@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPAY</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root { --primary: #002970; --accent: #00b9f5; --bg: #f5f7fa; --card-bg: #ffffff; --text-dark: #1f2937; --text-muted: #6b7280; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text-dark); padding-bottom: 90px; }
+        .auth-container { max-width: 400px; margin: 40px auto; padding: 20px; }
+        .card { background: var(--card-bg); padding: 24px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 16px; }
+        .card h2 { color: var(--primary); margin-bottom: 15px; font-size: 22px; text-align: center; }
+        .card h3 { color: var(--primary); margin-bottom: 15px; font-size: 16px; }
+        input { width: 100%; padding: 14px; margin: 8px 0; border-radius: 8px; border: 1px solid #d1d5db; font-size: 15px; }
+        input:focus { outline: none; border-color: var(--accent); }
+        .btn-primary { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .btn-danger { background: #ef4444; } .btn-success { background: #22c55e; } .btn-dark { background: #1f2937; }
+        .link-text { color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; }
+        .top-header { background: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; }
+        .profile-badge { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #e0f2fe; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
+        .dashboard-content { max-width: 450px; margin: auto; padding: 15px; }
+        .balance-banner { background: linear-gradient(135deg, #002970, #0056b3); color: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+        .section-title { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 14px; }
+        .grid-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+        .action-item { cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+        .icon-circle { width: 52px; height: 52px; border-radius: 14px; background: #f0f9ff; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 6px; border: 1px solid #e0f2fe; }
+        .action-label { font-size: 11px; font-weight: 600; color: var(--text-dark); }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 75px; background: #ffffff; display: flex; justify-content: center; align-items: center; border-top: 1px solid #e5e7eb; z-index: 100; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); }
+        .scan-pill-btn { background: linear-gradient(135deg, #00b9f5, #002970); color: white; display: flex; align-items: center; gap: 8px; padding: 12px 28px; border-radius: 50px; font-weight: 700; font-size: 15px; border: none; cursor: pointer; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; justify-content: center; z-index: 200; backdrop-filter: blur(4px); }
+        .modal-content { background: #ffffff; width: 100%; max-width: 450px; border-radius: 20px 20px 0 0; padding: 24px; position: relative; max-height: 85vh; overflow-y: auto; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: #f3f4f6; border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; cursor: pointer; }
+        .txn-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
+        .hidden { display: none !important; }
+        .fullscreen-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #e5e7eb; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .success-card { background: var(--card-bg); width: 90%; max-width: 350px; border-radius: 16px; padding: 30px 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .check-circle { width: 70px; height: 70px; background: #22c55e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px; }
+        .scan-payment-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; z-index: 250; }
+        .scan-header { padding: 20px; text-align: center; position: relative; border-bottom: 1px solid #e5e7eb; background: white; }
+        .back-btn { position: absolute; left: 20px; top: 22px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-dark); }
+        .amount-display-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        .amount-text { font-size: 60px; font-weight: 800; color: var(--text-dark); }
+        .numpad-container { background: white; border-radius: 24px 24px 0 0; padding: 25px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
+        .num-key { background: #f3f4f6; border: none; border-radius: 12px; font-size: 26px; font-weight: 600; color: var(--text-dark); padding: 18px 0; cursor: pointer; transition: 0.1s; }
+        .num-key:active { background: #e5e7eb; transform: scale(0.95); }
+        .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
+        .contact-avatar { width: 40px; height: 40px; border-radius: 50%; background: #e0f2fe; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; margin-right: 12px; }
+        #reader { border: none !important; border-radius: 16px; overflow: hidden; background: #000 !important; }
+        #reader video { object-fit: cover; border-radius: 16px; }
+        .notice-banner { background: #fef3c7; color: #92400e; padding: 10px 15px; font-size: 13px; font-weight: 600; text-align: center; border-bottom: 1px solid #fde68a; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Chat UI Styles */
+        .chat-header { background: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; border-radius: 20px 20px 0 0; }
+        .chat-body { padding: 15px; height: 50vh; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 10px; }
+        .chat-footer { padding: 15px; background: #fff; display: flex; gap: 10px; align-items: center; border-top: 1px solid #e5e7eb; }
+        .chat-input { flex-grow: 1; margin: 0; padding: 12px 15px; border-radius: 25px; }
+        .msg-bubble { max-width: 75%; padding: 10px 15px; border-radius: 18px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
+        .msg-sent { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-received { background: #e5e7eb; color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg-txn { background: #f0fdf4; border: 1px solid #bbf7d0; align-items: center; justify-content: center; text-align: center; font-weight: 700; color: #16a34a; padding: 15px; display: flex; flex-direction: column; gap: 5px; }
+        .msg-payment { width: 100%; text-align: center; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px; border-radius: 12px; font-size: 13px; font-weight: 600; margin: 5px 0; }
+        .msg-time { font-size: 10px; opacity: 0.7; margin-top: 4px; text-align: right; }
+    </style>
+</head>
+<body>
+
+    <div id="system-notice" class="notice-banner hidden">
+        <span id="notice-text"></span>
+        <span onclick="dismissNotice()" style="cursor:pointer; font-weight:bold; font-size:16px;">✕</span>
+    </div>
+
+    <!-- AUTHENTICATION -->
+    <div id="auth-screen" class="auth-container">
+        <div id="login-section" class="card">
+            <h2>RPAY</h2>
+            <input type="text" id="log-upi" placeholder="Enter UPI ID (e.g. name@rpay)">
+            <input type="password" id="log-pin" placeholder="Enter 4-Digit PIN" maxlength="4">
+            <button class="btn-primary" onclick="login()">Login</button>
+            <p style="font-size: 13px; text-align: center; margin-top: 15px;">
+                Don't have an account? <span class="link-text" onclick="toggleAuth('register')">Create Account</span>
+            </p>
+        </div>
+
+        <div id="register-section" class="card hidden">
+            <h2>Create RPAY Account</h2>
+            <input type="text" id="reg-name" placeholder="Full Name" oninput="resetSuggestions()">
+            <input type="password" id="reg-pin" placeholder="Create 4-Digit PIN" maxlength="4">
+            
+            <div id="suggestion-box" class="hidden" style="margin-top: 5px; text-align: left;">
+                <p style="font-size: 13px; color: #ef4444; margin-bottom: 8px; font-weight: 600;">That name is taken. Choose one:</p>
+                <div id="suggestion-buttons" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;"></div>
+            </div>
+
+            <button class="btn-primary" onclick="register()">Sign Up (₹10,000 Bonus)</button>
+            <p style="font-size: 13px; text-align: center; margin-top: 15px;">
+                Already registered? <span class="link-text" onclick="toggleAuth('login')">Login</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-screen" class="hidden">
+        <header class="top-header">
+            <div class="profile-badge">
+                <div class="avatar" id="avatar-initial" onclick="openProfileModal()" style="cursor:pointer;">U</div>
+                <div>
+                    <h4 id="user-display-name" style="font-size: 15px;">User</h4>
+                    <p id="my-upi" style="font-size: 11px; color: var(--text-muted);"></p>
+                </div>
+            </div>
+            <button onclick="logout()" style="background: none; border: 1px solid #d1d5db; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer;">Logout</button>
+        </header>
+
+        <main class="dashboard-content">
+            <div class="balance-banner">
+                <p style="font-size: 12px; color: #bae6fd; font-weight: 600;">Primary Balance</p>
+                <div style="font-size: 28px; font-weight: 800; margin: 5px 0;">₹<span id="live-balance">0.00</span></div>
+            </div>
+            <div class="card">
+                <div class="section-title">Quick Actions</div>
+                <div class="grid-actions">
+                    <div class="action-item" onclick="openUnifiedPayModal()">
+                        <div class="icon-circle">💸</div><span class="action-label">Pay / Contacts</span>
+                    </div>
+                    <div class="action-item" onclick="openModal('qrModal')">
+                        <div class="icon-circle">📱</div><span class="action-label">My QR</span>
+                    </div>
+                    <div class="action-item" onclick="openModal('historyModal')">
+                        <div class="icon-circle">📑</div><span class="action-label">Passbook</span>
+                    </div>
+                    <div class="action-item" onclick="updateBalance()">
+                        <div class="icon-circle">🔄</div><span class="action-label">Check Bal</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="section-title">Recent Activity</div>
+                <div id="mini-history-list" style="font-size: 13px; color: var(--text-muted);">No recent transactions.</div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <button class="scan-pill-btn" onclick="startScanner()">
+                <span style="font-size: 18px;">⛶</span> Scan Any QR
+            </button>
+        </nav>
+    </div>
+
+    <!-- BOSS0 SCREEN -->
+    <div id="owner-screen" class="hidden">
+        <header class="top-header" style="background: #1f2937; color: white;">
+            <div><h3 style="margin:0; color:#00b9f5; font-size:16px;">SYSTEM OPERATOR</h3><p style="font-size: 12px;">Boss0</p></div>
+            <button class="btn-danger" style="padding: 6px 12px; border:none; border-radius:20px; color: white;" onclick="logout()">Exit</button>
+        </header>
+        <div class="dashboard-content">
+            <div class="card">
+                <h3>System Broadcast</h3>
+                <input type="text" id="admin-notice-msg" placeholder="Enter message to broadcast globally">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary btn-success" onclick="adminSendBroadcast()">Push Notice</button>
+                    <button class="btn-primary btn-danger" onclick="adminClearBroadcast()">Clear All</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Account Management</h3>
+                <input type="text" id="admin-target" placeholder="Target UPI ID (e.g., friend@rpay)">
+                <input type="number" id="admin-amount" placeholder="Amount (₹)">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-primary btn-success" style="width:48%;" onclick="adminAdjust('add')">+ Add Funds</button>
+                    <button class="btn-primary btn-danger" style="width:48%;" onclick="adminAdjust('deduct')">- Deduct</button>
+                    <button class="btn-primary" style="width:48%; background:#eab308;" onclick="adminAdjust('freeze')">❄ Freeze</button>
+                    <button class="btn-primary" style="width:48%; background:#3b82f6;" onclick="adminAdjust('unfreeze')">☀ Unfreeze</button>
+                </div>
+                <button class="btn-primary btn-dark" onclick="adminDelete()" style="margin-top: 15px;">⚠ Terminate Account</button>
+            </div>
+            <div class="card">
+                <h3>Network Overview</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn-primary" style="margin-top:0;" onclick="adminViewUsers()">All Balances</button>
+                    <button class="btn-primary btn-dark" style="margin-top:0;" onclick="adminViewTransactions()">All Ledgers</button>
+                </div>
+                <div id="admin-viewer-area" style="max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="unifiedPayModal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('unifiedPayModal')">✕</button>
+            <h3>Send Money & Contacts</h3>
+            <input type="text" id="contact-search" placeholder="Search by name or enter UPI ID..." oninput="filterContacts()" style="margin-bottom: 5px;">
+            <button id="pay-new-btn" class="btn-primary" style="display: none; margin-bottom: 15px;" onclick="paySearchedId()">Pay New ID</button>
+            <div id="contacts-list" style="margin-top: 10px; max-height: 350px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <div id="qrModal" class="modal hidden">
+        <div class="modal-content" style="text-align: center;">
+            <button class="modal-close" onclick="closeModal('qrModal')">✕</button>
+            <h3>Receive Money</h3>
+            <div id="qrcode" style="margin: 15px auto; display: flex; justify-content: center;"></div>
+            <p id="qr-upi-label" style="font-size: 13px; font-weight: 700; color: var(--primary);"></p>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('historyModal')">✕</button>
+            <h3>Passbook & History</h3>
+            <div id="full-history-list"></div>
+        </div>
+    </div>
+
+    <div id="scannerModal" class="modal hidden">
+        <div class="modal-content" style="text-align: center;">
+            <button class="modal-close" onclick="stopScanner()">✕</button>
+            <h3 style="margin-bottom: 10px;">Scan QR Code</h3>
+            <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden;"></div>
+        </div>
+    </div>
+
+    <div id="scan-pay-screen" class="scan-payment-screen hidden">
+        <div class="scan-header">
+            <button class="back-btn" onclick="closeScanPay()">←</button>
+            <p style="font-size: 13px; color: var(--text-muted);">Paying to</p>
+            <h3 id="scan-target-upi" style="color: var(--primary); font-size: 16px; margin-top: 2px;"></h3>
+        </div>
+        <div class="amount-display-container">
+            <h1 class="amount-text">₹<span id="scan-amount-display">0</span></h1>
+        </div>
+        <div class="numpad-container">
+            <button class="btn-primary" onclick="proceedToPin()" style="font-size: 18px; padding: 16px; border-radius: 12px;">Proceed to Pay</button>
+            <div class="numpad">
+                <button class="num-key" onclick="numpad(1)">1</button><button class="num-key" onclick="numpad(2)">2</button><button class="num-key" onclick="numpad(3)">3</button>
+                <button class="num-key" onclick="numpad(4)">4</button><button class="num-key" onclick="numpad(5)">5</button><button class="num-key" onclick="numpad(6)">6</button>
+                <button class="num-key" onclick="numpad(7)">7</button><button class="num-key" onclick="numpad(8)">8</button><button class="num-key" onclick="numpad(9)">9</button>
+                <button class="num-key" style="background: transparent; pointer-events: none;"></button>
+                <button class="num-key" onclick="numpad(0)">0</button><button class="num-key" onclick="numpad('back')">⌫</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pinConfirmModal" class="modal hidden" style="z-index: 300;">
+        <div class="modal-content" style="text-align: center;">
+            <button class="modal-close" onclick="closeModal('pinConfirmModal')">✕</button>
+            <h3 style="margin-bottom: 5px;">Enter UPI PIN</h3>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">Paying ₹<span id="pin-confirm-amt" style="font-weight:bold; color:var(--text-dark);"></span> to <span id="pin-confirm-upi" style="font-weight:bold; color:var(--text-dark);"></span></p>
+            <input type="password" id="scan-pay-pin" placeholder="****" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 20px;">
+            <button class="btn-primary" onclick="executeScanPay()">Pay Now</button>
+        </div>
+    </div>
+
+    <div id="loading-screen" class="fullscreen-overlay hidden">
+        <div class="spinner"></div>
+        <h3 style="color: var(--primary);">Processing Payment...</h3>
+        <p style="color: var(--text-muted); font-size: 13px;">Securely connecting to RPAY servers</p>
+    </div>
+
+    <div id="success-screen" class="fullscreen-overlay hidden">
+        <div class="success-card">
+            <div class="check-circle">✓</div>
+            <h2 style="color: #22c55e; margin-bottom: 5px;">Payment Successful</h2>
+            <h1 id="receipt-amount" style="font-size: 36px; color: var(--text-dark); margin: 15px 0;">₹0.00</h1>
+            <div style="text-align: left; margin-top: 25px;">
+                <div class="receipt-detail"><span>Paid to</span> <strong id="receipt-receiver" style="color: var(--text-dark);">Name</strong></div>
+                <div class="receipt-detail"><span>From</span> <strong id="receipt-sender" style="color: var(--text-dark);">My Account</strong></div>
+                <div class="receipt-detail"><span>Date & Time</span> <strong id="receipt-time" style="color: var(--text-dark);">Time</strong></div>
+            </div>
+            <button class="btn-primary" onclick="closeSuccess()" style="margin-top: 30px;">Done</button>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
+            <h3>My Profile & Settings</h3>
+            <div style="text-align: center; margin: 15px 0;">
+                <div class="avatar" id="profile-modal-avatar" style="width: 60px; height: 60px; font-size: 24px; margin: 0 auto 10px;">U</div>
+                <h4 id="profile-modal-name" style="font-size: 18px; color: var(--primary);">User</h4>
+                <p id="profile-modal-upi" style="color: var(--text-muted); font-size: 13px;"></p>
+            </div>
+            <hr style="border:0; border-top:1px solid #f3f4f6; margin: 15px 0;">
+            <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text-dark);">Change Password / PIN</h4>
+            <input type="password" id="old-pin" placeholder="Current 4-Digit PIN" maxlength="4">
+            <input type="password" id="new-pin" placeholder="New 4-Digit PIN" maxlength="4">
+            <button class="btn-primary" onclick="changePin()">Update PIN</button>
+        </div>
+    </div>
+
+    <audio id="success-audio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+    
+    <!-- 1-on-1 Chat Modal -->
+    <div id="chatModal" class="modal hidden" style="z-index: 220;">
+        <div class="modal-content" style="padding: 0; background: var(--bg);">
+            <div class="chat-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button class="back-btn" style="position: static; font-size: 20px;" onclick="closeModal('chatModal')">←</button>
+                    <div class="contact-avatar" id="chat-avatar" style="margin: 0; width: 35px; height: 35px;">U</div>
+                    <div>
+                        <div id="chat-header-name" style="font-weight: 700; font-size: 15px; color: var(--text-dark);">Name</div>
+                        <div id="chat-header-upi" style="font-size: 11px; color: var(--text-muted);">upi_id</div>
+                    </div>
+                </div>
+                <!-- Launch Numpad directly from Chat -->
+                <button class="btn-primary" style="width: auto; margin: 0; padding: 6px 16px; border-radius: 20px; font-size: 13px;" onclick="initiateChatPay()">Pay</button>
+            </div>
+            
+            <div id="chat-messages" class="chat-body">
+                <!-- Messages populate here -->
+            </div>
+            
+            <div class="chat-footer">
+                <input type="text" id="chat-input-text" class="chat-input" placeholder="Message..." onkeypress="handleChatEnter(event)">
+                <button class="btn-primary" style="width: auto; margin: 0; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" onclick="sendChatMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+    <div style="text-align: center; padding: 15px 0 30px 0; font-size: 12px; font-weight: 600; color: var(--text-muted); position: relative; z-index: 10;">
+        Made by Rocket
+    </div>
+
+    <script>
+        // GLOBALS & HELPERS
+        let currentUser = ""; let currentPin = ""; let currentName = ""; let html5QrcodeScanner; let globalContacts = [];
+        
+        const escapeHTML = (str) => {
+            if (!str) return "";
+            return String(str).replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
+        };
+
+        function toggleAuth(view) {
+            document.getElementById('login-section').classList.toggle('hidden', view === 'register');
+            document.getElementById('register-section').classList.toggle('hidden', view === 'login');
+            resetSuggestions();
+        }
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function logout() {
+            currentUser = ""; currentPin = ""; currentName = ""; globalContacts = [];
+            document.getElementById('log-upi').value = ""; document.getElementById('log-pin').value = "";
+            document.getElementById('dashboard-screen').classList.add('hidden'); document.getElementById('owner-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        // AUTHENTICATION
+        let selectedUpi = "";
+        function resetSuggestions() {
+            selectedUpi = "";
+            document.getElementById('suggestion-box').classList.add('hidden');
+        }
+
+        async function register() {
+            const name = document.getElementById('reg-name').value.trim();
+            const pin = document.getElementById('reg-pin').value;
+            if(!name || !pin) return alert("Please fill in your name and a 4-digit PIN.");
+            
+            let upi_id = selectedUpi;
+            if (!upi_id) {
+                let cleanNamePart = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (!cleanNamePart) cleanNamePart = "user" + Math.floor(Math.random() * 9000 + 1000);
+                upi_id = cleanNamePart + '@rpay';
+            }
+
+            try {
+                const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
+                const data = await res.json();
+                
+                if(data.success) { 
+                    alert("Account Created!\n\nYour permanent UPI ID is:\n" + upi_id); 
+                    toggleAuth('login'); 
+                    document.getElementById('reg-name').value = ""; document.getElementById('reg-pin').value = "";
+                } else {
+                    if (data.suggestions) {
+                        const box = document.getElementById('suggestion-box');
+                        const btns = document.getElementById('suggestion-buttons');
+                        box.classList.remove('hidden');
+                        btns.innerHTML = data.suggestions.map(s => `<button style="background:#e0f2fe; color:var(--primary); border:1px solid #bae6fd; border-radius:6px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;" onclick="selectSuggestion('${escapeHTML(s)}')">${escapeHTML(s)}</button>`).join('');
+                    } else { alert(data.error || "Registration failed."); }
+                }
+            } catch(e) { alert("Network error. Please ensure server is running."); }
+        }
+
+        function selectSuggestion(suggestedUpi) { selectedUpi = suggestedUpi; register(); }
+
+        async function login() {
+            const upi_id = document.getElementById('log-upi').value.trim();
+            const pin = document.getElementById('log-pin').value;
+            if(!upi_id || !pin) return alert("Enter ID and PIN.");
+            
+            try {
+                const res = await fetch('/login', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, pin}) });
+                const data = await res.json();
+                
+                if(data.success) {
+                    if(data.user.status === 'FROZEN') return alert("Your account is temporarily frozen by security. Contact support.");
+                    currentUser = upi_id; currentPin = pin;
+                    document.getElementById('auth-screen').classList.add('hidden');
+                    
+                    if(currentUser === 'Boss0') {
+                        document.getElementById('owner-screen').classList.remove('hidden');
+                        adminViewUsers();
+                    } else {
+                        currentName = data.user.name;
+                        document.getElementById('dashboard-screen').classList.remove('hidden');
+                        document.getElementById('user-display-name').innerText = currentName;
+                        document.getElementById('avatar-initial').innerText = currentName.charAt(0).toUpperCase();
+                        document.getElementById('my-upi').innerText = currentUser;
+                        document.getElementById('qr-upi-label').innerText = currentUser;
+                        document.getElementById("qrcode").innerHTML = "";
+                        new QRCode(document.getElementById("qrcode"), { text: currentUser, width: 200, height: 200 });
+                        updateBalance(); loadHistory(); checkSystemNotices();
+                    }
+                } else alert(data.error);
+            } catch(e) { alert("Network error. Please ensure server is running."); }
+        }
+
+        // DASHBOARD FETCHES
+        async function updateBalance() {
+            const res = await fetch('/balance/' + currentUser);
+            document.getElementById('live-balance').innerText = parseFloat((await res.json()).balance).toFixed(2);
+        }
+
+        async function loadHistory() {
+            const res = await fetch('/history/' + currentUser);
+            const data = await res.json();
+            const mini = document.getElementById('mini-history-list');
+            mini.innerHTML = data.length === 0 ? "No recent transactions." : data.slice(0, 2).map(renderTxnRow).join('');
+            document.getElementById('full-history-list').innerHTML = data.length === 0 ? "<p>No records found.</p>" : data.map(renderTxnRow).join('');
+        }
+
+        function renderTxnRow(t) {
+            const isSender = t.sender === currentUser;
+            const time = new Date(t.created_at).toLocaleDateString();
+            const safeTarget = escapeHTML(isSender ? t.receiver : t.sender);
+            return `<div class="txn-row">
+                <div><div style="font-size:14px; font-weight:600;">${isSender ? "To: " : "From: "}${safeTarget}</div><div style="font-size:11px; color:var(--text-muted);">${time}</div></div>
+                <div style="font-size:15px; font-weight:800; color:${isSender ? '#dc2626' : '#16a34a'};">${isSender ? '- ' : '+ '}₹${parseFloat(t.amount).toFixed(2)}</div>
+            </div>`;
+        }
+
+        // UNIFIED PAY MODAL (Global Directory)
+        async function openUnifiedPayModal() {
+            openModal('unifiedPayModal');
+            document.getElementById('contact-search').value = "";
+            document.getElementById('pay-new-btn').style.display = 'none';
+            const res = await fetch('/directory/' + currentUser);
+            globalContacts = await res.json();
+            renderContacts(globalContacts);
+        }
+
+        function renderContacts(contactArray) {
+            const container = document.getElementById('contacts-list');
+            if(contactArray.length === 0) { 
+                container.innerHTML = "<p style='color:var(--text-muted); text-align:center; font-size:13px;'>No users found.</p>"; 
+                return; 
+            }
+            container.innerHTML = contactArray.map(c => `
+                <div class="contact-row">
+                    <div style="display:flex; align-items:center; cursor:pointer;" onclick="selectContact('${escapeHTML(c.upi_id)}', '${escapeHTML(c.name)}')">
+                        <div class="contact-avatar">${escapeHTML(c.name).charAt(0).toUpperCase()}</div>
+                        <div>
+                            <div style="font-weight:600; font-size:14px; color:var(--text-dark);">${escapeHTML(c.name)}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${escapeHTML(c.upi_id)}</div>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="padding: 6px 12px; margin:0; font-size:12px; width:auto;" onclick="selectContact('${escapeHTML(c.upi_id)}', '${escapeHTML(c.name)}')">Chat</button>
+                </div>
+            `).join('');
+        }
+
+        function filterContacts() {
+            const query = document.getElementById('contact-search').value.toLowerCase().trim();
+            const btn = document.getElementById('pay-new-btn');
+            if (query.includes('@')) { btn.style.display = 'block'; btn.innerText = "Pay New ID: " + escapeHTML(query); } 
+            else { btn.style.display = 'none'; }
+            const filtered = globalContacts.filter(c => c.name.toLowerCase().includes(query) || c.upi_id.toLowerCase().includes(query));
+            renderContacts(filtered);
+        }
+
+        function paySearchedId() { 
+            const upi = document.getElementById('contact-search').value.trim();
+            selectContact(upi, "New User"); 
+        }
+
+        // --- SECURE CHAT LOGIC ---
+        let currentChatTarget = "";
+        let currentChatName = "";
+
+        function selectContact(upi, name) {
+            closeModal('unifiedPayModal');
+            currentChatTarget = upi;
+            currentChatName = name;
+            document.getElementById('chat-header-name').innerText = escapeHTML(name);
+            document.getElementById('chat-header-upi').innerText = escapeHTML(upi);
+            openModal('chatModal');
+            fetchChatMessages();
+        }
+
+        function closeChat() { closeModal('chatModal'); openUnifiedPayModal(); }
+        function initiateChatPay() { closeModal('chatModal'); openScanPayScreen(currentChatTarget); }
+
+        function handleChatEnter(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        async function fetchChatMessages() {
+            const res = await fetch(`/chat/${currentUser}/${currentChatTarget}`);
+            const messages = await res.json();
+            const container = document.getElementById('chat-messages');
+            
+            container.innerHTML = messages.map(m => {
+                const isMe = m.sender === currentUser;
+                const time = new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                if (m.msg_type === 'PAYMENT') {
+                    const action = isMe ? `You paid ₹${parseFloat(m.content).toFixed(2)}` : `Received ₹${parseFloat(m.content).toFixed(2)}`;
+                    return `<div class="msg-payment">💸 ${action} <div style="font-size:10px; font-weight:normal; margin-top:2px;">${time}</div></div>`;
+                }
+                
+                return `
+                <div class="msg-bubble ${isMe ? 'msg-sent' : 'msg-recv'}">
+                    ${escapeHTML(m.content)}
+                    <div class="msg-time" style="color: ${isMe ? '#e0e7ff' : '#94a3b8'};">${time}</div>
+                </div>`;
+            }).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input-text');
+            const content = input.value.trim();
+            if(!content) return;
+            
+            // Optimistic UI update (Sanitized)
+            const container = document.getElementById('chat-messages');
+            container.innerHTML += `<div class="msg-bubble msg-sent">${escapeHTML(content)}<div class="msg-time" style="color: #e0e7ff;">Now</div></div>`;
+            container.scrollTop = container.scrollHeight;
+            input.value = "";
+
+            await fetch('/chat/send', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ sender: currentUser, receiver: currentChatTarget, content })
+            });
+        }
+
+        // SCAN & NUMPAD EXECUTION
+        let currentScanAmount = "0"; let currentScanReceiver = "";
+        function openScanPayScreen(upiId) { currentScanReceiver = upiId; currentScanAmount = "0"; document.getElementById('scan-target-upi').innerText = upiId; document.getElementById('scan-amount-display').innerText = "0"; document.getElementById('scan-pay-screen').classList.remove('hidden'); }
+        function closeScanPay() { document.getElementById('scan-pay-screen').classList.add('hidden'); }
+        function numpad(val) {
+            if (val === 'back') { currentScanAmount = currentScanAmount.slice(0, -1); if (currentScanAmount === "") currentScanAmount = "0"; } 
+            else { if (currentScanAmount === "0") currentScanAmount = val.toString(); else if (currentScanAmount.length < 6) currentScanAmount += val.toString(); }
+            document.getElementById('scan-amount-display').innerText = currentScanAmount;
+        }
+        function proceedToPin() {
+            if (currentScanAmount === "0" || currentScanAmount === "") return alert("Enter an amount.");
+            document.getElementById('pin-confirm-amt').innerText = currentScanAmount;
+            document.getElementById('pin-confirm-upi').innerText = currentScanReceiver;
+            document.getElementById('scan-pay-pin').value = "";
+            openModal('pinConfirmModal');
+        }
+
+        async function executeScanPay() {
+            const pin = document.getElementById('scan-pay-pin').value;
+            if(!pin) return alert("Enter your 4-digit PIN.");
+            closeModal('pinConfirmModal');
+            document.getElementById('scan-pay-screen').classList.add('hidden');
+            document.getElementById('loading-screen').classList.remove('hidden');
+
+            const res = await fetch('/pay', { 
+                method: 'POST', headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify({sender: currentUser, receiver: currentScanReceiver, pin: pin, amount: parseFloat(currentScanAmount)}) 
+            });
+            const data = await res.json();
+
+            setTimeout(() => {
+                document.getElementById('loading-screen').classList.add('hidden');
+                if(data.success) {
+                    playSuccessSound();
+                    document.getElementById('receipt-amount').innerText = "₹" + parseFloat(currentScanAmount).toFixed(2);
+                    document.getElementById('receipt-receiver').innerText = escapeHTML(currentScanReceiver);
+                    document.getElementById('receipt-sender').innerText = escapeHTML(currentUser);
+                    document.getElementById('receipt-time').innerText = new Date().toLocaleString();
+                    document.getElementById('success-screen').classList.remove('hidden');
+                    
+                    // If we paid from chat, let's refresh the chat window to show the payment receipt!
+                    if (!document.getElementById('chatModal').classList.contains('hidden')) {
+                        fetchChatMessages();
+                    }
+                    
+                } else {
+                    const errorMsg = data.error || "Unknown error";
+                    if (errorMsg.toLowerCase().includes("frozen")) alert("SECURITY ALERT: This account has been frozen and will be unfrozen after investigation.");
+                    else alert("Payment Failed: " + errorMsg);
+                }
+            }, 1500);
+        }
+
+        function closeSuccess() { document.getElementById('success-screen').classList.add('hidden'); updateBalance(); loadHistory(); }
+        function playSuccessSound() { const audio = document.getElementById('success-audio'); if(audio) { audio.currentTime = 0; audio.play().catch(e=>{}); } }
+        function startScanner() {
+            openModal('scannerModal');
+            if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 220, height: 220 } }, false);
+            }
+            
+            html5QrcodeScanner.render((decodedText) => {
+                stopScanner();
+                
+                // 1. Check if it's a dynamic QR code (ID + Amount)
+                if (decodedText.startsWith("upi://pay")) {
+                    const params = new URLSearchParams(decodedText.split('?')[1]);
+                    const payee = params.get('pa');
+                    const amount = params.get('am');
+                    
+                    if (payee && amount) {
+                        currentScanReceiver = payee;
+                        currentScanAmount = amount;
+                        document.getElementById('scan-target-upi').innerText = payee;
+                        document.getElementById('scan-amount-display').innerText = amount;
+                        document.getElementById('scan-pay-screen').classList.remove('hidden');
+                        return; // Stop here, the numpad is now pre-filled!
+                    }
+                }
+                
+                // 2. Fallback: If it's just a normal QR code with only an ID
+                openScanPayScreen(decodedText);
+                
+            }, (error) => {});
+        }
+
+        function stopScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); closeModal('scannerModal'); }
+
+        // NOTICES & SETTINGS
+        async function checkSystemNotices() { try { const res = await fetch('/notices/active'); const data = await res.json(); if(data.message) { document.getElementById('notice-text').innerText = escapeHTML(data.message); document.getElementById('system-notice').classList.remove('hidden'); } } catch(e) {} }
+        function dismissNotice() { document.getElementById('system-notice').classList.add('hidden'); }
+        function openProfileModal() { document.getElementById('profile-modal-name').innerText = currentName; document.getElementById('profile-modal-upi').innerText = currentUser; document.getElementById('profile-modal-avatar').innerText = currentName.charAt(0).toUpperCase(); openModal('profileModal'); }
+        async function changePin() {
+            const old_pin = document.getElementById('old-pin').value; const new_pin = document.getElementById('new-pin').value;
+            if(!old_pin || !new_pin || new_pin.length !== 4) return alert("Enter valid 4-digit PINs.");
+            const res = await fetch('/auth/change-pin', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ upi_id: currentUser, old_pin, new_pin }) });
+            if((await res.json()).success) { alert("PIN updated successfully!"); currentPin = new_pin; closeModal('profileModal'); } else alert("Incorrect current PIN.");
+        }
+
+        // ADMIN FUNCTIONS
+        async function adminSendBroadcast() { const message = document.getElementById('admin-notice-msg').value; if(!message) return alert("Enter a message."); await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message }) }); alert("Broadcast Sent!"); document.getElementById('admin-notice-msg').value = ""; }
+        async function adminClearBroadcast() { await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message: "" }) }); alert("Broadcast Cleared."); }
+        async function adminViewUsers() {
+            const res = await fetch('/admin/users', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin }) });
+            const data = await res.json();
+            document.getElementById('admin-viewer-area').innerHTML = data.data.map(u => `
+                <div class="txn-row" style="background:#f3f4f6; padding:12px; border-radius:6px; margin-bottom:8px; border-left: 4px solid ${u.status==='FROZEN'?'#ef4444':'#22c55e'};">
+                    <div><div style="font-weight:700; color:var(--text-dark);">${escapeHTML(u.name)}</div><div style="font-size:12px; color:var(--primary);">${escapeHTML(u.upi_id)}</div></div>
+                    <div style="text-align:right;"><div style="font-weight:800; font-size:15px; color:#16a34a;">₹${parseFloat(u.balance).toFixed(2)}</div><div style="font-size:10px; font-weight:bold; color:${u.status==='FROZEN'?'#ef4444':'#6b7280'};">${u.status}</div></div>
+                </div>
+            `).join('');
+        }
+        async function adminAdjust(action) {
+            const target_id = document.getElementById('admin-target').value.trim(); const amount = document.getElementById('admin-amount').value || 0;
+            if(!target_id) return alert("Enter target ID.");
+            const res = await fetch('/admin/adjust', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id, amount, action }) });
+            const data = await res.json(); if(data.success) { alert("Action applied."); adminViewUsers(); } else alert("Action Failed: " + (data.error || "Unknown error"));
+        }
+        async function adminDelete() {
+            const target_id = document.getElementById('admin-target').value.trim(); if(!target_id || !confirm("Delete " + target_id + "?")) return;
+            const res = await fetch('/admin/delete', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id }) });
+            if((await res.json()).success) { alert("Account Terminated."); adminViewUsers(); }
+        }
+        async function adminViewTransactions() {
+            const target_id = document.getElementById('admin-target').value.trim();
+            const res = await fetch('/admin/transactions', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id }) });
+            const data = await res.json();
+            document.getElementById('admin-viewer-area').innerHTML = data.data.map(t => `
+                <div class="txn-row" style="background:#f3f4f6; padding:10px; border-radius:6px; margin-bottom:8px;">
+                    <div style="font-size:12px;"><b style="color:#002970;">${escapeHTML(t.sender)}</b><br>➔ <b style="color:#00b9f5;">${escapeHTML(t.receiver)}</b></div>
+                    <div style="font-weight:bold; color:var(--text-dark);">₹${parseFloat(t.amount).toFixed(2)}</div>
+                </div>
+            `).join('');
+        }
+
+        // Enter-key listeners for auth fields
+        document.querySelectorAll('#auth-screen input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') { const btn = input.closest('.card').querySelector('.btn-primary'); if (btn) btn.click(); }
+            });
+        });
+    </script>
+</body>
+</html>

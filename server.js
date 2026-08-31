@@ -78,7 +78,8 @@ app.post('/pay', async (req, res) => {
         await client.query('UPDATE accounts SET balance = balance - $1 WHERE upi_id = $2', [amount, sender]);
         await client.query('UPDATE accounts SET balance = balance + $1 WHERE upi_id = $2', [amount, receiver]);
         await client.query('INSERT INTO transactions (sender, receiver, amount) VALUES ($1, $2, $3)', [sender, receiver, amount]);
-        
+                // Auto-insert payment into chat history
+        await client.query('INSERT INTO messages (sender, receiver, content, type) VALUES ($1, $2, $3, \'TRANSACTION\')', [sender, receiver, `₹${parseFloat(amount).toFixed(2)}`]);
         await client.query('COMMIT');
         res.json({ success: true });
     } catch (e) {

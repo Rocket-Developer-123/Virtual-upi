@@ -59,13 +59,6 @@ app.post('/pay', async (req, res) => {
         await client.query('UPDATE accounts SET balance = balance + $1 WHERE upi_id = $2', [amount, receiver]);
         await client.query('INSERT INTO transactions (sender, receiver, amount) VALUES ($1, $2, $3)', [sender, receiver, amount]);
         
-        // Auto-save to contacts if not already saved
-        await client.query(`
-            INSERT INTO contacts (owner_upi, contact_name, contact_upi) 
-            SELECT $1, name, $2 FROM accounts WHERE upi_id = $2 
-            AND NOT EXISTS (SELECT 1 FROM contacts WHERE owner_upi = $1 AND contact_upi = $2)
-        `, [sender, receiver]);
-
         await client.query('COMMIT');
         res.json({ success: true });
     } catch (e) {
@@ -80,20 +73,20 @@ app.get('/history/:upi', async (req, res) => {
     const result = await pool.query('SELECT * FROM transactions WHERE sender = $1 OR receiver = $1 ORDER BY created_at DESC', [req.params.upi]);
     res.json(result.rows);
 });
+
 app.get('/balance/:upi', async (req, res) => {
     const result = await pool.query('SELECT balance FROM accounts WHERE upi_id = $1', [req.params.upi]);
     res.json(result.rows[0]);
 });
 
-// --- CONTACTS ---
-app.get('/contacts/:upi', async (req, res) => {
-    const result = await pool.query('SELECT * FROM contacts WHERE owner_upi = $1 ORDER BY contact_name ASC', [req.params.upi]);
+// --- GLOBAL NETWORK DIRECTORY ---
+app.get('/directory/:upi', async (req, res) => {
+    // Fetch all active users to display in the search list (excludes Boss0 and the user themselves)
+    const result = await pool.query(
+        'SELECT name, upi_id FROM accounts WHERE upi_id != $1 AND upi_id != \'Boss0\' ORDER BY name ASC', 
+        [req.params.upi]
+    );
     res.json(result.rows);
-});
-app.post('/contacts/remove', async (req, res) => {
-    const { owner_upi, contact_upi } = req.body;
-    await pool.query('DELETE FROM contacts WHERE owner_upi = $1 AND contact_upi = $2', [owner_upi, contact_upi]);
-    res.json({ success: true });
 });
 
 // --- SYSTEM NOTICES ---

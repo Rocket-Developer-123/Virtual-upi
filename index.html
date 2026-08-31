@@ -419,13 +419,14 @@
             </div>`;
         }
 
-        // --- UNIFIED PAY / CONTACTS LOGIC ---
+                // --- UNIFIED PAY / NETWORK DIRECTORY LOGIC ---
         async function openUnifiedPayModal() {
             openModal('unifiedPayModal');
             document.getElementById('contact-search').value = "";
             document.getElementById('pay-new-btn').style.display = 'none';
             
-            const res = await fetch('/contacts/' + currentUser);
+            // Fetch directly from the global accounts directory
+            const res = await fetch('/directory/' + currentUser);
             globalContacts = await res.json();
             renderContacts(globalContacts);
         }
@@ -433,22 +434,21 @@
         function renderContacts(contactArray) {
             const container = document.getElementById('contacts-list');
             if(contactArray.length === 0) {
-                container.innerHTML = "<p style='color:var(--text-muted); text-align:center; font-size:13px;'>No contacts found.</p>";
+                container.innerHTML = "<p style='color:var(--text-muted); text-align:center; font-size:13px;'>No users found on the network.</p>";
                 return;
             }
+            
+            // Note: Data maps to c.name and c.upi_id now (matching the accounts database)
             container.innerHTML = contactArray.map(c => `
                 <div class="contact-row">
-                    <div style="display:flex; align-items:center; cursor:pointer;" onclick="selectContact('${c.contact_upi}')">
-                        <div class="contact-avatar">${c.contact_name.charAt(0).toUpperCase()}</div>
+                    <div style="display:flex; align-items:center; cursor:pointer;" onclick="selectContact('${c.upi_id}')">
+                        <div class="contact-avatar">${c.name.charAt(0).toUpperCase()}</div>
                         <div>
-                            <div style="font-weight:600; font-size:14px; color:var(--text-dark);">${c.contact_name}</div>
-                            <div style="font-size:11px; color:var(--text-muted);">${c.contact_upi}</div>
+                            <div style="font-weight:600; font-size:14px; color:var(--text-dark);">${c.name}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${c.upi_id}</div>
                         </div>
                     </div>
-                    <div style="display:flex; gap:10px;">
-                        <button class="btn-primary" style="padding: 6px 12px; margin:0; font-size:12px; width:auto;" onclick="selectContact('${c.contact_upi}')">Pay</button>
-                        <button class="btn-primary btn-danger" style="padding: 6px 10px; margin:0; font-size:12px; width:auto;" onclick="removeContact('${c.contact_upi}')">✕</button>
-                    </div>
+                    <button class="btn-primary" style="padding: 6px 12px; margin:0; font-size:12px; width:auto;" onclick="selectContact('${c.upi_id}')">Pay</button>
                 </div>
             `).join('');
         }
@@ -464,7 +464,11 @@
                 btn.style.display = 'none';
             }
 
-            const filtered = globalContacts.filter(c => c.contact_name.toLowerCase().includes(query) || c.contact_upi.toLowerCase().includes(query));
+            // Filter against c.name and c.upi_id
+            const filtered = globalContacts.filter(c => 
+                c.name.toLowerCase().includes(query) || 
+                c.upi_id.toLowerCase().includes(query)
+            );
             renderContacts(filtered);
         }
 
@@ -475,20 +479,11 @@
 
         function selectContact(upi) {
             closeModal('unifiedPayModal');
-            openScanPayScreen(upi); // Uses the awesome numpad screen!
+            openScanPayScreen(upi); // Triggers the numpad!
         }
 
-        async function removeContact(contact_upi) {
-            if(!confirm("Remove this contact?")) return;
-            const res = await fetch('/contacts/remove', {
-                method: 'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ owner_upi: currentUser, contact_upi })
-            });
-            if((await res.json()).success) {
-                globalContacts = globalContacts.filter(c => c.contact_upi !== contact_upi);
-                filterContacts(); // Refresh UI instantly
-            }
-        }
+
+            
 
         // --- NUMPAD & PAYMENT LOGIC ---
         let currentScanAmount = "0";

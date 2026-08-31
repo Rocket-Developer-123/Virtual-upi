@@ -532,7 +532,7 @@
             });
             const data = await res.json();
 
-                        setTimeout(() => {
+                                    setTimeout(() => {
                 document.getElementById('loading-screen').classList.add('hidden');
                 
                 if(data.success) {
@@ -543,16 +543,14 @@
                     document.getElementById('receipt-time').innerText = new Date().toLocaleString();
                     document.getElementById('success-screen').classList.remove('hidden');
                 } else {
-                    // Instantly kick the user out if their account is frozen
+                    // Show investigation notice instead of logging out
                     if (data.error.includes("frozen")) {
-                        alert("SECURITY ALERT: " + data.error + " You are being logged out.");
-                        logout();
+                        alert("SECURITY ALERT: Your account has been frozen and will be unfrozen after investigation.");
                     } else {
                         alert("Payment Failed: " + data.error);
                     }
                 }
             }, 1500);
-
         }
 
         function closeSuccess() {

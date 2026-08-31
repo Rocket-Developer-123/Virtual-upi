@@ -99,11 +99,16 @@
             </p>
         </div>
 
-        <div id="register-section" class="card hidden">
-            <h2>Create UPI Account</h2>
-            <input type="text" id="reg-name" placeholder="Full Name">
-            <input type="text" id="reg-upi" placeholder="Create Custom UPI ID (optional)">
+        <        <div id="register-section" class="card hidden">
+            <h2>Create RPAY Account</h2>
+            <input type="text" id="reg-name" placeholder="Full Name" oninput="resetSuggestions()">
             <input type="password" id="reg-pin" placeholder="Create 4-Digit PIN" maxlength="4">
+            
+            <div id="suggestion-box" class="hidden" style="margin-top: 5px; text-align: left;">
+                <p style="font-size: 13px; color: #ef4444; margin-bottom: 8px; font-weight: 600;">That name is taken. Choose one:</p>
+                <div id="suggestion-buttons" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;"></div>
+            </div>
+
             <button class="btn-primary" onclick="register()">Sign Up (₹10,000 Bonus)</button>
             <p style="font-size: 13px; text-align: center; margin-top: 15px;">
                 Already registered? <span class="link-text" onclick="toggleAuth('login')">Login</span>
@@ -343,21 +348,54 @@
             document.getElementById('auth-screen').classList.remove('hidden');
         }
 
+                let selectedUpi = ""; // Stores the suggestion if the user clicks one
+
+        function resetSuggestions() {
+            selectedUpi = "";
+            document.getElementById('suggestion-box').classList.add('hidden');
+        }
+
         async function register() {
             const name = document.getElementById('reg-name').value.trim();
-            const manualUpi = document.getElementById('reg-upi').value.trim();
             const pin = document.getElementById('reg-pin').value;
             
             if(!name || !pin) return alert("Please fill in your name and a 4-digit PIN.");
-            const cleanNamePart = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const upi_id = manualUpi ? (manualUpi.includes('@') ? manualUpi : manualUpi + '@rpay') : cleanNamePart + '@rpay';
+            
+            // If they haven't selected a suggestion, build the default one
+            let upi_id = selectedUpi;
+            if (!upi_id) {
+                const cleanNamePart = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                upi_id = cleanNamePart + '@rpay';
+            }
 
             const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
             const data = await res.json();
+            
             if(data.success) { 
-                alert("Account Created! Your UPI ID is: " + upi_id); 
+                alert("Account Created!\n\nYour permanent UPI ID is:\n" + upi_id); 
                 toggleAuth('login'); 
-            } else alert(data.error);
+                resetSuggestions();
+                document.getElementById('reg-name').value = "";
+                document.getElementById('reg-pin').value = "";
+            } else {
+                if (data.suggestions) {
+                    // Show the suggestions sent from the backend
+                    const box = document.getElementById('suggestion-box');
+                    const btns = document.getElementById('suggestion-buttons');
+                    box.classList.remove('hidden');
+                    btns.innerHTML = data.suggestions.map(s => 
+                        `<button style="background:#e0f2fe; color:var(--primary); border:1px solid #bae6fd; border-radius:6px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;" onclick="selectSuggestion('${s}')">${s}</button>`
+                    ).join('');
+                } else {
+                    alert(data.error);
+                }
+            }
+        }
+
+        // When a user clicks a suggestion, immediately attempt to register it
+        function selectSuggestion(suggestedUpi) {
+            selectedUpi = suggestedUpi;
+            register(); 
         }
 
         async function login() {

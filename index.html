@@ -28,6 +28,7 @@
         .btn-danger { background: #ef4444; }
         .btn-success { background: #22c55e; }
         .btn-dark { background: #1f2937; }
+        .btn-small { padding: 6px 12px; font-size: 12px; margin-top: 0; border-radius: 6px; }
         .link-text { color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: underline; }
 
         .top-header { background: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 50; }
@@ -53,37 +54,30 @@
         .txn-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
         .hidden { display: none !important; }
         
-        /* Loading & Success Screens */
         .fullscreen-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; }
         .spinner { width: 50px; height: 50px; border: 5px solid #e5e7eb; border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
         .success-card { background: var(--card-bg); width: 90%; max-width: 350px; border-radius: 16px; padding: 30px 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .check-circle { width: 70px; height: 70px; background: #22c55e; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px; }
-        .receipt-detail { display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: var(--text-muted); border-bottom: 1px dashed #e5e7eb; padding-bottom: 8px; }
         
-        /* Custom Numpad Screen */
+        /* Scan Numpad Screen */
         .scan-payment-screen { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; z-index: 250; }
         .scan-header { padding: 20px; text-align: center; position: relative; border-bottom: 1px solid #e5e7eb; background: white; }
         .back-btn { position: absolute; left: 20px; top: 22px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-dark); }
         .amount-display-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
         .amount-text { font-size: 60px; font-weight: 800; color: var(--text-dark); }
-        
         .numpad-container { background: white; border-radius: 24px 24px 0 0; padding: 25px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.05); }
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
         .num-key { background: #f3f4f6; border: none; border-radius: 12px; font-size: 26px; font-weight: 600; color: var(--text-dark); padding: 18px 0; cursor: pointer; transition: 0.1s; }
         .num-key:active { background: #e5e7eb; transform: scale(0.95); }
         
-        /* Profile & Contact Styles */
-        .profile-sheet { padding: 10px 0; }
-        .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
-        .contact-avatar { width: 38px; height: 38px; border-radius: 50%; background: #e0f2fe; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; }
+        /* Unified Contacts */
+        .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f3f4f6; }
+        .contact-avatar { width: 40px; height: 40px; border-radius: 50%; background: #e0f2fe; color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; margin-right: 12px; }
         
-        /* Upgraded Viewfinder QR Scanner */
         #reader { border: none !important; border-radius: 16px; overflow: hidden; background: #000 !important; }
         #reader video { object-fit: cover; border-radius: 16px; }
-
-        /* System Notice Banner */
         .notice-banner { background: #fef3c7; color: #92400e; padding: 10px 15px; font-size: 13px; font-weight: 600; text-align: center; border-bottom: 1px solid #fde68a; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
@@ -91,7 +85,7 @@
 
     <div id="system-notice" class="notice-banner hidden">
         <span id="notice-text"></span>
-        <span onclick="dismissNotice()" style="cursor:pointer; font-weight:bold;">✕</span>
+        <span onclick="dismissNotice()" style="cursor:pointer; font-weight:bold; font-size:16px;">✕</span>
     </div>
 
     <div id="auth-screen" class="auth-container">
@@ -136,10 +130,10 @@
             </div>
 
             <div class="card">
-                <div class="section-title">Money Transfers</div>
+                <div class="section-title">Quick Actions</div>
                 <div class="grid-actions">
-                    <div class="action-item" onclick="openModal('sendModal')">
-                        <div class="icon-circle">💸</div><span class="action-label">To UPI ID</span>
+                    <div class="action-item" onclick="openUnifiedPayModal()">
+                        <div class="icon-circle">💸</div><span class="action-label">Pay / Contacts</span>
                     </div>
                     <div class="action-item" onclick="openModal('qrModal')">
                         <div class="icon-circle">📱</div><span class="action-label">My QR</span>
@@ -149,9 +143,6 @@
                     </div>
                     <div class="action-item" onclick="updateBalance()">
                         <div class="icon-circle">🔄</div><span class="action-label">Check Bal</span>
-                    </div>
-                    <div class="action-item" onclick="openContactsModal()">
-                        <div class="icon-circle">📇</div><span class="action-label">Contacts</span>
                     </div>
                 </div>
             </div>
@@ -175,33 +166,50 @@
             <button class="btn-danger" style="padding: 6px 12px; border:none; border-radius:20px; color: white;" onclick="logout()">Exit</button>
         </header>
         <div class="dashboard-content">
+            
+            <div class="card">
+                <h3>System Broadcast</h3>
+                <input type="text" id="admin-notice-msg" placeholder="Enter message to broadcast globally">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary btn-success" onclick="adminSendBroadcast()">Push Notice</button>
+                    <button class="btn-primary btn-danger" onclick="adminClearBroadcast()">Clear All</button>
+                </div>
+            </div>
+
             <div class="card">
                 <h3>Account Management</h3>
                 <input type="text" id="admin-target" placeholder="Target UPI ID (e.g., friend@rpay)">
                 <input type="number" id="admin-amount" placeholder="Amount (₹)">
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-primary btn-success" onclick="adminAdjust('add')">+ Inject Funds</button>
-                    <button class="btn-primary btn-danger" onclick="adminAdjust('deduct')">- Deduct Funds</button>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-primary btn-success" style="width:48%;" onclick="adminAdjust('add')">+ Add Funds</button>
+                    <button class="btn-primary btn-danger" style="width:48%;" onclick="adminAdjust('deduct')">- Deduct</button>
+                    <button class="btn-primary" style="width:48%; background:#eab308;" onclick="adminAdjust('freeze')">❄ Freeze</button>
+                    <button class="btn-primary" style="width:48%; background:#3b82f6;" onclick="adminAdjust('unfreeze')">☀ Unfreeze</button>
                 </div>
                 <button class="btn-primary btn-dark" onclick="adminDelete()" style="margin-top: 15px;">⚠ Terminate Account</button>
             </div>
+            
             <div class="card">
-                <h3>Transaction Surveillance</h3>
-                <input type="text" id="admin-spy-target" placeholder="UPI ID (Leave blank for ALL)">
-                <button class="btn-primary" onclick="adminViewTransactions()">View Records</button>
-                <div id="admin-ledger" style="margin-top: 15px; max-height: 400px; overflow-y: auto;"></div>
+                <h3>Network Overview</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn-primary" style="margin-top:0;" onclick="adminViewUsers()">All Balances</button>
+                    <button class="btn-primary btn-dark" style="margin-top:0;" onclick="adminViewTransactions()">All Ledgers</button>
+                </div>
+                <div id="admin-viewer-area" style="max-height: 400px; overflow-y: auto;"></div>
             </div>
         </div>
     </div>
 
-    <div id="sendModal" class="modal hidden">
+    <div id="unifiedPayModal" class="modal hidden">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('sendModal')">✕</button>
-            <h3>Send Money</h3>
-            <input type="text" id="pay-receiver" placeholder="Receiver UPI ID">
-            <input type="number" id="pay-amount" placeholder="Amount (₹)">
-            <input type="password" id="pay-pin" placeholder="Enter 4-Digit UPI PIN" maxlength="4">
-            <button class="btn-primary" onclick="pay()">Pay Securely</button>
+            <button class="modal-close" onclick="closeModal('unifiedPayModal')">✕</button>
+            <h3>Send Money & Contacts</h3>
+            
+            <input type="text" id="contact-search" placeholder="Search by name or enter UPI ID..." oninput="filterContacts()" style="margin-bottom: 5px;">
+            
+            <button id="pay-new-btn" class="btn-primary" style="display: none; margin-bottom: 15px;" onclick="paySearchedId()">Pay New ID</button>
+            
+            <div id="contacts-list" style="margin-top: 10px; max-height: 350px; overflow-y: auto;"></div>
         </div>
     </div>
 
@@ -279,13 +287,11 @@
             <div class="check-circle">✓</div>
             <h2 style="color: #22c55e; margin-bottom: 5px;">Payment Successful</h2>
             <h1 id="receipt-amount" style="font-size: 36px; color: var(--text-dark); margin: 15px 0;">₹0.00</h1>
-            
             <div style="text-align: left; margin-top: 25px;">
                 <div class="receipt-detail"><span>Paid to</span> <strong id="receipt-receiver" style="color: var(--text-dark);">Name</strong></div>
                 <div class="receipt-detail"><span>From</span> <strong id="receipt-sender" style="color: var(--text-dark);">My Account</strong></div>
                 <div class="receipt-detail"><span>Date & Time</span> <strong id="receipt-time" style="color: var(--text-dark);">Time</strong></div>
             </div>
-            
             <button class="btn-primary" onclick="closeSuccess()" style="margin-top: 30px;">Done</button>
         </div>
     </div>
@@ -308,14 +314,6 @@
         </div>
     </div>
 
-    <div id="contactsModal" class="modal hidden">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('contactsModal')">✕</button>
-            <h3>Saved Contacts</h3>
-            <div id="contacts-list" style="margin-top: 15px; max-height: 300px; overflow-y: auto;"></div>
-        </div>
-    </div>
-
     <audio id="success-audio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <div style="text-align: center; padding: 15px 0 30px 0; font-size: 12px; font-weight: 600; color: var(--text-muted); position: relative; z-index: 10;">
@@ -327,6 +325,7 @@
         let currentPin = "";
         let currentName = "";
         let html5QrcodeScanner;
+        let globalContacts = []; // Store contacts in memory for searching
 
         function toggleAuth(view) {
             document.getElementById('login-section').classList.toggle('hidden', view === 'register');
@@ -337,42 +336,29 @@
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
         function logout() {
-            currentUser = ""; 
-            currentPin = ""; 
-            currentName = "";
-            document.getElementById('log-upi').value = "";
-            document.getElementById('log-pin').value = "";
+            currentUser = ""; currentPin = ""; currentName = ""; globalContacts = [];
+            document.getElementById('log-upi').value = ""; document.getElementById('log-pin').value = "";
             document.getElementById('dashboard-screen').classList.add('hidden');
             document.getElementById('owner-screen').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
         }
 
-                async function register() {
+        async function register() {
             const name = document.getElementById('reg-name').value.trim();
             const manualUpi = document.getElementById('reg-upi').value.trim();
             const pin = document.getElementById('reg-pin').value;
             
             if(!name || !pin) return alert("Please fill in your name and a 4-digit PIN.");
-
-            // Generate clean handle: lowercase, remove spaces and special characters
             const cleanNamePart = name.toLowerCase().replace(/[^a-z0-9]/g, '');
             const upi_id = manualUpi ? (manualUpi.includes('@') ? manualUpi : manualUpi + '@rpay') : cleanNamePart + '@rpay';
 
-            const res = await fetch('/register', { 
-                method: 'POST', 
-                headers: {'Content-Type':'application/json'}, 
-                body: JSON.stringify({upi_id, name, pin}) 
-            });
+            const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
             const data = await res.json();
-            
             if(data.success) { 
-                alert("Account Created Successfully!\nYour UPI ID is: " + upi_id); 
+                alert("Account Created! Your UPI ID is: " + upi_id); 
                 toggleAuth('login'); 
-            } else {
-                alert("Registration Failed: " + (data.error || "UPI ID may already exist."));
-            }
+            } else alert(data.error);
         }
-
 
         async function login() {
             const upi_id = document.getElementById('log-upi').value;
@@ -381,17 +367,14 @@
             const data = await res.json();
             
             if(data.success) {
-                if(data.user.status === 'FROZEN') {
-                    return alert("Your account is temporarily frozen by security. Contact support.");
-                }
+                if(data.user.status === 'FROZEN') return alert("Your account is temporarily frozen by security. Contact support.");
 
-                currentUser = upi_id;
-                currentPin = pin;
+                currentUser = upi_id; currentPin = pin;
                 document.getElementById('auth-screen').classList.add('hidden');
                 
                 if(currentUser === 'Boss0') {
                     document.getElementById('owner-screen').classList.remove('hidden');
-                    adminViewTransactions();
+                    adminViewUsers(); // Auto-load users
                 } else {
                     currentName = data.user.name;
                     document.getElementById('dashboard-screen').classList.remove('hidden');
@@ -399,7 +382,6 @@
                     document.getElementById('avatar-initial').innerText = currentName.charAt(0).toUpperCase();
                     document.getElementById('my-upi').innerText = currentUser;
                     document.getElementById('qr-upi-label').innerText = currentUser;
-                    
                     document.getElementById("qrcode").innerHTML = "";
                     new QRCode(document.getElementById("qrcode"), { text: currentUser, width: 200, height: 200 });
                     
@@ -408,49 +390,6 @@
                     checkSystemNotices();
                 }
             } else alert(data.error);
-        }
-
-        async function pay() {
-            const receiver = document.getElementById('pay-receiver').value;
-            const amount = document.getElementById('pay-amount').value;
-            const pin = document.getElementById('pay-pin').value;
-            
-            if(!receiver || !amount || !pin) return alert("Please fill all fields.");
-
-            closeModal('sendModal');
-            document.getElementById('loading-screen').classList.remove('hidden');
-
-            const res = await fetch('/pay', { 
-                method: 'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body: JSON.stringify({sender: currentUser, receiver, pin, amount}) 
-            });
-            const data = await res.json();
-
-            setTimeout(() => {
-                document.getElementById('loading-screen').classList.add('hidden');
-                
-                if(data.success) {
-                    playSuccessSound(); // Play audio effect on success
-                    document.getElementById('receipt-amount').innerText = "₹" + amount;
-                    document.getElementById('receipt-receiver').innerText = receiver;
-                    document.getElementById('receipt-sender').innerText = currentUser;
-                    document.getElementById('receipt-time').innerText = new Date().toLocaleString();
-                    document.getElementById('success-screen').classList.remove('hidden');
-                } else {
-                    alert("Payment Failed: " + data.error);
-                }
-                
-                document.getElementById('pay-receiver').value = "";
-                document.getElementById('pay-amount').value = "";
-                document.getElementById('pay-pin').value = "";
-            }, 1500);
-        }
-
-        function closeSuccess() {
-            document.getElementById('success-screen').classList.add('hidden');
-            updateBalance(); 
-            loadHistory(); 
         }
 
         async function updateBalance() {
@@ -480,22 +419,78 @@
             </div>`;
         }
 
-        function startScanner() {
-            openModal('scannerModal');
-            if (!html5QrcodeScanner) {
-                html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 220, height: 220 } }, false);
+        // --- UNIFIED PAY / CONTACTS LOGIC ---
+        async function openUnifiedPayModal() {
+            openModal('unifiedPayModal');
+            document.getElementById('contact-search').value = "";
+            document.getElementById('pay-new-btn').style.display = 'none';
+            
+            const res = await fetch('/contacts/' + currentUser);
+            globalContacts = await res.json();
+            renderContacts(globalContacts);
+        }
+
+        function renderContacts(contactArray) {
+            const container = document.getElementById('contacts-list');
+            if(contactArray.length === 0) {
+                container.innerHTML = "<p style='color:var(--text-muted); text-align:center; font-size:13px;'>No contacts found.</p>";
+                return;
             }
-            html5QrcodeScanner.render((decodedText) => {
-                stopScanner();
-                openScanPayScreen(decodedText);
-            }, (error) => {});
+            container.innerHTML = contactArray.map(c => `
+                <div class="contact-row">
+                    <div style="display:flex; align-items:center; cursor:pointer;" onclick="selectContact('${c.contact_upi}')">
+                        <div class="contact-avatar">${c.contact_name.charAt(0).toUpperCase()}</div>
+                        <div>
+                            <div style="font-weight:600; font-size:14px; color:var(--text-dark);">${c.contact_name}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${c.contact_upi}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-primary" style="padding: 6px 12px; margin:0; font-size:12px; width:auto;" onclick="selectContact('${c.contact_upi}')">Pay</button>
+                        <button class="btn-primary btn-danger" style="padding: 6px 10px; margin:0; font-size:12px; width:auto;" onclick="removeContact('${c.contact_upi}')">✕</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function stopScanner() {
-            if (html5QrcodeScanner) html5QrcodeScanner.clear();
-            closeModal('scannerModal');
+        function filterContacts() {
+            const query = document.getElementById('contact-search').value.toLowerCase().trim();
+            const btn = document.getElementById('pay-new-btn');
+            
+            if (query.includes('@')) {
+                btn.style.display = 'block';
+                btn.innerText = "Pay New ID: " + query;
+            } else {
+                btn.style.display = 'none';
+            }
+
+            const filtered = globalContacts.filter(c => c.contact_name.toLowerCase().includes(query) || c.contact_upi.toLowerCase().includes(query));
+            renderContacts(filtered);
         }
 
+        function paySearchedId() {
+            const query = document.getElementById('contact-search').value.trim();
+            selectContact(query);
+        }
+
+        function selectContact(upi) {
+            closeModal('unifiedPayModal');
+            openScanPayScreen(upi); // Uses the awesome numpad screen!
+        }
+
+        async function removeContact(contact_upi) {
+            if(!confirm("Remove this contact?")) return;
+            const res = await fetch('/contacts/remove', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ owner_upi: currentUser, contact_upi })
+            });
+            if((await res.json()).success) {
+                globalContacts = globalContacts.filter(c => c.contact_upi !== contact_upi);
+                filterContacts(); // Refresh UI instantly
+            }
+        }
+
+        // --- NUMPAD & PAYMENT LOGIC ---
         let currentScanAmount = "0";
         let currentScanReceiver = "";
 
@@ -507,9 +502,7 @@
             document.getElementById('scan-pay-screen').classList.remove('hidden');
         }
 
-        function closeScanPay() {
-            document.getElementById('scan-pay-screen').classList.add('hidden');
-        }
+        function closeScanPay() { document.getElementById('scan-pay-screen').classList.add('hidden'); }
 
         function numpad(val) {
             if (val === 'back') {
@@ -523,7 +516,7 @@
         }
 
         function proceedToPin() {
-            if (currentScanAmount === "0" || currentScanAmount === "") return alert("Please enter an amount.");
+            if (currentScanAmount === "0" || currentScanAmount === "") return alert("Enter an amount.");
             document.getElementById('pin-confirm-amt').innerText = currentScanAmount;
             document.getElementById('pin-confirm-upi').innerText = currentScanReceiver;
             document.getElementById('scan-pay-pin').value = "";
@@ -539,8 +532,7 @@
             document.getElementById('loading-screen').classList.remove('hidden');
 
             const res = await fetch('/pay', { 
-                method: 'POST', 
-                headers:{'Content-Type':'application/json'}, 
+                method: 'POST', headers:{'Content-Type':'application/json'}, 
                 body: JSON.stringify({sender: currentUser, receiver: currentScanReceiver, pin: pin, amount: currentScanAmount}) 
             });
             const data = await res.json();
@@ -549,7 +541,7 @@
                 document.getElementById('loading-screen').classList.add('hidden');
                 
                 if(data.success) {
-                    playSuccessSound(); // Play audio effect on success
+                    playSuccessSound();
                     document.getElementById('receipt-amount').innerText = "₹" + currentScanAmount;
                     document.getElementById('receipt-receiver').innerText = currentScanReceiver;
                     document.getElementById('receipt-sender').innerText = currentUser;
@@ -561,111 +553,26 @@
             }, 1500);
         }
 
-        // --- BOSS0 OWNER FUNCTIONS ---
-        async function adminAdjust(action) {
-            const target_id = document.getElementById('admin-target').value;
-            const amount = document.getElementById('admin-amount').value;
-            if(!target_id || !amount) return alert("Enter target and amount.");
-            
-            const res = await fetch('/admin/adjust', {
-                method: 'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id, amount, action })
-            });
-            if((await res.json()).success) { alert("Funds adjusted."); adminViewTransactions(); }
+        function closeSuccess() {
+            document.getElementById('success-screen').classList.add('hidden');
+            updateBalance(); 
+            loadHistory(); 
         }
 
-        async function adminDelete() {
-            const target_id = document.getElementById('admin-target').value;
-            if(!target_id || !confirm("Delete " + target_id + "?")) return;
-            
-            const res = await fetch('/admin/delete', {
-                method: 'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id })
-            });
-            if((await res.json()).success) alert("Account Terminated.");
-        }
-
-        async function adminViewTransactions() {
-            const target_id = document.getElementById('admin-spy-target').value;
-            const res = await fetch('/admin/transactions', {
-                method: 'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id })
-            });
-            const data = await res.json();
-            
-            document.getElementById('admin-ledger').innerHTML = data.data.map(t => `
-                <div class="txn-row" style="background:#f3f4f6; padding:10px; border-radius:6px; margin-bottom:8px;">
-                    <div><b style="color:#002970;">${t.sender}</b> ➔ <b style="color:#00b9f5;">${t.receiver}</b></div>
-                    <div style="font-weight:bold;">₹${t.amount}</div>
-                </div>
-            `).join('');
-        }
-
-        // --- NEW FEATURES JAVASCRIPT ---
         function playSuccessSound() {
             const audio = document.getElementById('success-audio');
-            if(audio) {
-                audio.currentTime = 0;
-                audio.play().catch(e => console.log("Audio play blocked by browser policy"));
-            }
+            if(audio) { audio.currentTime = 0; audio.play().catch(e=>{}); }
         }
 
-        function openProfileModal() {
-            document.getElementById('profile-modal-name').innerText = currentName;
-            document.getElementById('profile-modal-upi').innerText = currentUser;
-            document.getElementById('profile-modal-avatar').innerText = currentName.charAt(0).toUpperCase();
-            document.getElementById('profile-modal-date').innerText = currentUser === 'Boss0' ? 'System Administrator' : 'August 2026';
-            openModal('profileModal');
+        // --- CAMERA SCANNER ---
+        function startScanner() {
+            openModal('scannerModal');
+            if (!html5QrcodeScanner) html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 220, height: 220 } }, false);
+            html5QrcodeScanner.render((decodedText) => { stopScanner(); openScanPayScreen(decodedText); }, (error) => {});
         }
+        function stopScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); closeModal('scannerModal'); }
 
-        async function changePin() {
-            const old_pin = document.getElementById('old-pin').value;
-            const new_pin = document.getElementById('new-pin').value;
-            if(!old_pin || !new_pin || new_pin.length !== 4) return alert("Enter valid 4-digit PINs.");
-            
-            const res = await fetch('/auth/change-pin', {
-                method: 'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ upi_id: currentUser, old_pin, new_pin })
-            });
-            const data = await res.json();
-            if(data.success) {
-                alert("PIN updated successfully!");
-                currentPin = new_pin;
-                closeModal('profileModal');
-            } else {
-                alert(data.error);
-            }
-        }
-
-        async function openContactsModal() {
-            openModal('contactsModal');
-            const res = await fetch('/contacts/' + currentUser);
-            const contacts = await res.json();
-            
-            const container = document.getElementById('contacts-list');
-            if(contacts.length === 0) {
-                container.innerHTML = "<p style='color:var(--text-muted); text-align:center;'>No saved contacts yet.</p>";
-                return;
-            }
-            container.innerHTML = contacts.map(c => `
-                <div class="contact-row" onclick="selectContact('${c.contact_upi}')" style="cursor:pointer;">
-                    <div style="display:flex; align-items:center;">
-                        <div class="contact-avatar">${c.contact_name.charAt(0).toUpperCase()}</div>
-                        <div>
-                            <div style="font-weight:600; font-size:14px;">${c.contact_name}</div>
-                            <div style="font-size:11px; color:var(--text-muted);">${c.contact_upi}</div>
-                        </div>
-                    </div>
-                    <span style="color:var(--accent); font-size:13px; font-weight:650;">Pay ›</span>
-                </div>
-            `).join('');
-        }
-
-        function selectContact(upi) {
-            closeModal('contactsModal');
-            openScanPayScreen(upi);
-        }
-
+        // --- SYSTEM NOTICES ---
         async function checkSystemNotices() {
             try {
                 const res = await fetch('/notices/active');
@@ -676,9 +583,104 @@
                 }
             } catch(e) {}
         }
+        function dismissNotice() { document.getElementById('system-notice').classList.add('hidden'); }
 
-        function dismissNotice() {
-            document.getElementById('system-notice').classList.add('hidden');
+        // --- PROFILE SETTINGS ---
+        function openProfileModal() {
+            document.getElementById('profile-modal-name').innerText = currentName;
+            document.getElementById('profile-modal-upi').innerText = currentUser;
+            document.getElementById('profile-modal-avatar').innerText = currentName.charAt(0).toUpperCase();
+            openModal('profileModal');
+        }
+        async function changePin() {
+            const old_pin = document.getElementById('old-pin').value;
+            const new_pin = document.getElementById('new-pin').value;
+            if(!old_pin || !new_pin || new_pin.length !== 4) return alert("Enter valid 4-digit PINs.");
+            
+            const res = await fetch('/auth/change-pin', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ upi_id: currentUser, old_pin, new_pin })
+            });
+            if((await res.json()).success) { alert("PIN updated successfully!"); currentPin = new_pin; closeModal('profileModal'); } 
+            else alert("Incorrect current PIN.");
+        }
+
+        // --- BOSS0 OWNER FUNCTIONS ---
+        async function adminSendBroadcast() {
+            const message = document.getElementById('admin-notice-msg').value;
+            if(!message) return alert("Enter a message.");
+            const res = await fetch('/admin/broadcast', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message })
+            });
+            if((await res.json()).success) { alert("Broadcast Sent!"); document.getElementById('admin-notice-msg').value = ""; }
+        }
+        
+        async function adminClearBroadcast() {
+            await fetch('/admin/broadcast', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message: "" })
+            });
+            alert("Broadcast Cleared.");
+        }
+
+        async function adminViewUsers() {
+            const res = await fetch('/admin/users', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin })
+            });
+            const data = await res.json();
+            
+            document.getElementById('admin-viewer-area').innerHTML = data.data.map(u => `
+                <div class="txn-row" style="background:#f3f4f6; padding:12px; border-radius:6px; margin-bottom:8px; border-left: 4px solid ${u.status==='FROZEN'?'#ef4444':'#22c55e'};">
+                    <div>
+                        <div style="font-weight:700; color:var(--text-dark);">${u.name}</div>
+                        <div style="font-size:12px; color:var(--primary);">${u.upi_id}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:800; font-size:15px; color:#16a34a;">₹${u.balance.toFixed(2)}</div>
+                        <div style="font-size:10px; font-weight:bold; color:${u.status==='FROZEN'?'#ef4444':'#6b7280'};">${u.status}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function adminAdjust(action) {
+            const target_id = document.getElementById('admin-target').value;
+            const amount = document.getElementById('admin-amount').value || 0;
+            if(!target_id) return alert("Enter target ID.");
+            
+            const res = await fetch('/admin/adjust', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id, amount, action })
+            });
+            if((await res.json()).success) { alert("Action applied."); adminViewUsers(); }
+        }
+
+        async function adminDelete() {
+            const target_id = document.getElementById('admin-target').value;
+            if(!target_id || !confirm("Delete " + target_id + "?")) return;
+            const res = await fetch('/admin/delete', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id })
+            });
+            if((await res.json()).success) { alert("Account Terminated."); adminViewUsers(); }
+        }
+
+        async function adminViewTransactions() {
+            const target_id = document.getElementById('admin-target').value;
+            const res = await fetch('/admin/transactions', {
+                method: 'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id })
+            });
+            const data = await res.json();
+            
+            document.getElementById('admin-viewer-area').innerHTML = data.data.map(t => `
+                <div class="txn-row" style="background:#f3f4f6; padding:10px; border-radius:6px; margin-bottom:8px;">
+                    <div style="font-size:12px;"><b style="color:#002970;">${t.sender}</b><br>➔ <b style="color:#00b9f5;">${t.receiver}</b></div>
+                    <div style="font-weight:bold; color:var(--text-dark);">₹${t.amount}</div>
+                </div>
+            `).join('');
         }
     </script>
 </body>

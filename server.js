@@ -124,15 +124,26 @@ app.post('/admin/adjust', async (req, res) => {
     if (admin_id !== 'Boss0' || admin_pin !== '5555') return res.status(401).json({ success: false });
     
     try {
-        if (action === 'add') await pool.query('UPDATE accounts SET balance = balance + $1 WHERE upi_id = $2', [amount, target_id]);
-        if (action === 'deduct') await pool.query('UPDATE accounts SET balance = balance - $1 WHERE upi_id = $2', [amount, target_id]);
-        if (action === 'freeze') await pool.query('UPDATE accounts SET status = \'FROZEN\' WHERE upi_id = $1', [target_id]);
-        if (action === 'unfreeze') await pool.query('UPDATE accounts SET status = \'ACTIVE\' WHERE upi_id = $1', [target_id]);
+        const target = target_id.trim(); // Cleans up accidental spaces
+        let result;
+        
+        // Using RETURNING * lets us check if a row was actually found and updated
+        if (action === 'add') result = await pool.query('UPDATE accounts SET balance = balance + $1 WHERE upi_id = $2 RETURNING *', [amount, target]);
+        if (action === 'deduct') result = await pool.query('UPDATE accounts SET balance = balance - $1 WHERE upi_id = $2 RETURNING *', [amount, target]);
+        if (action === 'freeze') result = await pool.query('UPDATE accounts SET status = $1 WHERE upi_id = $2 RETURNING *', ['FROZEN', target]);
+        if (action === 'unfreeze') result = await pool.query('UPDATE accounts SET status = $1 WHERE upi_id = $2 RETURNING *', ['ACTIVE', target]);
+        
+        // If 0 rows were updated, the ID was typed wrong
+        if (result && result.rowCount === 0) {
+            return res.status(400).json({ success: false, error: "Target not found. Did you type the full @rpay handle?" });
+        }
+        
         res.json({ success: true });
     } catch (e) {
-        res.status(400).json({ success: false });
+        res.status(400).json({ success: false, error: e.message });
     }
 });
+
 
 app.post('/admin/delete', async (req, res) => {
     const { admin_id, admin_pin, target_id } = req.body;

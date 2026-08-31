@@ -331,6 +331,13 @@
         let currentName = "";
         let html5QrcodeScanner;
         let globalContacts = []; // Store contacts in memory for searching
+                // XSS Sanitizer Helper
+        const escapeHTML = (str) => {
+            if (!str) return "";
+            return String(str).replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag));
+        };
 
         function toggleAuth(view) {
             document.getElementById('login-section').classList.toggle('hidden', view === 'register');
@@ -355,42 +362,27 @@
             document.getElementById('suggestion-box').classList.add('hidden');
         }
 
-        async function register() {
+                async function register() {
             const name = document.getElementById('reg-name').value.trim();
+            const manualUpi = document.getElementById('reg-upi').value.trim();
             const pin = document.getElementById('reg-pin').value;
             
             if(!name || !pin) return alert("Please fill in your name and a 4-digit PIN.");
             
-            // If they haven't selected a suggestion, build the default one
-            let upi_id = selectedUpi;
-            if (!upi_id) {
-                const cleanNamePart = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                upi_id = cleanNamePart + '@rpay';
-            }
+            // Generate clean handle, fallback to random user ID if emojis/symbols are used
+            let cleanNamePart = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (!cleanNamePart) cleanNamePart = "user" + Math.floor(Math.random() * 9000 + 1000);
+            
+            const upi_id = manualUpi ? (manualUpi.includes('@') ? manualUpi : manualUpi + '@rpay') : cleanNamePart + '@rpay';
 
             const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
             const data = await res.json();
-            
             if(data.success) { 
-                alert("Account Created!\n\nYour permanent UPI ID is:\n" + upi_id); 
+                alert("Account Created! Your UPI ID is: " + upi_id); 
                 toggleAuth('login'); 
-                resetSuggestions();
-                document.getElementById('reg-name').value = "";
-                document.getElementById('reg-pin').value = "";
-            } else {
-                if (data.suggestions) {
-                    // Show the suggestions sent from the backend
-                    const box = document.getElementById('suggestion-box');
-                    const btns = document.getElementById('suggestion-buttons');
-                    box.classList.remove('hidden');
-                    btns.innerHTML = data.suggestions.map(s => 
-                        `<button style="background:#e0f2fe; color:var(--primary); border:1px solid #bae6fd; border-radius:6px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;" onclick="selectSuggestion('${s}')">${s}</button>`
-                    ).join('');
-                } else {
-                    alert(data.error);
-                }
-            }
+            } else alert(data.error);
         }
+
 
         // When a user clicks a suggestion, immediately attempt to register it
         function selectSuggestion(suggestedUpi) {
@@ -447,13 +439,16 @@
         function renderTxnRow(t) {
             const isSender = t.sender === currentUser;
             const time = new Date(t.created_at).toLocaleDateString();
+            const safeTarget = escapeHTML(isSender ? t.receiver : t.sender);
+            const safeAmount = parseFloat(t.amount).toFixed(2);
+            
             return `
             <div class="txn-row">
                 <div>
-                    <div style="font-size:14px; font-weight:600;">${isSender ? "To: " + t.receiver : "From: " + t.sender}</div>
+                    <div style="font-size:14px; font-weight:600;">${isSender ? "To: " + safeTarget : "From: " + safeTarget}</div>
                     <div style="font-size:11px; color:var(--text-muted);">${time}</div>
                 </div>
-                <div style="font-size:15px; font-weight:800; color:${isSender ? '#dc2626' : '#16a34a'};">${isSender ? '- ' : '+ '}₹${t.amount}</div>
+                <div style="font-size:15px; font-weight:800; color:${isSender ? '#dc2626' : '#16a34a'};">${isSender ? '- ' : '+ '}₹${safeAmount}</div>
             </div>`;
         }
 
@@ -469,27 +464,25 @@
             renderContacts(globalContacts);
         }
 
-        function renderContacts(contactArray) {
+function renderContacts(contactArray) {
             const container = document.getElementById('contacts-list');
             if(contactArray.length === 0) {
                 container.innerHTML = "<p style='color:var(--text-muted); text-align:center; font-size:13px;'>No users found on the network.</p>";
                 return;
             }
-            
-            // Note: Data maps to c.name and c.upi_id now (matching the accounts database)
             container.innerHTML = contactArray.map(c => `
                 <div class="contact-row">
-                    <div style="display:flex; align-items:center; cursor:pointer;" onclick="selectContact('${c.upi_id}')">
-                        <div class="contact-avatar">${c.name.charAt(0).toUpperCase()}</div>
+                    <div style="display:flex; align-items:center; cursor:pointer;" onclick="selectContact('${escapeHTML(c.upi_id)}')">
+                        <div class="contact-avatar">${escapeHTML(c.name).charAt(0).toUpperCase()}</div>
                         <div>
-                            <div style="font-weight:600; font-size:14px; color:var(--text-dark);">${c.name}</div>
-                            <div style="font-size:11px; color:var(--text-muted);">${c.upi_id}</div>
+                            <div style="font-weight:600; font-size:14px; color:var(--text-dark);">${escapeHTML(c.name)}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${escapeHTML(c.upi_id)}</div>
                         </div>
                     </div>
-                    <button class="btn-primary" style="padding: 6px 12px; margin:0; font-size:12px; width:auto;" onclick="selectContact('${c.upi_id}')">Pay</button>
+                    <button class="btn-primary" style="padding: 6px 12px; margin:0; font-size:12px; width:auto;" onclick="selectContact('${escapeHTML(c.upi_id)}')">Pay</button>
                 </div>
             `).join('');
-        }
+}
 
         function filterContacts() {
             const query = document.getElementById('contact-search').value.toLowerCase().trim();
@@ -556,7 +549,7 @@
             openModal('pinConfirmModal');
         }
 
-        async function executeScanPay() {
+                async function executeScanPay() {
             const pin = document.getElementById('scan-pay-pin').value;
             if(!pin) return alert("Enter your 4-digit PIN.");
 
@@ -566,26 +559,26 @@
 
             const res = await fetch('/pay', { 
                 method: 'POST', headers:{'Content-Type':'application/json'}, 
-                body: JSON.stringify({sender: currentUser, receiver: currentScanReceiver, pin: pin, amount: currentScanAmount}) 
+                body: JSON.stringify({sender: currentUser, receiver: currentScanReceiver, pin: pin, amount: parseFloat(currentScanAmount)}) 
             });
             const data = await res.json();
 
-                                                setTimeout(() => {
+            setTimeout(() => {
                 document.getElementById('loading-screen').classList.add('hidden');
                 
                 if(data.success) {
                     playSuccessSound();
-                    document.getElementById('receipt-amount').innerText = "₹" + currentScanAmount;
+                    document.getElementById('receipt-amount').innerText = "₹" + parseFloat(currentScanAmount).toFixed(2);
                     document.getElementById('receipt-receiver').innerText = currentScanReceiver;
                     document.getElementById('receipt-sender').innerText = currentUser;
                     document.getElementById('receipt-time').innerText = new Date().toLocaleString();
                     document.getElementById('success-screen').classList.remove('hidden');
                 } else {
-                    // Check for frozen string (lowercase makes it case-insensitive)
-                    if (data.error.toLowerCase().includes("frozen")) {
+                    const errorMsg = data.error || "Unknown error";
+                    if (errorMsg.toLowerCase().includes("frozen")) {
                         alert("SECURITY ALERT: This account has been frozen and will be unfrozen after investigation.");
                     } else {
-                        alert("Payment Failed: " + data.error);
+                        alert("Payment Failed: " + errorMsg);
                     }
                 }
             }, 1500);
@@ -663,20 +656,16 @@
         }
 
         async function adminViewUsers() {
-            const res = await fetch('/admin/users', {
-                method: 'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin })
-            });
+            const res = await fetch('/admin/users', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin }) });
             const data = await res.json();
-            
             document.getElementById('admin-viewer-area').innerHTML = data.data.map(u => `
                 <div class="txn-row" style="background:#f3f4f6; padding:12px; border-radius:6px; margin-bottom:8px; border-left: 4px solid ${u.status==='FROZEN'?'#ef4444':'#22c55e'};">
                     <div>
-                        <div style="font-weight:700; color:var(--text-dark);">${u.name}</div>
-                        <div style="font-size:12px; color:var(--primary);">${u.upi_id}</div>
+                        <div style="font-weight:700; color:var(--text-dark);">${escapeHTML(u.name)}</div>
+                        <div style="font-size:12px; color:var(--primary);">${escapeHTML(u.upi_id)}</div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-weight:800; font-size:15px; color:#16a34a;">₹${u.balance.toFixed(2)}</div>
+                        <div style="font-weight:800; font-size:15px; color:#16a34a;">₹${parseFloat(u.balance).toFixed(2)}</div>
                         <div style="font-size:10px; font-weight:bold; color:${u.status==='FROZEN'?'#ef4444':'#6b7280'};">${u.status}</div>
                     </div>
                 </div>
@@ -714,20 +703,27 @@
         }
 
         async function adminViewTransactions() {
+        async function adminViewTransactions() {
             const target_id = document.getElementById('admin-target').value;
-            const res = await fetch('/admin/transactions', {
-                method: 'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id })
-            });
+            const res = await fetch('/admin/transactions', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id }) });
             const data = await res.json();
-            
             document.getElementById('admin-viewer-area').innerHTML = data.data.map(t => `
                 <div class="txn-row" style="background:#f3f4f6; padding:10px; border-radius:6px; margin-bottom:8px;">
-                    <div style="font-size:12px;"><b style="color:#002970;">${t.sender}</b><br>➔ <b style="color:#00b9f5;">${t.receiver}</b></div>
-                    <div style="font-weight:bold; color:var(--text-dark);">₹${t.amount}</div>
+                    <div style="font-size:12px;"><b style="color:#002970;">${escapeHTML(t.sender)}</b><br>➔ <b style="color:#00b9f5;">${escapeHTML(t.receiver)}</b></div>
+                    <div style="font-weight:bold; color:var(--text-dark);">₹${parseFloat(t.amount).toFixed(2)}</div>
                 </div>
             `).join('');
         }
+        // Listen for Enter key on authentication inputs
+        document.querySelectorAll('#auth-screen input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const btn = input.closest('.card').querySelector('.btn-primary');
+                    if (btn) btn.click();
+                }
+            });
+        });
+
     </script>
 </body>
 </html>

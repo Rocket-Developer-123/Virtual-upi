@@ -532,7 +532,7 @@
             });
             const data = await res.json();
 
-                                    setTimeout(() => {
+                                                setTimeout(() => {
                 document.getElementById('loading-screen').classList.add('hidden');
                 
                 if(data.success) {
@@ -543,9 +543,9 @@
                     document.getElementById('receipt-time').innerText = new Date().toLocaleString();
                     document.getElementById('success-screen').classList.remove('hidden');
                 } else {
-                    // Show investigation notice instead of logging out
-                    if (data.error.includes("frozen")) {
-                        alert("SECURITY ALERT: Your account has been frozen and will be unfrozen after investigation.");
+                    // Check for frozen string (lowercase makes it case-insensitive)
+                    if (data.error.toLowerCase().includes("frozen")) {
+                        alert("SECURITY ALERT: This account has been frozen and will be unfrozen after investigation.");
                     } else {
                         alert("Payment Failed: " + data.error);
                     }
@@ -645,8 +645,8 @@
             `).join('');
         }
 
-        async function adminAdjust(action) {
-            const target_id = document.getElementById('admin-target').value;
+                async function adminAdjust(action) {
+            const target_id = document.getElementById('admin-target').value.trim();
             const amount = document.getElementById('admin-amount').value || 0;
             if(!target_id) return alert("Enter target ID.");
             
@@ -654,8 +654,16 @@
                 method: 'POST', headers:{'Content-Type':'application/json'},
                 body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id, amount, action })
             });
-            if((await res.json()).success) { alert("Action applied."); adminViewUsers(); }
+            const data = await res.json();
+            
+            if(data.success) { 
+                alert("Action applied successfully."); 
+                adminViewUsers(); // Instantly refreshes the list to show the FROZEN status
+            } else {
+                alert("Action Failed: " + (data.error || "Unknown error"));
+            }
         }
+
 
         async function adminDelete() {
             const target_id = document.getElementById('admin-target').value;

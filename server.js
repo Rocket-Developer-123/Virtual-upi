@@ -19,12 +19,28 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.post('/register', async (req, res) => {
     const { upi_id, name, pin } = req.body;
     try {
+        // 1. Check if the UPI ID is already taken
+        const check = await pool.query('SELECT upi_id FROM accounts WHERE upi_id = $1', [upi_id]);
+        
+        if (check.rows.length > 0) {
+            // 2. Generate 3 unique suggestions if taken
+            const base = upi_id.replace('@rpay', '');
+            const suggestions = [
+                base + Math.floor(Math.random() * 100) + '@rpay',
+                base + Math.floor(Math.random() * 1000) + '@rpay',
+                base + (Math.floor(Math.random() * 9000) + 1000) + '@rpay' // 4 digit number
+            ];
+            return res.json({ success: false, error: "ID taken", suggestions });
+        }
+
+        // 3. If available, create the account
         await pool.query('INSERT INTO accounts (upi_id, name, pin, balance, status) VALUES ($1, $2, $3, 10000, \'ACTIVE\')', [upi_id, name, pin]);
         res.json({ success: true });
     } catch (e) {
-        res.status(400).json({ success: false, error: "UPI ID already exists or invalid format." });
+        res.status(400).json({ success: false, error: "Registration failed or invalid format." });
     }
 });
+
 
 app.post('/login', async (req, res) => {
     const { upi_id, pin } = req.body;

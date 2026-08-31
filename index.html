@@ -493,8 +493,37 @@
 
         function closeSuccess() { document.getElementById('success-screen').classList.add('hidden'); updateBalance(); loadHistory(); }
         function playSuccessSound() { const audio = document.getElementById('success-audio'); if(audio) { audio.currentTime = 0; audio.play().catch(e=>{}); } }
+        function startScanner() {
+            openModal('scannerModal');
+            if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 220, height: 220 } }, false);
+            }
+            
+            html5QrcodeScanner.render((decodedText) => {
+                stopScanner();
+                
+                // 1. Check if it's a dynamic QR code (ID + Amount)
+                if (decodedText.startsWith("upi://pay")) {
+                    const params = new URLSearchParams(decodedText.split('?')[1]);
+                    const payee = params.get('pa');
+                    const amount = params.get('am');
+                    
+                    if (payee && amount) {
+                        currentScanReceiver = payee;
+                        currentScanAmount = amount;
+                        document.getElementById('scan-target-upi').innerText = payee;
+                        document.getElementById('scan-amount-display').innerText = amount;
+                        document.getElementById('scan-pay-screen').classList.remove('hidden');
+                        return; // Stop here, the numpad is now pre-filled!
+                    }
+                }
+                
+                // 2. Fallback: If it's just a normal QR code with only an ID
+                openScanPayScreen(decodedText);
+                
+            }, (error) => {});
+        }
 
-        function startScanner() { openModal('scannerModal'); if (!html5QrcodeScanner) html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 220, height: 220 } }, false); html5QrcodeScanner.render((text) => { stopScanner(); openScanPayScreen(text); }, (e) => {}); }
         function stopScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); closeModal('scannerModal'); }
 
         // NOTICES & SETTINGS

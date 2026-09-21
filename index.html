@@ -27,8 +27,9 @@
         /* Updated Balance Banner for Kinex */
         .balance-banner { background: linear-gradient(135deg, #090e17, #001f3f); border: 1px solid #00b9f5; color: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; position: relative; overflow: hidden; box-shadow: 0 8px 20px rgba(0, 185, 245, 0.15); }
         .kinex-display { display: flex; align-items: center; gap: 12px; margin-top: 5px; }
-        .kinex-coin-img { width: 42px; height: 42px; border-radius: 50%; box-shadow: 0 0 15px rgba(0, 255, 255, 0.4); object-fit: cover; }
-        
+        .coin-wrapper { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0, 185, 245, 0.4); flex-shrink: 0; }
+        .kinex-coin-img { width: 135%; height: 135%; object-fit: cover; object-position: center; }
+
         .section-title { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 14px; }
         .grid-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
         .action-item { cursor: pointer; display: flex; flex-direction: column; align-items: center; }
@@ -124,12 +125,16 @@
         </header>
 
         <main class="dashboard-content">
-            <div class="balance-banner">
+             <div class="balance-banner">
                 <p style="font-size: 12px; color: #bae6fd; font-weight: 600;">Primary Kinex Balance</p>
                 <div class="kinex-display">
-                    <img src="1789966012698.png" alt="Kinex" class="kinex-coin-img">
+                    <div class="coin-wrapper">
+                        <img src="1789966012698.png" alt="Kinex" class="kinex-coin-img">
+                    </div>
                     <div style="font-size: 32px; font-weight: 800;">K <span id="live-balance">0.00</span></div>
                 </div>
+            </div>
+
             </div>
             <div class="card">
                 <div class="section-title">Quick Actions</div>

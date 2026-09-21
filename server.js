@@ -79,7 +79,6 @@ app.post('/pay', async (req, res) => {
         await client.query('UPDATE accounts SET balance = balance + $1 WHERE upi_id = $2', [amount, receiver]);
         await client.query('INSERT INTO transactions (sender, receiver, amount) VALUES ($1, $2, $3)', [sender, receiver, amount]);
                 // Auto-insert payment into chat history
-        await client.query('INSERT INTO messages (sender, receiver, content, type) VALUES ($1, $2, $3, \'TRANSACTION\')', [sender, receiver, `₹${parseFloat(amount).toFixed(2)}`]);
         await client.query('COMMIT');
         res.json({ success: true });
     } catch (e) {
@@ -180,39 +179,5 @@ app.post('/admin/transactions', async (req, res) => {
         : await pool.query('SELECT * FROM transactions ORDER BY created_at DESC LIMIT 50');
     res.json({ success: true, data: result.rows });
 });
-
-// --- SECURE CHAT LOGIC ---
-app.post('/messages/history', async (req, res) => {
-    const { user_id, pin, target_id } = req.body;
-    try {
-        // Authenticate request to prevent unauthorized reading
-        const auth = await pool.query('SELECT status FROM accounts WHERE upi_id = $1 AND pin = $2', [user_id, pin]);
-        if (auth.rows.length === 0) throw new Error("Unauthorized");
-        
-        const result = await pool.query(`
-            SELECT sender, content, type, created_at FROM messages 
-            WHERE (sender = $1 AND receiver = $2) OR (sender = $2 AND receiver = $1)
-            ORDER BY created_at ASC
-        `, [user_id, target_id]);
-        res.json({ success: true, data: result.rows });
-    } catch (e) {
-        res.status(401).json({ success: false, error: e.message });
-    }
-});
-
-app.post('/messages/send', async (req, res) => {
-    const { sender, pin, receiver, content } = req.body;
-    try {
-        const auth = await pool.query('SELECT status FROM accounts WHERE upi_id = $1 AND pin = $2', [sender, pin]);
-        if (auth.rows.length === 0) throw new Error("Unauthorized");
-        if (auth.rows[0].status === 'FROZEN') throw new Error("Account frozen.");
-
-        await pool.query('INSERT INTO messages (sender, receiver, content, type) VALUES ($1, $2, $3, \'TEXT\')', [sender, receiver, content]);
-        res.json({ success: true });
-    } catch (e) {
-        res.status(400).json({ success: false, error: e.message });
-    }
-});
-
 
 app.listen(process.env.PORT || 3000, () => console.log('API live'));

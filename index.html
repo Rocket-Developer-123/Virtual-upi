@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>RPAY | Kinex Network</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            /* RPAY Core Variables */
+            --primary: #002970; --accent: #0B7A99; --text-dark: #1f2937; --text-muted: #586A80; 
+            
+            /* Kinex Theme Variables */
+            --bg:#EEF3F8; --surface:#FFFFFF; --text:#0A1A2F; --muted:#586A80; --line:#E3EAF2; --tile:#EAF3FA;
+            --pos:#0E8A47; --pos-bg:#E3F5EA; --neg:#C62F2F; --nav:#FFFFFF;
+            --hero-a:#04142A; --hero-b:#0B3157; --cyan:#22D3EE; --blue:#0EA5E9;
+            --shadow:0 14px 32px -16px rgba(4,20,42,.45);
+            box-sizing:border-box;
+            padding-top:env(safe-area-inset-top,0px);
+            padding-bottom:env(safe-area-inset-bottom,0px);
+        }
+        
+        @media (prefers-color-scheme: dark){
+            :root:not([data-theme="light"]){
+                --bg:#030D1A; --surface:#0B1A2E; --text:#E8F1FA; --muted:#93A7BD; --line:#16304B; --tile:#12293F;
+                --accent:#4DD8F5; --pos:#3DD68C; --pos-bg:#0F2E27; --neg:#FF7B7B; --nav:#0A182B;
+                --hero-a:#020B18; --hero-b:#0A2A4E; --shadow:0 14px 32px -16px rgba(0,0,0,.8);
+                --text-dark: #E8F1FA;
+            }
+        }
+
+        html{
+            scroll-padding-top:env(safe-area-inset-top,0px);
+            background-color:var(--bg);
+            background-image:linear-gradient(var(--hero-a),var(--hero-a));
+            background-size:100% 240px;
+            background-repeat:no-repeat;
+        }
+        *,*::before,*::after{box-sizing:inherit}
+        body{
+            margin:0; background:var(--bg); color:var(--text);
+            font-family:Figtree,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+            -webkit-font-smoothing:antialiased; line-height:1.35; padding-bottom: 90px;
+        }
+        button{font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; -webkit-tap-highlight-color:transparent}
+        button:focus-visible{outline:2px solid var(--cyan); outline-offset:3px; border-radius:12px}
+        svg{display:block}
+        
+        .hidden { display: none !important; }
+        
+        /* ---------- App Container ---------- */
+        .app{max-width:480px; margin:0 auto; min-height:100vh; padding-bottom:128px; position:relative; background:var(--bg)}
+
+        /* ---------- Hero ---------- */
+        .hero{
+            position:relative; overflow:hidden; color:#fff;
+            background:linear-gradient(165deg,var(--hero-a),var(--hero-b));
+            padding:16px 20px 76px; border-radius:0 0 32px 32px;
+        }
+        .top{display:flex; align-items:center; justify-content:space-between; gap:12px; position:relative; z-index:2}
+        .who{display:flex; align-items:center; gap:12px; min-width:0}
+        .avatar{
+            width:46px; height:46px; border-radius:50%; flex:none;
+            display:grid; place-items:center; font-family:Sora,system-ui,sans-serif; font-weight:700; font-size:18px;
+            background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22);
+        }
+        .name{font-size:18px; font-weight:700; letter-spacing:-.01em}
+        .handle{display:inline-flex; align-items:center; gap:6px; margin-top:2px; font-size:14px; color:rgba(255,255,255,.72); font-weight:500}
+        .handle:hover{color:#fff}
+        .icon-btn{
+            width:44px; height:44px; border-radius:50%; display:grid; place-items:center; flex:none;
+            background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18); color:#fff;
+        }
+
+        /* Perfectly Cropped Coin Integration */
+        .coin{
+            position:absolute; right:-34px; top:58px; width:150px; height:150px; z-index:0; pointer-events:none;
+            transform:rotate(-14deg);
+        }
+        .coin-wrapper { 
+            width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 0 30px rgba(34,211,238,.35); 
+        }
+        .kinex-coin-img { 
+            width: 135%; height: 135%; object-fit: cover; object-position: center; 
+        }
+
+        .balance{position:relative; z-index:2; margin-top:34px}
+        .label-row{display:flex; align-items:center; gap:6px; font-size:15px; font-weight:600; color:rgba(255,255,255,.75)}
+        .eye{width:32px; height:32px; border-radius:50%; display:grid; place-items:center; color:rgba(255,255,255,.8); margin-left:-2px}
+        .amount{
+            margin:2px 0 0; display:flex; align-items:baseline; gap:8px;
+            font-family:Sora,system-ui,sans-serif; font-weight:700; letter-spacing:-.02em;
+            font-variant-numeric:tabular-nums; transition:opacity .25s;
+        }
+        .amount .cur{font-size:clamp(20px,6vw,26px); color:var(--cyan)}
+        .amount .num{font-size:clamp(32px,10vw,46px); line-height:1.1}
+        .amount.is-loading{opacity:.35}
+        .asof{margin:6px 0 0; font-size:13px; color:rgba(255,255,255,.6)}
+
+        /* ---------- Quick actions ---------- */
+        .actions{
+            position:relative; z-index:3; margin:-38px 16px 0; padding:18px 6px 14px;
+            background:var(--surface); border-radius:24px; box-shadow:var(--shadow);
+            display:grid; grid-template-columns:repeat(4,1fr); gap:2px;
+        }
+        .act{display:flex; flex-direction:column; align-items:center; gap:8px; padding:2px 0; font-size:13px; font-weight:600; text-align:center}
+        .act .ico{width:56px; height:56px; border-radius:18px; display:grid; place-items:center; background:var(--tile); color:var(--accent); transition:transform .15s}
+        .act:active .ico{transform:scale(.94)}
+        .act.primary .ico{background:linear-gradient(135deg,var(--cyan),var(--blue)); color:#04142A}
+        .act .ico.spin svg{animation:spin .7s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* ---------- Activity ---------- */
+        .activity{margin:26px 16px 0}
+        .sec-head{display:flex; align-items:baseline; justify-content:space-between; padding:0 4px 10px}
+        .sec-head h2{margin:0; font-size:18px; font-weight:700; letter-spacing:-.01em}
+        .link{font-size:14px; font-weight:600; color:var(--accent); padding:6px 4px}
+        .list{background:var(--surface); border-radius:24px; padding:4px 16px; margin:0; list-style:none; box-shadow:var(--shadow)}
+        .row{display:flex; align-items:center; gap:12px; padding:14px 0}
+        .row + .row{border-top:1px solid var(--line)}
+        .badge{width:44px; height:44px; border-radius:14px; flex:none; display:grid; place-items:center; background:var(--tile); color:var(--accent)}
+        .row.in .badge{background:var(--pos-bg); color:var(--pos)}
+        .meta{flex:1; min-width:0}
+        .meta b{display:block; font-size:16px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+        .meta span{font-size:13px; color:var(--muted)}
+        .amt{font-family:Sora,system-ui,sans-serif; font-weight:600; font-size:16px; font-variant-numeric:tabular-nums; white-space:nowrap}
+        .row.in .amt{color:var(--pos)}
+        .row.out .amt{color:var(--neg)}
+        .empty{padding:28px 8px; text-align:center; color:var(--muted); font-size:15px}
+        .empty b{display:block; color:var(--text); font-size:16px; margin-bottom:4px}
+
+        /* ---------- Bottom nav ---------- */
+        .nav{
+            position:fixed; left:50%; bottom:0; transform:translateX(-50%); z-index:10;
+            width:100%; max-width:480px;
+            display:grid; grid-template-columns:repeat(5,1fr); align-items:end;
+            background:var(--nav); border-top:1px solid var(--line);
+            padding:8px 8px calc(10px + env(safe-area-inset-bottom,0px));
+        }
+        .tab{display:flex; flex-direction:column; align-items:center; gap:4px; font-size:12px; font-weight:600; color:var(--muted); padding:4px 0}
+        .tab[aria-current="page"]{color:var(--accent)}
+        .tab.scan{color:var(--text)}
+        .tab.scan .fab{
+            width:62px; height:62px; border-radius:50%; margin-top:-34px; display:grid; place-items:center; color:#fff;
+            background:linear-gradient(135deg,var(--cyan),#0B6FD1); border:5px solid var(--nav);
+            box-shadow:0 10px 22px -8px rgba(14,165,233,.8);
+        }
+
+        /* ---------- Modals & Global RPAY Styles ---------- */
+        .auth-container { max-width: 400px; margin: 40px auto; padding: 20px; }
+        .card { background: var(--surface); padding: 24px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 16px; border: 1px solid var(--line); }
+        .card h2 { color: var(--text); margin-bottom: 15px; font-size: 22px; text-align: center; }
+        input { width: 100%; padding: 14px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--line); font-size: 15px; background: var(--bg); color: var(--text); }
+        input:focus { outline: none; border-color: var(--cyan); }
+        .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg,var(--cyan),var(--blue)); color: #04142A; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .btn-danger { background: var(--neg); color: white; } .btn-success { background: var(--pos); color: white; } .btn-dark { background: var(--surface); border: 1px solid var(--line); color: var(--text); }
+        .link-text { color: var(--blue); font-weight: 600; cursor: pointer; text-decoration: underline; }
+        
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 200; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--surface); width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 24px; position: relative; max-height: 85vh; overflow-y: auto; color: var(--text); }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: var(--bg); color: var(--text); border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; cursor: pointer; }
+        
+        .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); }
+        .contact-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--tile); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; margin-right: 12px; }
+        
+        .scan-payment-screen { position: fixed; inset: 0; background: var(--surface); display: flex; flex-direction: column; z-index: 250; color: var(--text); }
+        .scan-header { padding: 20px; text-align: center; position: relative; border-bottom: 1px solid var(--line); }
+        .amount-display-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        .amount-text { font-size: 60px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px; }
+        .numpad-container { background: var(--bg); border-radius: 24px 24px 0 0; padding: 25px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
+        .num-key { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; font-size: 26px; font-weight: 600; color: var(--text); padding: 18px 0; cursor: pointer; }
+        
+        .toast{
+            position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom,0px)); z-index:400;
+            transform:translate(-50%,12px); opacity:0; pointer-events:none;
+            background:#04142A; color:#fff; padding:11px 16px; border-radius:14px; font-size:14px; font-weight:500;
+            max-width:calc(100% - 32px); text-align:center; transition:opacity .2s, transform .2s;
+            box-shadow:0 10px 24px -10px rgba(0,0,0,.6);
+        }
+        .toast.show{opacity:1; transform:translate(-50%,0)}
+        
+        .fullscreen-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; }
+        .spinner { width: 50px; height: 50px; border: 5px solid var(--line); border-top-color: var(--cyan); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        .success-card { background: var(--surface); width: 90%; max-width: 350px; border-radius: 24px; padding: 30px 20px; text-align: center; box-shadow: var(--shadow); color: var(--text); }
+        .check-circle { width: 70px; height: 70px; background: var(--pos); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px; }
+
+        @media (min-width:520px){ body{background:var(--bg)} .app{box-shadow:0 0 0 1px var(--line)} }
+    </style>
+</head>
+<body>
+
+    <!-- AUTHENTICATION -->
+    <div id="auth-screen" class="auth-container">
+        <div id="login-section" class="card">
+            <h2>Kinex Network</h2>
+            <input type="text" id="log-upi" placeholder="Enter ID (e.g. name@rpay)">
+            <input type="password" id="log-pin" placeholder="Enter 4-Digit PIN" maxlength="4">
+            <button class="btn-primary" onclick="login()">Login</button>
+            <p style="font-size: 13px; text-align: center; margin-top: 15px;">
+                Don't have an account? <span class="link-text" onclick="toggleAuth('register')">Create Account</span>
+            </p>
+        </div>
+
+        <div id="register-section" class="card hidden">
+            <h2>Join Kinex</h2>
+            <input type="text" id="reg-name" placeholder="Full Name" oninput="resetSuggestions()">
+            <input type="password" id="reg-pin" placeholder="Create 4-Digit PIN" maxlength="4">
+            
+            <div id="suggestion-box" class="hidden" style="margin-top: 5px; text-align: left;">
+                <p style="font-size: 13px; color: var(--neg); margin-bottom: 8px; font-weight: 600;">That name is taken. Choose one:</p>
+                <div id="suggestion-buttons" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;"></div>
+            </div>
+
+            <button class="btn-primary" onclick="register()">Sign Up (K 10,000 Bonus)</button>
+            <p style="font-size: 13px; text-align: center; margin-top: 15px;">
+                Already registered? <span class="link-text" onclick="toggleAuth('login')">Login</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD APP -->
+    <main class="app hidden" id="dashboard-screen">
+        <header class="hero">
+            <div class="coin">
+                <div class="coin-wrapper">
+                    <img src="1789966012698.png" alt="Kinex" class="kinex-coin-img">
+                </div>
+            </div>
+
+            <div class="top">
+                <div class="who">
+                    <div class="avatar" id="nav-avatar" aria-hidden="true">U</div>
+                    <div>
+                        <div class="name" id="nav-name">User</div>
+                        <button class="handle" type="button" id="copy-id">
+                            <span id="nav-id">user@rpay</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <button class="icon-btn" type="button" data-action="logout" aria-label="Log out">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h10"/></svg>
+                </button>
+            </div>
+
+            <section class="balance" aria-label="Kinex balance">
+                <div class="label-row">
+                    <span>Kinex balance</span>
+                    <button class="eye" type="button" id="eye" aria-pressed="false" aria-label="Hide balance"></button>
+                </div>
+                <p class="amount" id="amountWrap"><span class="cur">K</span><span class="num" id="amount">0.00</span></p>
+                <p class="asof" id="asof">Updated just now</p>
+            </section>
+        </header>
+
+        <nav class="actions" aria-label="Quick actions">
+            <button class="act primary" type="button" data-action="pay">
+                <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg></span>
+                Pay
+            </button>
+            <button class="act" type="button" data-action="qr">
+                <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.5"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.5"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.5"/><path d="M14 14h2.5v2.5H14zM19 14v.01M14 20.5v-.01M17.5 18.5H20.5V20.5"/></svg></span>
+                My QR
+            </button>
+            <button class="act" type="button" data-action="passbook">
+                <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h11a2 2 0 0 1 2 2v15H8a2 2 0 0 1-2-2z"/><path d="M6 18.5a2 2 0 0 1 2-2h11"/><path d="M10 8h5M10 11.5h5"/></svg></span>
+                Passbook
+            </button>
+            <button class="act" type="button" data-action="balance" id="balBtn">
+                <span class="ico" id="balIco"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-14 5.3"/><path d="M4 12a8 8 0 0 1 14-5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></svg></span>
+                Check Bal
+            </button>
+        </nav>
+
+        <section class="activity" aria-labelledby="actH">
+            <div class="sec-head">
+                <h2 id="actH">Recent activity</h2>
+                <button class="link" type="button" data-action="passbook">See all</button>
+            </div>
+            <ul class="list" id="list"></ul>
+        </section>
+
+        <nav class="nav" aria-label="Main">
+            <button class="tab" type="button" aria-current="page" data-action="home">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H5.500A1.500 1.500 0 0 1 4 19.500z"/><path d="M9.500 21v-6h5v6"/></svg>
+                Home
+            </button>
+            <button class="tab" type="button" data-action="contacts">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.500 20a6.500 6.500 0 0 1 13 0"/><path d="M16 4.500a3.500 3.500 0 0 1 0 7M18 14.500a6.500 6.500 0 0 1 3.500 5.500"/></svg>
+                Contacts
+            </button>
+            <button class="tab scan" type="button" data-action="scan" aria-label="Scan any QR">
+                <span class="fab"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M4 12h16"/></svg></span>
+                Scan QR
+            </button>
+            <button class="tab" type="button" data-action="passbook">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.500h11a2 2 0 0 1 2 2v15H8a2 2 0 0 1-2-2z"/><path d="M6 18.500a2 2 0 0 1 2-2h11"/></svg>
+                Passbook
+            </button>
+            <button class="tab" type="button" data-action="me">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                Profile
+            </button>
+        </nav>
+    </main>
+
+    <!-- BOSS0 SCREEN (Kept isolated for Admin) -->
+    <div id="owner-screen" class="hidden" style="max-width: 480px; margin: auto; padding-bottom: 90px;">
+        <div class="card" style="border-radius: 0 0 24px 24px; background: var(--hero-b); color: white;">
+            <h3>SYSTEM OPERATOR</h3><p>Boss0</p>
+            <button class="btn-danger" style="margin-top: 15px;" onclick="logout()">Exit Admin</button>
+        </div>
+        <div style="padding: 15px;">
+            <div class="card">
+                <h3>System Broadcast</h3>
+                <input type="text" id="admin-notice-msg" placeholder="Enter global message">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary btn-success" onclick="adminSendBroadcast()">Push</button>
+                    <button class="btn-primary btn-danger" onclick="adminClearBroadcast()">Clear</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Account Management</h3>
+                <input type="text" id="admin-target" placeholder="Target ID">
+                <input type="number" id="admin-amount" placeholder="Amount (K)">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-primary btn-success" style="width:48%;" onclick="adminAdjust('add')">+ Add</button>
+                    <button class="btn-primary btn-danger" style="width:48%;" onclick="adminAdjust('deduct')">- Deduct</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Network Overview</h3>
+                <button class="btn-primary" onclick="adminViewUsers()">Refresh Balances</button>
+                <div id="admin-viewer-area" style="margin-top: 15px; max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="unifiedPayModal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('unifiedPayModal')">✕</button>
+            <h3 style="margin-bottom: 15px;">Send Kinex & Contacts</h3>
+            <input type="text" id="contact-search" placeholder="Search by name or enter ID..." oninput="filterContacts()" style="margin-bottom: 5px;">
+            <button id="pay-new-btn" class="btn-primary" style="display: none; margin-bottom: 15px;" onclick="paySearchedId()">Pay New ID</button>
+            <div id="contacts-list" style="margin-top: 10px; max-height: 350px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <div id="qrModal" class="modal hidden">
+        <div class="modal-content" style="text-align: center;">
+            <button class="modal-close" onclick="closeModal('qrModal')">✕</button>
+            <h3 style="margin-bottom: 15px;">Receive Kinex</h3>
+            <div id="qrcode" style="background: white; padding: 15px; border-radius: 12px; display: inline-block; margin: 15px auto;"></div>
+            <p id="qr-upi-label" style="font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 10px;"></p>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('historyModal')">✕</button>
+            <h3 style="margin-bottom: 15px;">Passbook & History</h3>
+            <div id="full-history-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+    </div>
+
+    <div id="scannerModal" class="modal hidden">
+        <div class="modal-content" style="text-align: center;">
+            <button class="modal-close" onclick="stopScanner()">✕</button>
+            <h3 style="margin-bottom: 15px;">Scan QR Code</h3>
+            <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden; background: #000;"></div>
+        </div>
+    </div>
+
+    <!-- SCAN PAYMENT SCREENS -->
+    <div id="scan-pay-screen" class="scan-payment-screen hidden">
+        <div class="scan-header">
+            <button class="back-btn" onclick="closeScanPay()">←</button>
+            <p style="font-size: 13px; color: var(--muted);">Paying to</p>
+            <h3 id="scan-target-upi" style="color: var(--accent); font-size: 16px; margin-top: 2px;"></h3>
+        </div>
+        <div class="amount-display-container">
+            <h1 class="amount-text">K <span id="scan-amount-display">0</span></h1>
+        </div>
+        <div class="numpad-container">
+            <button class="btn-primary" onclick="proceedToPin()" style="font-size: 18px; padding: 16px; border-radius: 12px;">Proceed to Pay</button>
+            <div class="numpad">
+                <button class="num-key" onclick="numpad(1)">1</button><button class="num-key" onclick="numpad(2)">2</button><button class="num-key" onclick="numpad(3)">3</button>
+                <button class="num-key" onclick="numpad(4)">4</button><button class="num-key" onclick="numpad(5)">5</button><button class="num-key" onclick="numpad(6)">6</button>
+                <button class="num-key" onclick="numpad(7)">7</button><button class="num-key" onclick="numpad(8)">8</button><button class="num-key" onclick="numpad(9)">9</button>
+                <button class="num-key" style="background: transparent; pointer-events: none;"></button>
+                <button class="num-key" onclick="numpad(0)">0</button><button class="num-key" onclick="numpad('back')">⌫</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pinConfirmModal" class="modal hidden" style="z-index: 300;">
+        <div class="modal-content" style="text-align: center;">
+            <button class="modal-close" onclick="closeModal('pinConfirmModal')">✕</button>
+            <h3 style="margin-bottom: 5px;">Enter PIN</h3>
+            <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">Paying K <span id="pin-confirm-amt" style="font-weight:bold; color:var(--text);"></span> to <span id="pin-confirm-upi" style="font-weight:bold; color:var(--text);"></span></p>
+            <input type="password" id="scan-pay-pin" placeholder="****" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 20px;">
+            <button class="btn-primary" onclick="executeScanPay()">Pay Now</button>
+        </div>
+    </div>
+
+    <div id="loading-screen" class="fullscreen-overlay hidden">
+        <div class="spinner"></div>
+        <h3 style="color: var(--accent);">Processing Payment...</h3>
+        <p style="color: var(--muted); font-size: 13px;">Securely connecting to Kinex Network</p>
+    </div>
+
+    <div id="success-screen" class="fullscreen-overlay hidden">
+        <div class="success-card">
+            <div class="check-circle">✓</div>
+            <h2 style="color: var(--pos); margin-bottom: 5px;">Payment Successful</h2>
+            <h1 id="receipt-amount" style="font-size: 36px; color: var(--text); margin: 15px 0;">K 0.00</h1>
+            <div style="text-align: left; margin-top: 25px; font-size: 14px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--muted)">Paid to</span> <strong id="receipt-receiver" style="color: var(--text);">Name</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--muted)">From</span> <strong id="receipt-sender" style="color: var(--text);">My Account</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--muted)">Date</span> <strong id="receipt-time" style="color: var(--text);">Time</strong></div>
+            </div>
+            <button class="btn-primary" onclick="closeSuccess()" style="margin-top: 30px;">Done</button>
+        </div>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div id="profileModal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
+            <h3 style="margin-bottom: 15px;">My Profile & Settings</h3>
+            <div style="text-align: center; margin: 15px 0;">
+                <div class="avatar" id="profile-modal-avatar" style="width: 60px; height: 60px; font-size: 24px; margin: 0 auto 10px;">U</div>
+                <h4 id="profile-modal-name" style="font-size: 18px; color: var(--text);">User</h4>
+                <p id="profile-modal-upi" style="color: var(--muted); font-size: 13px;"></p>
+            </div>
+            <hr style="border:0; border-top:1px solid var(--line); margin: 15px 0;">
+            <h4 style="font-size: 14px; margin-bottom: 10px; color: var(--text);">Change Password / PIN</h4>
+            <input type="password" id="old-pin" placeholder="Current 4-Digit PIN" maxlength="4">
+            <input type="password" id="new-pin" placeholder="New 4-Digit PIN" maxlength="4">
+            <button class="btn-primary" onclick="changePin()">Update PIN</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <audio id="success-audio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+    <script>
+        // GLOBALS & HELPERS
+        let currentUser = ""; let currentPin = ""; let currentName = ""; let html5QrcodeScanner; let globalContacts = [];
+        const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const $ = id => document.getElementById(id);
+        
+        const escapeHTML = (str) => {
+            if (!str) return "";
+            return String(str).replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
+        };
+
+        const ICON_EYE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+        const ICON_EYE_OFF = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.600 5.100A9.800 9.800 0 0 1 12 5c6.400 0 10 7 10 7a17 17 0 0 1-3.200 4M6.500 6.600C3.700 8.400 2 12 2 12s3.600 7 10 7c1.600 0 3-.4 4.300-1"/><path d="M9.900 9.900a3 3 0 0 0 4.200 4.200"/></svg>';
+        const ICON_IN  = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7L7 17"/><path d="M16 17H7V8"/></svg>';
+        const ICON_OUT = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>';
+
+        function toggleAuth(view) {
+            $('login-section').classList.toggle('hidden', view === 'register');
+            $('register-section').classList.toggle('hidden', view === 'login');
+            resetSuggestions();
+        }
+        function openModal(id) { $(id).classList.remove('hidden'); }
+        function closeModal(id) { $(id).classList.add('hidden'); }
+        
+        function logout() {
+            currentUser = ""; currentPin = ""; currentName = ""; globalContacts = [];
+            $('log-upi').value = ""; $('log-pin').value = "";
+            $('dashboard-screen').classList.add('hidden'); 
+            $('owner-screen').classList.add('hidden');
+            $('auth-screen').classList.remove('hidden');
+        }
+
+        // AUTHENTICATION
+        let selectedUpi = "";
+        function resetSuggestions() { selectedUpi = ""; $('suggestion-box').classList.add('hidden'); }
+
+        async function register() {
+            const name = $('reg-name').value.trim();
+            const pin = $('reg-pin').value;
+            if(!name || !pin) return alert("Please fill in your name and a 4-digit PIN.");
+            
+            let upi_id = selectedUpi;
+            if (!upi_id) {
+                let cleanNamePart = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if (!cleanNamePart) cleanNamePart = "user" + Math.floor(Math.random() * 9000 + 1000);
+                upi_id = cleanNamePart + '@rpay';
+            }
+
+            try {
+                const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
+                const data = await res.json();
+                
+                if(data.success) { 
+                    alert("Account Created!\n\nYour permanent ID is:\n" + upi_id); 
+                    toggleAuth('login'); 
+                    $('reg-name').value = ""; $('reg-pin').value = "";
+                } else {
+                    if (data.suggestions) {
+                        $('suggestion-box').classList.remove('hidden');
+                        $('suggestion-buttons').innerHTML = data.suggestions.map(s => `<button style="background:var(--tile); color:var(--accent); border:1px solid var(--line); border-radius:6px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;" onclick="selectSuggestion('${escapeHTML(s)}')">${escapeHTML(s)}</button>`).join('');
+                    } else { alert(data.error || "Registration failed."); }
+                }
+            } catch(e) { alert("Network error. Please ensure server is running."); }
+        }
+        function selectSuggestion(suggestedUpi) { selectedUpi = suggestedUpi; register(); }
+
+        async function login() {
+            const upi_id = $('log-upi').value.trim();
+            const pin = $('log-pin').value;
+            if(!upi_id || !pin) return alert("Enter ID and PIN.");
+            
+            try {
+                const res = await fetch('/login', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, pin}) });
+                const data = await res.json();
+                
+                if(data.success) {
+                    if(data.user.status === 'FROZEN') return alert("Your account is temporarily frozen by security. Contact support.");
+                    currentUser = upi_id; currentPin = pin;
+                    $('auth-screen').classList.add('hidden');
+                    
+                    if(currentUser === 'Boss0') {
+                        $('owner-screen').classList.remove('hidden');
+                        adminViewUsers();
+                    } else {
+                        currentName = data.user.name;
+                        $('dashboard-screen').classList.remove('hidden');
+                        
+                        // Map Data to New UI Header
+                        $('nav-name').innerText = currentName;
+                        $('nav-avatar').innerText = currentName.charAt(0).toUpperCase();$('nav-id').innerText = currentUser;
+                        
+                        // Setup QR Modal
+                        $('qr-upi-label').innerText = currentUser;
+                        $("qrcode").innerHTML = "";
+                        new QRCode($("qrcode"), { text: currentUser, width: 200, height: 200 });
+                        
+                        updateBalance(); 
+                        loadHistory();
+                    }
+                } else alert(data.error);
+            } catch(e) { alert("Network error. Please ensure server is running."); }
+        }
+
+        /* ---- NEW DASHBOARD DATA BINDING ---- */
+        let hiddenBal = false;
+        let currentBalanceVal = 0;
+        try { hiddenBal = localStorage.getItem('kinex-hide-balance') === '1'; } catch (e) {}
+
+        function renderBalance(value) {
+            $('amount').textContent = hiddenBal ? '••••••' : fmt(value);
+            const eye = $('eye');
+            eye.innerHTML = hiddenBal ? ICON_EYE : ICON_EYE_OFF;
+            eye.setAttribute('aria-pressed', String(hiddenBal));
+            eye.setAttribute('aria-label', hiddenBal ? 'Show balance' : 'Hide balance');
+            $('amountWrap').setAttribute('aria-label', hiddenBal ? 'Balance hidden' : `Balance K ${fmt(currentBalanceVal)}`);
+        }
+
+        function countUp(targetBal) {
+            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduce || hiddenBal) { renderBalance(targetBal); return; }
+            const start = performance.now(), dur = 900;
+            (function tick(now) {
+                const p = Math.min((now - start) / dur, 1);
+                renderBalance(targetBal * (1 - Math.pow(1 - p, 3)));
+                if (p < 1) requestAnimationFrame(tick);
+            })(start);
+        }
+
+        $('eye').addEventListener('click', () => {
+            hiddenBal = !hiddenBal;
+            try { localStorage.setItem('kinex-hide-balance', hiddenBal ? '1' : '0'); } catch (e) {}
+            renderBalance(currentBalanceVal);
+        });
+
+        $('copy-id').addEventListener('click', async () => {
+            try { await navigator.clipboard.writeText(currentUser); toast('Copied ' + currentUser); }
+            catch (e) { toast('Copy is not available here'); }
+        });
+
+        let busyBal = false;
+        async function updateBalance() {
+            if (busyBal) return;
+            busyBal = true;
+            $('balIco').classList.add('spin');$('amountWrap').classList.add('is-loading');
+            
+            try {
+                const res = await fetch('/balance/' + currentUser);
+                const data = await res.json();
+                currentBalanceVal = parseFloat(data.balance);
+                
+                setTimeout(() => {
+                    $('balIco').classList.remove('spin');$('amountWrap').classList.remove('is-loading');
+                    const time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                    $('asof').textContent = `Updated ${time}`;
+                    toast('Balance is up to date');
+                    busyBal = false;
+                    countUp(currentBalanceVal);
+                }, 700);
+            } catch(e) {
+                busyBal = false;
+                $('balIco').classList.remove('spin');
+            }
+        }
+
+        async function loadHistory() {
+            const res = await fetch('/history/' + currentUser);
+            const data = await res.json();
+            
+            // Map to new Activity List UI
+            const list = $('list');
+            if (data.length === 0) {
+                list.innerHTML = '<li class="empty"><b>No activity yet</b>Pay someone or scan a QR to make your first transfer.</li>';
+            } else {
+                list.innerHTML = data.slice(0, 4).map(a => {
+                    const incoming = a.receiver === currentUser;
+                    const verb = incoming ? 'Received' : 'Sent';
+                    const sign = incoming ? '+' : '\u2212';
+                    const dir = incoming ? 'in' : 'out';
+                    const who = incoming ? a.sender : a.receiver;
+                    const dateStr = new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                    
+                    return `<li class="row ${dir}">
+                        <span class="badge" aria-hidden="true">${incoming ? ICON_IN : ICON_OUT}</span>
+                        <div class="meta"><b>${escapeHTML(who)}</b><span>${verb} on ${dateStr}</span></div>
+                        <span class="amt" aria-label="${verb} K ${fmt(parseFloat(a.amount))}">${sign}K ${fmt(parseFloat(a.amount))}</span>
+                    </li>`;
+                }).join('');
+            }
+
+            // Also keep standard modal mapping
+            $('full-history-list').innerHTML = data.length === 0 ? "<p>No records found.</p>" : data.map(t => {
+                const isSender = t.sender === currentUser;
+                const safeTarget = escapeHTML(isSender ? t.receiver : t.sender);
+                return `<div class="card" style="margin-bottom:0; padding:15px; display:flex; justify-content:space-between;">
+                    <div><div style="font-weight:600; font-size:14px;">${isSender ? "To: " : "From: "}${safeTarget}</div><div style="font-size:11px; color:var(--muted);">${new Date(t.created_at).toLocaleDateString()}</div></div>
+                    <div style="font-weight:800; font-size:15px; color:${isSender ? 'var(--neg)' : 'var(--pos)'};">${isSender ? '- ' : '+ '}K ${fmt(parseFloat(t.amount))}</div>
+                </div>`;
+            }).join('');
+        }
+
+        // Action routing for new UI buttons
+        document.addEventListener('click', e => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            if (action === 'balance') return updateBalance();
+            if (action === 'home') return window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (action === 'pay') return openUnifiedPayModal();
+            if (action === 'qr') return openModal('qrModal');
+            if (action === 'passbook') return openModal('historyModal');
+            if (action === 'scan') return startScanner();
+            if (action === 'contacts') return openUnifiedPayModal();
+            if (action === 'me') {
+                $('profile-modal-name').innerText = currentName; 
+                $('profile-modal-upi').innerText = currentUser; 
+                $('profile-modal-avatar').innerText = currentName.charAt(0).toUpperCase(); 
+                return openModal('profileModal');
+            }
+            if (action === 'logout') return logout();
+        });
+
+        let toastTimer;
+        function toast(msg) {
+            const t = $('toast'); t.textContent = msg; t.classList.add('show');
+            clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+        }
+
+        /* ---- CONTACTS LIST ---- */
+        async function openUnifiedPayModal() {
+            openModal('unifiedPayModal');
+            $('contact-search').value = ""; $('pay-new-btn').style.display = 'none';
+            const res = await fetch('/directory/' + currentUser);
+            globalContacts = await res.json();
+            renderContacts(globalContacts);
+        }
+
+        function renderContacts(contactArray) {
+            const container = $('contacts-list');
+            if(contactArray.length === 0) { 
+                container.innerHTML = "<p style='color:var(--muted); text-align:center; font-size:13px;'>No users found.</p>"; 
+                return; 
+            }
+            container.innerHTML = contactArray.map(c => `
+                <div class="contact-row">
+                    <div style="display:flex; align-items:center; cursor:pointer;" onclick="closeModal('unifiedPayModal'); openScanPayScreen('${escapeHTML(c.upi_id)}')">
+                        <div class="contact-avatar">${escapeHTML(c.name).charAt(0).toUpperCase()}</div>
+                        <div>
+                            <div style="font-weight:600; font-size:14px; color:var(--text);">${escapeHTML(c.name)}</div>
+                            <div style="font-size:11px; color:var(--muted);">${escapeHTML(c.upi_id)}</div>
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="padding: 6px 12px; margin:0; font-size:12px; width:auto;" onclick="closeModal('unifiedPayModal'); openScanPayScreen('${escapeHTML(c.upi_id)}')">Pay</button>
+                </div>
+            `).join('');
+        }
+
+        function filterContacts() {
+            const query = $('contact-search').value.toLowerCase().trim();
+            const btn = $('pay-new-btn');
+            if (query.includes('@')) { btn.style.display = 'block'; btn.innerText = "Pay New ID: " + escapeHTML(query); } 
+            else { btn.style.display = 'none'; }
+            renderContacts(globalContacts.filter(c => c.name.toLowerCase().includes(query) || c.upi_id.toLowerCase().includes(query)));
+        }
+
+        function paySearchedId() { 
+            closeModal('unifiedPayModal'); 
+            openScanPayScreen($('contact-search').value.trim()); 
+        }
+
+        /* ---- PAYMENT EXECUTION ---- */
+        let currentScanAmount = "0"; let currentScanReceiver = "";
+        
+        function openScanPayScreen(upiId) { 
+            currentScanReceiver = upiId; 
+            currentScanAmount = "0"; 
+            $('scan-target-upi').innerText = upiId; 
+            $('scan-amount-display').innerText = "0"; 
+            $('scan-pay-screen').classList.remove('hidden'); 
+        }
+        
+        function closeScanPay() { 
+            $('scan-pay-screen').classList.add('hidden'); 
+        }
+        
+        function numpad(val) {
+            if (val === 'back') { currentScanAmount = currentScanAmount.slice(0, -1); if (currentScanAmount === "") currentScanAmount = "0"; } 
+            else { if (currentScanAmount === "0") currentScanAmount = val.toString(); else if (currentScanAmount.length < 6) currentScanAmount += val.toString(); }
+            $('scan-amount-display').innerText = currentScanAmount;
+        }
+        
+        function proceedToPin() {
+            if (currentScanAmount === "0" || currentScanAmount === "") return alert("Enter an amount.");
+            $('pin-confirm-amt').innerText = currentScanAmount; $('pin-confirm-upi').innerText = currentScanReceiver; $('scan-pay-pin').value = "";
+            openModal('pinConfirmModal');
+        }
+
+        async function executeScanPay() {
+            const pin = $('scan-pay-pin').value;
+            if(!pin) return alert("Enter your 4-digit PIN.");
+            closeModal('pinConfirmModal'); $('scan-pay-screen').classList.add('hidden');$('loading-screen').classList.remove('hidden');
+
+            const res = await fetch('/pay', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({sender: currentUser, receiver: currentScanReceiver, pin: pin, amount: parseFloat(currentScanAmount)}) });
+            const data = await res.json();
+
+            setTimeout(() => {
+                $('loading-screen').classList.add('hidden');
+                if(data.success) {
+                    const audio = $('success-audio'); if(audio) { audio.currentTime = 0; audio.play().catch(e=>{}); }$('receipt-amount').innerText = "K " + fmt(parseFloat(currentScanAmount));
+                    $('receipt-receiver').innerText = escapeHTML(currentScanReceiver);$('receipt-sender').innerText = escapeHTML(currentUser);
+                    $('receipt-time').innerText = new Date().toLocaleString();$('success-screen').classList.remove('hidden');
+                } else {
+                    const errorMsg = data.error || "Unknown error";
+                    if (errorMsg.toLowerCase().includes("frozen")) alert("SECURITY ALERT: Account frozen for investigation.");
+                    else alert("Payment Failed: " + errorMsg);
+                }
+            }, 1500);
+        }
+
+        function closeSuccess() { $('success-screen').classList.add('hidden'); updateBalance(); loadHistory(); }
+
+        /* ---- QR SCANNER ---- */
+        function startScanner() {
+            openModal('scannerModal');
+            if (!html5QrcodeScanner) html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 220, height: 220 } }, false);
+            html5QrcodeScanner.render((decodedText) => {
+                stopScanner();
+                if (decodedText.startsWith("upi://pay")) {
+                    const params = new URLSearchParams(decodedText.split('?')[1]);
+                    if (params.get('pa') && params.get('am')) {
+                        currentScanReceiver = params.get('pa'); currentScanAmount = params.get('am');
+                        $('scan-target-upi').innerText = currentScanReceiver; $('scan-amount-display').innerText = currentScanAmount;
+                        $('scan-pay-screen').classList.remove('hidden'); return;
+                    }
+                }
+                openScanPayScreen(decodedText);
+            }, (error) => {});
+        }
+        function stopScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); closeModal('scannerModal'); }
+
+        async function changePin() {
+            const old_pin = $('old-pin').value; const new_pin =$('new-pin').value;
+            if(!old_pin || !new_pin || new_pin.length !== 4) return alert("Enter valid 4-digit PINs.");
+            const res = await fetch('/auth/change-pin', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ upi_id: currentUser, old_pin, new_pin }) });
+            if((await res.json()).success) { alert("PIN updated successfully!"); currentPin = new_pin; closeModal('profileModal'); } else alert("Incorrect current PIN.");
+        }
+
+        // Enter-key logic for Auth
+        document.querySelectorAll('#auth-screen input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') { const btn = input.closest('.card').querySelector('.btn-primary'); if (btn) btn.click(); }
+            });
+        });
+
+        // ADMIN FUNCTIONS
+        async function adminSendBroadcast() { const message = $('admin-notice-msg').value; if(!message) return; await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message }) }); alert("Broadcast Sent!"); $('admin-notice-msg').value = ""; }
+        async function adminClearBroadcast() { await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message: "" }) }); alert("Broadcast Cleared."); }
+        async function adminViewUsers() {
+            const res = await fetch('/admin/users', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin }) });
+            $('admin-viewer-area').innerHTML = (await res.json()).data.map(u => `
+                <div class="card" style="margin-bottom:8px; padding:12px; display:flex; justify-content:space-between; border-left:4px solid ${u.status==='FROZEN'?'var(--neg)':'var(--pos)'};">
+                    <div><div style="font-weight:700;">${escapeHTML(u.name)}</div><div style="font-size:12px; color:var(--muted);">${escapeHTML(u.upi_id)}</div></div>
+                    <div style="text-align:right;"><div style="font-weight:800; font-size:15px; color:var(--pos);">K ${fmt(parseFloat(u.balance))}</div><div style="font-size:10px; font-weight:bold; color:${u.status==='FROZEN'?'var(--neg)':'var(--muted)'};">${u.status}</div></div>
+                </div>
+            `).join('');
+        }
+        async function adminAdjust(action) {
+            const target_id = $('admin-target').value.trim(); const amount =$('admin-amount').value || 0;
+            if(!target_id) return alert("Enter target ID.");
+            const res = await fetch('/admin/adjust', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id, amount, action }) });
+            const data = await res.json(); if(data.success) { alert("Action applied."); adminViewUsers(); } else alert("Action Failed.");
+        }
+        async function adminDelete() {
+            const target_id = $('admin-target').value.trim(); if(!target_id || !confirm("Delete " + target_id + "?")) return;
+            const res = await fetch('/admin/delete', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id }) });
+            if((await res.json()).success) { alert("Account Terminated."); adminViewUsers(); }
+        }
+    </script>
+</body>
+</html>

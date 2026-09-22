@@ -19,13 +19,13 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:#060F26; --surface:#0D1B3E; --surface2:#132550; --ink:#E6F0FF; --muted:#8CA1C6;
+    --bg:#030D1A; --surface:#0B1A2E; --surface2:#132550; --ink:#E6F0FF; --muted:#8CA1C6;
     --line:#1F3466; --grid:rgba(56,232,255,.05); --accent:#38E8FF; --fill:#22D3EE; --on-fill:#04223A;
     --good:#3DDC97; --bad:#FF7088; --shadow:0 10px 30px -14px rgba(0,0,0,.7);
   }
 }
 :root[data-theme="dark"] {
-  --bg:#060F26; --surface:#0D1B3E; --surface2:#132550; --ink:#E6F0FF; --muted:#8CA1C6;
+  --bg:#030D1A; --surface:#0B1A2E; --surface2:#132550; --ink:#E6F0FF; --muted:#8CA1C6;
   --line:#1F3466; --grid:rgba(56,232,255,.05); --accent:#38E8FF; --fill:#22D3EE; --on-fill:#04223A;
   --good:#3DDC97; --bad:#FF7088; --shadow:0 10px 30px -14px rgba(0,0,0,.7);
 }
@@ -36,15 +36,16 @@ body {
   background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
   background-size:32px 32px;
   font-family:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  font-size:16px; line-height:1.45; -webkit-font-smoothing:antialiased;
+  font-size:16px; line-height:1.45; -webkit-font-smoothing:antialiased; padding-bottom: 90px;
 }
 button { font:inherit; color:inherit; cursor:pointer; background:none; border:0; padding:0; -webkit-tap-highlight-color:transparent; }
 :focus-visible { outline:3px solid var(--fill); outline-offset:2px; border-radius:8px; }
 h1,h2,h3,.num { font-family:'Chakra Petch','Figtree',system-ui,sans-serif; }
 h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
 .sub { margin:0 0 16px; color:var(--muted); font-size:14.5px; max-width:44ch; }
+.hidden { display: none !important; }
 
-.app { max-width:460px; margin:0 auto; padding:0 16px 110px; }
+.app { max-width:460px; margin:0 auto; padding:0 16px; }
 .top { display:flex; align-items:center; justify-content:space-between; padding:14px 0 10px; }
 .brand { display:flex; align-items:center; gap:10px; }
 .brand span { font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:20px; letter-spacing:.5px; }
@@ -99,7 +100,7 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
 
 /* vault */
 .wheel-wrap { position:relative; width:min(100%,320px); aspect-ratio:1; margin:6px auto 18px; }
-.wheel { width:100%; height:100%; transition:transform 4.6s cubic-bezier(.12,.72,.08,1); display:block; filter:drop-shadow(0 12px 22px rgba(4,34,58,.35)); }
+.wheel { width:100%; height:100%; transition:transform 4.5s cubic-bezier(0.1, 0.7, 0.1, 1); display:block; filter:drop-shadow(0 12px 22px rgba(4,34,58,.35)); }
 .hub { position:absolute; inset:0; margin:auto; width:27%; aspect-ratio:1; border-radius:50%; background:#06122E;
   box-shadow:0 0 0 5px #0D2557,0 0 22px rgba(34,211,238,.55); display:grid; place-items:center; }
 .hub img { width:88%; height:88%; border-radius:50%; }
@@ -157,15 +158,21 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
   color:var(--on-fill); font-size:10.5px; font-weight:800; display:none; align-items:center; justify-content:center; }
 .dot.on { display:inline-flex; }
 
-/* toast */
+/* toast & modals */
 .toast { position:fixed; left:50%; bottom:calc(84px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,20px); opacity:0; pointer-events:none;
   background:var(--hero2); color:#EAF4FF; border:1px solid #22D3EE; border-radius:14px; padding:10px 16px; font-weight:600; font-size:14.5px;
-  transition:.25s; z-index:40; max-width:calc(100vw - 32px); text-align:center; box-shadow: 0 10px 24px -10px rgba(0,0,0,.6); }
+  transition:.25s; z-index:400; max-width:calc(100vw - 32px); text-align:center; box-shadow: 0 10px 24px -10px rgba(0,0,0,.6); }
 .toast.show { opacity:1; transform:translate(-50%,0); }
 
-@media (prefers-reduced-motion: reduce) {
-  *,*::before,*::after { animation:none !important; transition-duration:.01ms !important; }
-}
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 200; backdrop-filter: blur(4px); }
+.modal-content { background: var(--surface); width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 24px; position: relative; color: var(--ink); text-align: center; }
+.modal-close { position: absolute; top: 15px; right: 15px; background: var(--bg); color: var(--ink); border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; cursor: pointer; }
+
+/* Numpad */
+.pin-numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; margin-bottom: 15px; }
+.pin-numpad .num-key { padding: 12px 0; font-size: 22px; background: var(--surface2); border: 1px solid var(--line); border-radius: 12px; font-weight: 600; color: var(--accent); cursor: pointer; transition: 0.1s; }
+.pin-numpad .num-key:active { background: var(--line); transform: scale(0.95); }
+
 </style>
 </head>
 <body>
@@ -256,6 +263,26 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Passbook</button>
 </nav>
 
+<!-- PIN CONFIRMATION MODAL -->
+<div id="pinModal" class="modal-overlay hidden">
+  <div class="modal-content">
+      <button class="modal-close" onclick="document.getElementById('pinModal').classList.add('hidden')">✕</button>
+      <h3 style="margin-bottom: 5px;">Security Verification</h3>
+      <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">Redeeming <span id="pin-amt-label" style="font-weight:bold; color:var(--accent);"></span></p>
+      
+      <input type="password" id="auth-pin" readonly placeholder="* * * *" maxlength="4" style="width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 10px; cursor: default; padding: 14px 0;">
+      
+      <div class="pin-numpad">
+          <button class="num-key" onclick="numpadPin(1)">1</button><button class="num-key" onclick="numpadPin(2)">2</button><button class="num-key" onclick="numpadPin(3)">3</button>
+          <button class="num-key" onclick="numpadPin(4)">4</button><button class="num-key" onclick="numpadPin(5)">5</button><button class="num-key" onclick="numpadPin(6)">6</button>
+          <button class="num-key" onclick="numpadPin(7)">7</button><button class="num-key" onclick="numpadPin(8)">8</button><button class="num-key" onclick="numpadPin(9)">9</button>
+          <button class="num-key" style="background: transparent; border: none;"></button><button class="num-key" onclick="numpadPin(0)">0</button><button class="num-key" onclick="numpadPin('back')">⌫</button>
+      </div>
+
+      <button class="btn" onclick="executeReward()">Confirm & Claim</button>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -263,23 +290,14 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
   'use strict';
   
   // -- ADMIN CONFIGURATION --
-  // For the Quests page to "mint" Kinex seamlessly without writing a new backend route, 
-  // it secretly utilizes the existing Boss0 admin endpoint. Ensure this matches your DB pin.
   const ADMIN_PIN = "0000"; 
-  const MERCHANT_ID = "shop@rpay"; // Make sure to register this account so scratch card payments succeed.
+  const MERCHANT_ID = "shop@rpay";
 
+  // Silent Login Check
   let currentUser = localStorage.getItem('rpay_currentUser');
-  let currentPin = localStorage.getItem('rpay_currentPin');
-  
-  if (!currentUser || !currentPin) {
-      currentUser = prompt("Welcome to RPAY Quests!\n\nEnter your Kinex ID (e.g. name@rpay) to sync rewards:");
-      currentPin = prompt("Enter your 4-digit PIN for processing rewards:");
-      if (currentUser) {
-          localStorage.setItem('rpay_currentUser', currentUser);
-          localStorage.setItem('rpay_currentPin', currentPin);
-      } else {
-          window.location.href = '/'; // Kick back if cancelled
-      }
+  if (!currentUser) {
+      window.location.href = '/'; // Kick back to main dashboard if not logged in
+      return;
   }
   
   document.getElementById('userIdTxt').textContent = currentUser;
@@ -290,10 +308,11 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
   var WEIGHTS = [24, 15, 20, 7, 18, 1, 10, 5];
   var SC_VALS = [5, 10, 20, 50, 100, 250, 500];
   var SC_W = [30, 25, 18, 12, 8, 5, 2];
-  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Track the actual real-world day index (days since epoch) to enforce 24-hour limits
-  const getToday = () => Math.floor(Date.now() / 86400000);
+  const getToday = () => {
+    const d = new Date();
+    return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000);
+  };
 
   function fresh() {
     return { bal: 0, streak: 0, best: 0, lastCheckin: 0, spinDay: 0, pendingSpin: 0,
@@ -322,6 +341,80 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2400);
   }
 
+  /* ---------- Reward Authentication Flow ---------- */
+  let pendingRewardAmt = 0;
+  let pendingRewardLbl = "";
+  let pendingAction = null;
+
+  window.numpadPin = function(val) {
+      const input = $('#auth-pin');
+      let current = input.value;
+      if (val === 'back') { input.value = current.slice(0, -1); } 
+      else { if (current.length < 4) input.value += val; }
+  };
+
+  function requestRewardAuth(amt, label, callback) {
+      pendingRewardAmt = amt;
+      pendingRewardLbl = label;
+      pendingAction = callback;
+      $('#pin-amt-label').textContent = "K " + fmt(amt);
+      $('#auth-pin').value = "";
+      $('#pinModal').classList.remove('hidden');
+  }
+
+  window.executeReward = async function() {
+      const pin = $('#auth-pin').value;
+      if(pin.length !== 4) return toast("Enter your 4-digit PIN.");
+      
+      $('#pinModal').classList.add('hidden');
+      toast("Verifying security PIN...");
+
+      try {
+          // Verify user PIN against server using login endpoint
+          const resAuth = await fetch('/login', {
+              method: 'POST',
+              headers:{'Content-Type':'application/json'},
+              body: JSON.stringify({upi_id: currentUser, pin: pin})
+          });
+          const authData = await resAuth.json();
+
+          if(!authData.success) {
+              toast("Verification failed. Incorrect PIN.");
+              return;
+          }
+
+          // PIN Verified. Now Mint the Reward.
+          toast("Minting reward...");
+          const resMint = await fetch('/admin/adjust', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ admin_id: 'Boss0', admin_pin: ADMIN_PIN, target_id: currentUser, amount: pendingRewardAmt, action: 'add' })
+          });
+          const mintData = await resMint.json();
+
+          if(!mintData.success) {
+              toast("Failed to process reward (Check Admin config)");
+              return;
+          }
+
+          // Mint Successful -> Run Local UI Callbacks
+          S.earned += pendingRewardAmt;
+          S.ledger.unshift({ d: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), t: pendingRewardLbl, a: pendingRewardAmt });
+          if (S.ledger.length > 60) S.ledger.length = 60;
+          
+          if(pendingAction) pendingAction();
+          
+          save(); 
+          fetchRealBalance();
+          toast('+K ' + pendingRewardAmt + ' Claimed!');
+          renderAll();
+
+      } catch(e) {
+          toast("Network error processing reward.");
+      }
+  }
+
+
   /* ---------- Real Server Balance Sync ---------- */
   async function fetchRealBalance() {
       try {
@@ -329,17 +422,15 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
           const data = await res.json();
           S.bal = parseFloat(data.balance || 0);
           renderHero(true);
-      } catch(e) {
-          console.error("Balance sync failed", e);
-      }
+      } catch(e) { console.error("Balance sync failed", e); }
   }
 
   var shown = S.bal;
   function paintBal(v) { $('#bal').textContent = S.hidden ? 'K \u2022\u2022\u2022\u2022\u2022\u2022' : 'K ' + fmt(Math.round(v)); }
   function animateBal(to) {
-    var from = shown, start = null, dur = reduced ? 0 : 700;
+    var from = shown, start = null, dur = 700;
     shown = to;
-    if (!dur || S.hidden) { paintBal(to); return; }
+    if (S.hidden) { paintBal(to); return; }
     function step(ts) {
       if (start === null) start = ts;
       var p = Math.min(1, (ts - start) / dur), e = 1 - Math.pow(1 - p, 3);
@@ -358,44 +449,8 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
     $('#eyeTxt').textContent = S.hidden ? 'Show' : 'Hide';
   }
 
-  /* ---------- Server API Minting (Credit) ---------- */
-  async function credit(amount, label, isReward) {
-    if (isReward) {
-      toast("Minting reward...");
-      try {
-        const res = await fetch('/admin/adjust', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            admin_id: 'Boss0', 
-            admin_pin: ADMIN_PIN, 
-            target_id: currentUser, 
-            amount: amount, 
-            action: 'add'
-          })
-        });
-        const data = await res.json();
-        if(!data.success) {
-            toast("Failed to process reward (Check Admin config)");
-            return;
-        }
-      } catch(e) {
-        toast("Network error claiming reward.");
-        return;
-      }
-    }
-    
-    // Only update local tracking if the network call succeeded
-    if (isReward) S.earned += amount;
-    S.ledger.unshift({ d: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), t: label, a: amount });
-    if (S.ledger.length > 60) S.ledger.length = 60;
-    save(); 
-    fetchRealBalance();
-    toast('+K ' + amount + ' Claimed!');
-  }
-
   /* ---------- Server API Deduct (Pay) ---------- */
-  async function pay(amt, silent) {
+  async function pay(amt) {
     if (S.bal < amt) { toast('Not enough Kinex for that payment.'); return false; }
     toast("Processing payment...");
     
@@ -403,14 +458,11 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
         const res = await fetch('/pay', {
             method: 'POST',
             headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({sender: currentUser, receiver: MERCHANT_ID, pin: currentPin, amount: amt})
+            body: JSON.stringify({sender: currentUser, receiver: MERCHANT_ID, pin: localStorage.getItem('rpay_currentPin'), amount: amt})
         });
         const data = await res.json();
         
-        if(!data.success) { 
-            toast('Payment failed: ' + (data.error || "Unknown")); 
-            return false; 
-        }
+        if(!data.success) { toast('Payment failed: ' + (data.error || "Unknown")); return false; }
         
         S.payments++; S.volume += amt;
         S.ledger.unshift({ d: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), t: 'Paid ' + MERCHANT_ID, a: -amt });
@@ -421,12 +473,9 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
             got = true; 
         }
         save();
-        
-        if (!silent) { 
-            fetchRealBalance(); 
-            toast('Paid K ' + fmt(amt) + (got ? '. Scratch card unlocked!' : '.')); 
-            renderAll(); 
-        }
+        fetchRealBalance(); 
+        toast('Paid K ' + fmt(amt) + (got ? '. Scratch card unlocked!' : '.')); 
+        renderAll(); 
         return true;
         
     } catch(e) {
@@ -469,10 +518,10 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
     var b = $('#claimDaily');
     if (b) b.addEventListener('click', function () {
       var ns = effStreak() + 1, r = REWARDS[(ns - 1) % 7];
-      S.streak = ns; S.lastCheckin = getToday(); 
-      if (ns > S.best) S.best = ns;
-      credit(r, 'Daily check-in', true);
-      renderAll();
+      requestRewardAuth(r, 'Daily check-in', function() {
+          S.streak = ns; S.lastCheckin = getToday(); 
+          if (ns > S.best) S.best = ns;
+      });
     });
   }
 
@@ -500,9 +549,9 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
   }
   function finishSpin(prize) {
     S.pendingSpin = 0; spinning = false;
-    credit(prize, 'Vault spin', true);
-    $('#win').textContent = prize === 1000 ? 'Jackpot! +K 1,000' : 'You won K ' + fmt(prize);
-    renderAll();
+    requestRewardAuth(prize, 'Vault spin', function() {
+        $('#win').textContent = prize === 1000 ? 'Jackpot! +K 1,000' : 'You won K ' + fmt(prize);
+    });
   }
   function doSpin() {
     let todayDate = getToday();
@@ -513,9 +562,9 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
     var target = (360 - (idx * 45 + 22.5) + (Math.random() * 24 - 12) + 360) % 360;
     rot = rot - (rot % 360) + 360 * 5 + target;
     var w = $('#wheel');
-    w.style.transition = reduced ? 'transform .6s ease-out' : '';
+    w.style.transition = 'transform 4.5s cubic-bezier(0.1, 0.7, 0.1, 1)';
     w.style.transform = 'rotate(' + rot + 'deg)';
-    setTimeout(function () { finishSpin(prize); }, reduced ? 700 : 4700);
+    setTimeout(function () { finishSpin(prize); }, 4700);
   }
 
   /* ---------- scratch ---------- */
@@ -548,10 +597,11 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
   }
   function reveal(c) {
     if (c.done) return;
-    c.done = true; S.scratched++;
-    credit(c.prize, 'Scratch card', true);
     var cv = $('#sc'); if (cv) cv.classList.add('gone');
-    setTimeout(function () { renderAll(true); }, reduced ? 0 : 450);
+    requestRewardAuth(c.prize, 'Scratch card', function() {
+        c.done = true; S.scratched++;
+        setTimeout(function () { renderAll(true); }, 450);
+    });
   }
   function initCanvas(card) {
     var cv = $('#sc'), ctx = cv.getContext('2d'), w = cv.width, h = cv.height;
@@ -607,8 +657,9 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
       el.addEventListener('click', function () {
         var b = BADGES.filter(function (x) { return x.id === el.getAttribute('data-b'); })[0];
         if (!b || !badgeState(b).ready) return;
-        S.claimed[b.id] = true; credit(b.reward, 'Badge: ' + b.name, true);
-        renderAll();
+        requestRewardAuth(b.reward, 'Badge: ' + b.name, function() {
+            S.claimed[b.id] = true; 
+        });
       });
     });
   }
@@ -658,9 +709,14 @@ h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
   buildWheel();
   fetchRealBalance(); // Initial Server Sync
   renderAll(true);
-  if (S.pendingSpin) { var p = S.pendingSpin; finishSpin(p); }
+  
+  // Clean up any spins interrupted by refresh
+  if (S.pendingSpin) { 
+      var p = S.pendingSpin; 
+      S.pendingSpin = 0; save();
+      requestRewardAuth(p, 'Vault spin', function() {}); 
+  }
 })();
 </script>
 </body>
 </html>
-

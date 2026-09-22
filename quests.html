@@ -1,1 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RPAY Quests & Rewards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#E8EEF6; --surface:#FFFFFF; --surface2:#F0F4FA; --ink:#0B1B35; --muted:#54647F;
+  --line:#D3DCE8; --grid:rgba(11,27,53,.045); --accent:#0A7C99; --fill:#22D3EE; --on-fill:#04223A;
+  --good:#0E8A57; --bad:#C2384A; --hero1:#0D2557; --hero2:#06122E; --hero-ink:#EAF4FF;
+  --shadow:0 10px 30px -14px rgba(11,27,53,.35);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#060F26; --surface:#0D1B3E; --surface2:#132550; --ink:#E6F0FF; --muted:#8CA1C6;
+    --line:#1F3466; --grid:rgba(56,232,255,.05); --accent:#38E8FF; --fill:#22D3EE; --on-fill:#04223A;
+    --good:#3DDC97; --bad:#FF7088; --shadow:0 10px 30px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#060F26; --surface:#0D1B3E; --surface2:#132550; --ink:#E6F0FF; --muted:#8CA1C6;
+  --line:#1F3466; --grid:rgba(56,232,255,.05); --accent:#38E8FF; --fill:#22D3EE; --on-fill:#04223A;
+  --good:#3DDC97; --bad:#FF7088; --shadow:0 10px 30px -14px rgba(0,0,0,.7);
+}
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+*,*::before,*::after { box-sizing:border-box; }
+body {
+  margin:0; background-color:var(--bg); color:var(--ink);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:32px 32px;
+  font-family:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  font-size:16px; line-height:1.45; -webkit-font-smoothing:antialiased;
+}
+button { font:inherit; color:inherit; cursor:pointer; background:none; border:0; padding:0; -webkit-tap-highlight-color:transparent; }
+:focus-visible { outline:3px solid var(--fill); outline-offset:2px; border-radius:8px; }
+h1,h2,h3,.num { font-family:'Chakra Petch','Figtree',system-ui,sans-serif; }
+h2 { font-size:22px; margin:0 0 4px; letter-spacing:.2px; }
+.sub { margin:0 0 16px; color:var(--muted); font-size:14.5px; max-width:44ch; }
+
+.app { max-width:460px; margin:0 auto; padding:0 16px 110px; }
+.top { display:flex; align-items:center; justify-content:space-between; padding:14px 0 10px; }
+.brand { display:flex; align-items:center; gap:10px; }
+.brand span { font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:20px; letter-spacing:.5px; }
+.pill-btn { border:1px solid var(--line); background:var(--surface); border-radius:999px; padding:7px 14px; font-size:14px; font-weight:600; display: flex; align-items: center; gap: 6px; }
+.pill-btn:hover { border-color:var(--accent); }
+
+/* Crop Coin Match from Dashboard */
+.coin-wrapper { width: 84px; height: 84px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 25px rgba(34,211,238,.45); flex-shrink: 0; background: #000; }
+.kinex-coin-img { width: 135%; height: 135%; object-fit: cover; object-position: center; }
+
+.hero { position:relative; overflow:hidden; border-radius:22px; padding:18px; color:var(--hero-ink);
+  background:radial-gradient(120% 90% at 88% -10%,rgba(34,211,238,.30),transparent 55%),linear-gradient(160deg,var(--hero1),var(--hero2));
+  box-shadow:var(--shadow); margin-bottom:22px; }
+.hero-row { display:flex; align-items:center; gap:16px; }
+.hero .lbl { font-size:13px; color:#9FB6DA; }
+.bal { font-size:38px; font-weight:700; line-height:1.1; margin:2px 0 0; font-variant-numeric:tabular-nums; }
+.hero-actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; align-items:center; }
+.chip { display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(159,182,218,.35); background:rgba(255,255,255,.06);
+  color:var(--hero-ink); border-radius:999px; padding:6px 12px; font-size:13.5px; font-weight:600; }
+.chip:hover { border-color:#22D3EE; }
+.chip svg { width:16px; height:16px; }
+.spin-once svg { animation:rot .7s linear; }
+@keyframes rot { to { transform:rotate(360deg); } }
+.earned { margin-left:auto; font-size:13px; color:#9FB6DA; }
+.earned b { color:#5CE8A6; font-family:'Chakra Petch',sans-serif; font-size:15px; }
+.pulse { animation:glow .9s ease-out; }
+@keyframes glow { 0% { box-shadow:0 0 0 0 rgba(34,211,238,.7),var(--shadow); } 100% { box-shadow:0 0 0 22px rgba(34,211,238,0),var(--shadow); } }
+
+.view { display:none; }
+.view.active { display:block; }
+
+.panel { background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow); }
+.btn { width:100%; border:0; border-radius:14px; padding:14px 16px; font-weight:700; font-size:16px;
+  background:var(--fill); color:var(--on-fill); font-family:'Chakra Petch',sans-serif; letter-spacing:.3px; }
+.btn:hover:not(:disabled) { filter:brightness(1.06); }
+.btn:disabled { background:var(--surface2); color:var(--muted); cursor:not-allowed; }
+.btn.ghost { background:transparent; color:var(--ink); border:1px solid var(--line); }
+.note { margin:12px 0 0; font-size:14px; color:var(--muted); }
+
+/* streak */
+.streak-head { display:flex; align-items:baseline; gap:10px; margin-bottom:14px; }
+.streak-head .num { font-size:44px; font-weight:700; color:var(--accent); line-height:1; }
+.streak-head span { color:var(--muted); font-size:14.5px; }
+.days { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:16px; }
+.day { text-align:center; border:1px solid var(--line); border-radius:12px; padding:8px 0 7px; background:var(--surface2); }
+.day small { display:block; color:var(--muted); font-size:11.5px; }
+.day b { display:block; font-family:'Chakra Petch',sans-serif; font-size:14px; }
+.day.done { background:var(--fill); border-color:var(--fill); color:var(--on-fill); }
+.day.done small { color:var(--on-fill); opacity:.75; }
+.day.next { border:2px solid var(--fill); animation:glow 1.8s ease-out infinite; }
+.day.big b { font-size:15px; }
+
+/* vault */
+.wheel-wrap { position:relative; width:min(100%,320px); aspect-ratio:1; margin:6px auto 18px; }
+.wheel { width:100%; height:100%; transition:transform 4.6s cubic-bezier(.12,.72,.08,1); display:block; filter:drop-shadow(0 12px 22px rgba(4,34,58,.35)); }
+.hub { position:absolute; inset:0; margin:auto; width:27%; aspect-ratio:1; border-radius:50%; background:#06122E;
+  box-shadow:0 0 0 5px #0D2557,0 0 22px rgba(34,211,238,.55); display:grid; place-items:center; }
+.hub img { width:88%; height:88%; border-radius:50%; }
+.pointer { position:absolute; top:-8px; left:50%; width:0; height:0; margin-left:-13px; z-index:2;
+  border-left:13px solid transparent; border-right:13px solid transparent; border-top:26px solid var(--fill);
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.4)); }
+.win { text-align:center; font-family:'Chakra Petch',sans-serif; font-size:18px; min-height:28px; margin:-4px 0 12px; color:var(--accent); font-weight:600; }
+
+/* scratch */
+.scratch { position:relative; aspect-ratio:2/1; border-radius:16px; overflow:hidden; background:linear-gradient(150deg,#0D2557,#06122E); border:1px solid var(--line); }
+.prize { position:absolute; inset:0; display:grid; place-content:center; text-align:center; color:#EAF4FF; }
+.prize small { color:#9FB6DA; font-size:13px; }
+.prize b { font-family:'Chakra Petch',sans-serif; font-size:44px; color:#22D3EE; line-height:1.1; }
+.scratch canvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:crosshair; transition:opacity .5s; }
+.scratch canvas.gone { opacity:0; pointer-events:none; }
+.empty { text-align:center; padding:8px 4px 4px; }
+.empty p { color:var(--muted); margin:0 0 14px; }
+
+/* badges */
+.badges { display:grid; gap:10px; }
+.badge { display:grid; grid-template-columns:56px 1fr auto; gap:12px; align-items:center; background:var(--surface);
+  border:1px solid var(--line); border-radius:16px; padding:12px; }
+.badge.ready { border-color:var(--fill); animation:glow 1.8s ease-out infinite; }
+.hex { width:56px; height:56px; position:relative; }
+.hex svg { width:100%; height:100%; }
+.hex text { font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:20px; text-anchor:middle; dominant-baseline:central; }
+.badge h3 { margin:0; font-size:16px; }
+.badge p { margin:1px 0 6px; font-size:13px; color:var(--muted); }
+.bar { height:6px; border-radius:6px; background:var(--surface2); overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--fill); border-radius:6px; transition:width .5s; }
+.badge .cnt { font-size:12px; color:var(--muted); margin-top:4px; }
+.claim { border:0; border-radius:12px; padding:9px 12px; font-weight:700; font-family:'Chakra Petch',sans-serif; background:var(--fill); color:var(--on-fill); }
+.claim:disabled { background:var(--surface2); color:var(--muted); cursor:default; }
+.claim.got { background:transparent; color:var(--good); border:1px solid var(--good); }
+
+/* passbook */
+.ledger { list-style:none; margin:0; padding:0; }
+.ledger li { display:flex; justify-content:space-between; gap:12px; padding:12px 2px; border-bottom:1px solid var(--line); }
+.ledger li:last-child { border-bottom:0; }
+.ledger .t { font-weight:600; font-size:15px; color:var(--ink); }
+.ledger .d { font-size:12.5px; color:var(--muted); }
+.ledger .a { font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:16px; white-space:nowrap; }
+.in { color:var(--good); } .out { color:var(--bad); }
+
+/* tabs */
+.tabs { position:fixed; bottom:0; left:0; right:0; margin:0 auto; max-width:460px; z-index:20;
+  display:grid; grid-template-columns:repeat(5,1fr); background:var(--surface); border-top:1px solid var(--line);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px)); }
+.tab { position:relative; border:0; background:none; padding:6px 0 4px; display:flex; flex-direction:column; align-items:center; gap:2px;
+  font-size:11.5px; font-weight:600; color:var(--muted); cursor: pointer; }
+.tab svg { width:22px; height:22px; }
+.tab[aria-selected="true"] { color:var(--accent); }
+.tab[aria-selected="true"]::before { content:''; position:absolute; top:-7px; width:28px; height:3px; border-radius:3px; background:var(--fill); }
+.dot { position:absolute; top:2px; left:calc(50% + 8px); min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:var(--fill);
+  color:var(--on-fill); font-size:10.5px; font-weight:800; display:none; align-items:center; justify-content:center; }
+.dot.on { display:inline-flex; }
+
+/* toast */
+.toast { position:fixed; left:50%; bottom:calc(84px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,20px); opacity:0; pointer-events:none;
+  background:var(--hero2); color:#EAF4FF; border:1px solid #22D3EE; border-radius:14px; padding:10px 16px; font-weight:600; font-size:14.5px;
+  transition:.25s; z-index:40; max-width:calc(100vw - 32px); text-align:center; box-shadow: 0 10px 24px -10px rgba(0,0,0,.6); }
+.toast.show { opacity:1; transform:translate(-50%,0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { animation:none !important; transition-duration:.01ms !important; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand"><span>RPAY Quests</span></div>
+    <button class="pill-btn" type="button" onclick="window.location.href='/'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Dashboard
+    </button>
+  </header>
+
+  <section class="hero" id="hero" aria-label="Kinex balance">
+    <div class="hero-row">
+      <div class="coin-wrapper">
+        <img src="1789966012698.png" alt="Kinex" class="kinex-coin-img">
+      </div>
+      <div>
+        <div class="lbl">Kinex balance</div>
+        <div class="bal num" id="bal">K 0</div>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <button class="chip" id="eye" type="button" aria-pressed="false" aria-label="Hide balance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        <span id="eyeTxt">Hide</span>
+      </button>
+      <button class="chip" id="refresh" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+        Sync
+      </button>
+      <button class="chip" id="copy" type="button" aria-label="Copy your ID">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+        <span id="userIdTxt">User</span>
+      </button>
+      <div class="earned">Earned <b id="earned">K 0</b></div>
+    </div>
+  </section>
+
+  <main>
+    <section class="view active" id="view-checkin" role="tabpanel" aria-labelledby="t-checkin"></section>
+
+    <section class="view" id="view-vault" role="tabpanel" aria-labelledby="t-vault">
+      <h2>Spin the Vault</h2>
+      <p class="sub">One free spin every day. Prizes run from K 10 to a K 1,000 jackpot.</p>
+      <div class="panel">
+        <div class="wheel-wrap">
+          <div class="pointer" aria-hidden="true"></div>
+          <svg class="wheel" id="wheel" viewBox="0 0 300 300" aria-hidden="true"></svg>
+          <div class="hub"><img src="1789966012698.png" style="width: 135%; height: 135%; object-fit: cover;"></div>
+        </div>
+        <div class="win" id="win" aria-live="polite"></div>
+        <button class="btn" id="spin" type="button">Spin the Vault</button>
+        <p class="note" id="spinNote"></p>
+      </div>
+    </section>
+
+    <section class="view" id="view-scratch" role="tabpanel" aria-labelledby="t-scratch">
+      <h2>Scratch cards</h2>
+      <p class="sub">Every payment of K 100 or more earns a card worth K 5 to K 500.</p>
+      <div class="panel" id="scratchPanel"></div>
+    </section>
+
+    <section class="view" id="view-badges" role="tabpanel" aria-labelledby="t-badges">
+      <h2>Badges</h2>
+      <p class="sub" id="badgeSub"></p>
+      <div class="badges" id="badges"></div>
+    </section>
+
+    <section class="view" id="view-passbook" role="tabpanel" aria-labelledby="t-passbook">
+      <h2>Passbook</h2>
+      <p class="sub">Recent rewards and scratch card unlocks.</p>
+      <div class="panel"><ul class="ledger" id="ledger"></ul></div>
+    </section>
+  </main>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Earn sections">
+  <button class="tab" role="tab" id="t-checkin" data-tab="checkin" aria-selected="true" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18M9 15l2 2 4-4"/></svg>Check-in<span class="dot" id="d-checkin"></span></button>
+  <button class="tab" role="tab" id="t-vault" data-tab="vault" aria-selected="false" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>Vault<span class="dot" id="d-vault"></span></button>
+  <button class="tab" role="tab" id="t-scratch" data-tab="scratch" aria-selected="false" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 15l3-4 3 3 2-2 2 3"/></svg>Scratch<span class="dot" id="d-scratch"></span></button>
+  <button class="tab" role="tab" id="t-badges" data-tab="badges" aria-selected="false" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4.5v9L12 20l-8-4.5v-9z"/><path d="M9 11l2 2 4-4"/></svg>Badges<span class="dot" id="d-badges"></span></button>
+  <button class="tab" role="tab" id="t-passbook" data-tab="passbook" aria-selected="false" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Passbook</button>
+</nav>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+  
+  // -- ADMIN CONFIGURATION --
+  // For the Quests page to "mint" Kinex seamlessly without writing a new backend route, 
+  // it secretly utilizes the existing Boss0 admin endpoint. Ensure this matches your DB pin.
+  const ADMIN_PIN = "0000"; 
+  const MERCHANT_ID = "shop@rpay"; // Make sure to register this account so scratch card payments succeed.
+
+  let currentUser = localStorage.getItem('rpay_currentUser');
+  let currentPin = localStorage.getItem('rpay_currentPin');
+  
+  if (!currentUser || !currentPin) {
+      currentUser = prompt("Welcome to RPAY Quests!\n\nEnter your Kinex ID (e.g. name@rpay) to sync rewards:");
+      currentPin = prompt("Enter your 4-digit PIN for processing rewards:");
+      if (currentUser) {
+          localStorage.setItem('rpay_currentUser', currentUser);
+          localStorage.setItem('rpay_currentPin', currentPin);
+      } else {
+          window.location.href = '/'; // Kick back if cancelled
+      }
+  }
+  
+  document.getElementById('userIdTxt').textContent = currentUser;
+
+  var KEY = 'rpay-earn-' + currentUser;
+  var REWARDS = [20, 30, 40, 60, 80, 120, 200];
+  var PRIZES = [10, 50, 20, 100, 25, 1000, 75, 250];
+  var WEIGHTS = [24, 15, 20, 7, 18, 1, 10, 5];
+  var SC_VALS = [5, 10, 20, 50, 100, 250, 500];
+  var SC_W = [30, 25, 18, 12, 8, 5, 2];
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Track the actual real-world day index (days since epoch) to enforce 24-hour limits
+  const getToday = () => Math.floor(Date.now() / 86400000);
+
+  function fresh() {
+    return { bal: 0, streak: 0, best: 0, lastCheckin: 0, spinDay: 0, pendingSpin: 0,
+      cards: [], scratched: 0, payments: 0, volume: 0, claimed: {}, earned: 0, hidden: false,
+      ledger: [] };
+  }
+  
+  var S;
+  try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
+  if (!S || typeof S.bal !== 'number') S = fresh();
+  
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  function $(s) { return document.querySelector(s); }
+  function fmt(n) { return n.toLocaleString('en-US'); }
+  function pick(vals, w) {
+    var t = 0, i; for (i = 0; i < w.length; i++) t += w[i];
+    var r = Math.random() * t;
+    for (i = 0; i < w.length; i++) { r -= w[i]; if (r < 0) return i; }
+    return w.length - 1;
+  }
+
+  var toastTimer;
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2400);
+  }
+
+  /* ---------- Real Server Balance Sync ---------- */
+  async function fetchRealBalance() {
+      try {
+          const res = await fetch('/balance/' + currentUser);
+          const data = await res.json();
+          S.bal = parseFloat(data.balance || 0);
+          renderHero(true);
+      } catch(e) {
+          console.error("Balance sync failed", e);
+      }
+  }
+
+  var shown = S.bal;
+  function paintBal(v) { $('#bal').textContent = S.hidden ? 'K \u2022\u2022\u2022\u2022\u2022\u2022' : 'K ' + fmt(Math.round(v)); }
+  function animateBal(to) {
+    var from = shown, start = null, dur = reduced ? 0 : 700;
+    shown = to;
+    if (!dur || S.hidden) { paintBal(to); return; }
+    function step(ts) {
+      if (start === null) start = ts;
+      var p = Math.min(1, (ts - start) / dur), e = 1 - Math.pow(1 - p, 3);
+      paintBal(from + (to - from) * e);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  
+  function renderHero(animate) {
+    if (animate) { animateBal(S.bal); var h = $('#hero'); h.classList.remove('pulse'); void h.offsetWidth; h.classList.add('pulse'); }
+    else { shown = S.bal; paintBal(S.bal); }
+    $('#earned').textContent = S.hidden ? 'K \u2022\u2022\u2022' : 'K ' + fmt(S.earned);
+    $('#eye').setAttribute('aria-pressed', S.hidden ? 'true' : 'false');
+    $('#eye').setAttribute('aria-label', S.hidden ? 'Show balance' : 'Hide balance');
+    $('#eyeTxt').textContent = S.hidden ? 'Show' : 'Hide';
+  }
+
+  /* ---------- Server API Minting (Credit) ---------- */
+  async function credit(amount, label, isReward) {
+    if (isReward) {
+      toast("Minting reward...");
+      try {
+        const res = await fetch('/admin/adjust', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            admin_id: 'Boss0', 
+            admin_pin: ADMIN_PIN, 
+            target_id: currentUser, 
+            amount: amount, 
+            action: 'add'
+          })
+        });
+        const data = await res.json();
+        if(!data.success) {
+            toast("Failed to process reward (Check Admin config)");
+            return;
+        }
+      } catch(e) {
+        toast("Network error claiming reward.");
+        return;
+      }
+    }
+    
+    // Only update local tracking if the network call succeeded
+    if (isReward) S.earned += amount;
+    S.ledger.unshift({ d: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), t: label, a: amount });
+    if (S.ledger.length > 60) S.ledger.length = 60;
+    save(); 
+    fetchRealBalance();
+    toast('+K ' + amount + ' Claimed!');
+  }
+
+  /* ---------- Server API Deduct (Pay) ---------- */
+  async function pay(amt, silent) {
+    if (S.bal < amt) { toast('Not enough Kinex for that payment.'); return false; }
+    toast("Processing payment...");
+    
+    try {
+        const res = await fetch('/pay', {
+            method: 'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({sender: currentUser, receiver: MERCHANT_ID, pin: currentPin, amount: amt})
+        });
+        const data = await res.json();
+        
+        if(!data.success) { 
+            toast('Payment failed: ' + (data.error || "Unknown")); 
+            return false; 
+        }
+        
+        S.payments++; S.volume += amt;
+        S.ledger.unshift({ d: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), t: 'Paid ' + MERCHANT_ID, a: -amt });
+        
+        var got = false;
+        if (amt >= 100) { 
+            S.cards.push({ id: Date.now() + '' + Math.random().toString(36).slice(2, 6), prize: SC_VALS[pick(SC_VALS, SC_W)], done: false }); 
+            got = true; 
+        }
+        save();
+        
+        if (!silent) { 
+            fetchRealBalance(); 
+            toast('Paid K ' + fmt(amt) + (got ? '. Scratch card unlocked!' : '.')); 
+            renderAll(); 
+        }
+        return true;
+        
+    } catch(e) {
+        toast('Network error processing payment.');
+        return false;
+    }
+  }
+
+  /* ---------- check-in ---------- */
+  function effStreak() { 
+      let today = getToday();
+      return (S.lastCheckin === today || S.lastCheckin === today - 1) ? S.streak : 0; 
+  }
+  
+  function renderCheckin() {
+    let todayDate = getToday();
+    var eff = effStreak(), today = S.lastCheckin === todayDate;
+    var weekPos = today ? ((eff - 1) % 7) + 1 : (eff % 7);
+    var nextIdx = today ? -1 : weekPos;
+    var reward = REWARDS[eff % 7];
+    var days = '';
+    
+    for (var i = 0; i < 7; i++) {
+      var cls = 'day' + (i < weekPos ? ' done' : '') + (i === nextIdx ? ' next' : '') + (i === 6 ? ' big' : '');
+      days += '<div class="' + cls + '"><small>Day ' + (i + 1) + '</small><b>K ' + REWARDS[i] + '</b></div>';
+    }
+    
+    var broke = !today && S.streak > 0 && eff === 0;
+    var msg = today ? 'Checked in. Your next reward is ready tomorrow.'
+      : broke ? 'Your streak broke. Check in now to start again at K 20.'
+      : 'Check in every day. A missed day resets the streak.';
+      
+    $('#view-checkin').innerHTML =
+      '<h2>Daily check-in</h2><p class="sub">Rewards climb each day to K 200 on day 7, then the cycle repeats.</p>' +
+      '<div class="panel"><div class="streak-head"><div class="num">' + eff + '</div><span>day streak</span></div>' +
+      '<div class="days">' + days + '</div>' +
+      '<button class="btn" id="claimDaily" type="button"' + (today ? ' disabled' : '') + '>' +
+      (today ? 'Claimed today' : 'Claim K ' + reward) + '</button><p class="note">' + msg + '</p></div>';
+      
+    var b = $('#claimDaily');
+    if (b) b.addEventListener('click', function () {
+      var ns = effStreak() + 1, r = REWARDS[(ns - 1) % 7];
+      S.streak = ns; S.lastCheckin = getToday(); 
+      if (ns > S.best) S.best = ns;
+      credit(r, 'Daily check-in', true);
+      renderAll();
+    });
+  }
+
+  /* ---------- vault ---------- */
+  var rot = 0, spinning = false;
+  function polar(a, r) { var d = a * Math.PI / 180; return [(150 + r * Math.sin(d)).toFixed(2), (150 - r * Math.cos(d)).toFixed(2)]; }
+  function buildWheel() {
+    var svg = '<circle cx="150" cy="150" r="149" fill="#06122E" stroke="#22D3EE" stroke-width="2"/>';
+    for (var i = 0; i < 8; i++) {
+      var a1 = i * 45, a2 = (i + 1) * 45, p1 = polar(a1, 140), p2 = polar(a2, 140);
+      var fill = PRIZES[i] === 1000 ? '#22D3EE' : PRIZES[i] === 250 ? '#A9BCD4' : (i % 2 ? '#0B1E48' : '#12295C');
+      var ink = (PRIZES[i] === 1000 || PRIZES[i] === 250) ? '#04223A' : '#DFF6FF';
+      svg += '<path d="M150 150 L' + p1[0] + ' ' + p1[1] + ' A140 140 0 0 1 ' + p2[0] + ' ' + p2[1] + ' Z" fill="' + fill + '" stroke="#2B4A8C" stroke-width="1"/>';
+      var fs = PRIZES[i] === 1000 ? 15 : 17;
+      svg += '<text x="150" y="58" text-anchor="middle" font-family="Chakra Petch,sans-serif" font-weight="700" font-size="' + fs + '" fill="' + ink + '" transform="rotate(' + (a1 + 22.5) + ' 150 150)">K ' + fmt(PRIZES[i]) + '</text>';
+    }
+    $('#wheel').innerHTML = svg;
+  }
+  function renderVault() {
+    var todayDate = getToday();
+    var can = S.spinDay !== todayDate && !spinning;
+    var b = $('#spin'); b.disabled = !can;
+    b.textContent = spinning ? 'Spinning\u2026' : (S.spinDay === todayDate ? 'Spun today' : 'Spin the Vault');
+    $('#spinNote').textContent = S.spinDay === todayDate && !spinning ? 'Your free spin is used. It resets tomorrow.' : 'Your free spin for today is ready.';
+  }
+  function finishSpin(prize) {
+    S.pendingSpin = 0; spinning = false;
+    credit(prize, 'Vault spin', true);
+    $('#win').textContent = prize === 1000 ? 'Jackpot! +K 1,000' : 'You won K ' + fmt(prize);
+    renderAll();
+  }
+  function doSpin() {
+    let todayDate = getToday();
+    if (spinning || S.spinDay === todayDate) return;
+    var idx = pick(PRIZES, WEIGHTS), prize = PRIZES[idx];
+    S.spinDay = todayDate; S.pendingSpin = prize; save();
+    spinning = true; $('#win').textContent = ''; renderVault();
+    var target = (360 - (idx * 45 + 22.5) + (Math.random() * 24 - 12) + 360) % 360;
+    rot = rot - (rot % 360) + 360 * 5 + target;
+    var w = $('#wheel');
+    w.style.transition = reduced ? 'transform .6s ease-out' : '';
+    w.style.transform = 'rotate(' + rot + 'deg)';
+    setTimeout(function () { finishSpin(prize); }, reduced ? 700 : 4700);
+  }
+
+  /* ---------- scratch ---------- */
+  var scSig = '';
+  function renderScratch(force) {
+    var c = S.cards[0];
+    var sig = S.cards.length + ':' + (c ? c.id + ':' + c.done : '');
+    if (!force && sig === scSig) return;
+    scSig = sig;
+    var p = $('#scratchPanel');
+    if (!c) {
+      p.innerHTML = '<div class="empty"><p>No cards yet. Pay K 100 or more in the network to earn one.</p><button class="btn ghost" id="quickPay" type="button">Buy one test item for K 100</button></div>';
+      $('#quickPay').addEventListener('click', function () { pay(100); });
+      return;
+    }
+    var left = S.cards.length - 1;
+    p.innerHTML =
+      '<div class="scratch"><div class="prize"><small>' + (c.done ? 'You won' : 'Scratch to reveal') + '</small><b>K ' + fmt(c.prize) + '</b></div>' +
+      (c.done ? '' : '<canvas id="sc" width="360" height="180" aria-label="Scratch area"></canvas>') + '</div>' +
+      '<div style="margin-top:14px;display:grid;gap:8px">' +
+      (c.done ? '<button class="btn" id="nextCard" type="button">' + (left ? 'Next card' : 'Done') + '</button>'
+              : '<button class="btn ghost" id="revealNow" type="button">Reveal now</button>') + '</div>' +
+      '<p class="note">' + (left ? left + ' more card' + (left > 1 ? 's' : '') + ' waiting.' : 'This is your last card.') + '</p>';
+    if (c.done) {
+      $('#nextCard').addEventListener('click', function () { S.cards.shift(); save(); renderAll(true); });
+    } else {
+      initCanvas(c);
+      $('#revealNow').addEventListener('click', function () { reveal(c); });
+    }
+  }
+  function reveal(c) {
+    if (c.done) return;
+    c.done = true; S.scratched++;
+    credit(c.prize, 'Scratch card', true);
+    var cv = $('#sc'); if (cv) cv.classList.add('gone');
+    setTimeout(function () { renderAll(true); }, reduced ? 0 : 450);
+  }
+  function initCanvas(card) {
+    var cv = $('#sc'), ctx = cv.getContext('2d'), w = cv.width, h = cv.height;
+    var g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#E4EBF3'); g.addColorStop(.5, '#A7B6CA'); g.addColorStop(1, '#D3DCE8');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2;
+    for (var x = -h; x < w; x += 14) { ctx.beginPath(); ctx.moveTo(x, h); ctx.lineTo(x + h, 0); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(6,18,46,.7)'; ctx.font = '700 26px "Chakra Petch", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('SCRATCH HERE', w / 2, h / 2);
+    var down = false, last = null, moves = 0;
+    function pos(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * w / r.width, (e.clientY - r.top) * h / r.height]; }
+    function draw(e) {
+      var p = pos(e);
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineWidth = 44; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.moveTo(last ? last[0] : p[0], last ? last[1] : p[1]); ctx.lineTo(p[0] + .01, p[1]); ctx.stroke();
+      last = p;
+    }
+    function cleared() {
+      var d = ctx.getImageData(0, 0, w, h).data, n = 0, t = 0;
+      for (var i = 3; i < d.length; i += 64) { t++; if (d[i] < 40) n++; }
+      return n / t;
+    }
+    cv.addEventListener('pointerdown', function (e) { down = true; last = null; cv.setPointerCapture(e.pointerId); draw(e); });
+    cv.addEventListener('pointermove', function (e) { if (!down) return; draw(e); if (++moves % 10 === 0 && cleared() > .5) { down = false; reveal(card); } });
+    function up() { if (!down) return; down = false; if (cleared() > .5) reveal(card); }
+    cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  }
+
+  /* ---------- badges ---------- */
+  var BADGES = [
+    { id: 'first', name: 'First Transfer', desc: 'Make your first payment', target: 1, reward: 100, glyph: '1', get: function () { return S.payments; } },
+    { id: 'ten', name: 'Ten-Timer', desc: 'Make 10 payments', target: 10, reward: 250, glyph: '10', get: function () { return S.payments; } },
+    { id: 'fifty', name: 'Half-Century', desc: 'Make 50 payments', target: 50, reward: 1000, glyph: '50', get: function () { return S.payments; } },
+    { id: 'vol', name: 'Big Mover', desc: 'Send K 5,000 in total', target: 5000, reward: 750, glyph: '5K', get: function () { return S.volume; } },
+    { id: 'week', name: 'Week Warrior', desc: 'Reach a 7-day check-in streak', target: 7, reward: 300, glyph: '7', get: function () { return Math.max(S.best, effStreak()); } },
+    { id: 'shark', name: 'Card Shark', desc: 'Scratch 5 cards', target: 5, reward: 200, glyph: '5', get: function () { return S.scratched; } }
+  ];
+  function badgeState(b) { var v = Math.min(b.get(), b.target); return { v: v, ready: v >= b.target && !S.claimed[b.id], got: !!S.claimed[b.id] }; }
+  function renderBadges() {
+    var html = '', got = 0;
+    BADGES.forEach(function (b) {
+      var s = badgeState(b); if (s.got) got++;
+      var fill = s.got ? '#22D3EE' : 'none', stroke = s.got || s.ready ? '#22D3EE' : 'var(--line)', txt = s.got ? '#04223A' : (s.ready ? 'var(--accent)' : 'var(--muted)');
+      html += '<div class="badge' + (s.ready ? ' ready' : '') + '"><div class="hex"><svg viewBox="0 0 56 56"><polygon points="28,3 51,16 51,40 28,53 5,40 5,16" fill="' + fill + '" stroke="' + stroke + '" stroke-width="3"/><text x="28" y="29" fill="' + txt + '">' + b.glyph + '</text></svg></div>' +
+        '<div><h3>' + b.name + '</h3><p>' + b.desc + '</p><div class="bar"><i style="width:' + (s.v / b.target * 100) + '%"></i></div><div class="cnt">' + fmt(s.v) + ' / ' + fmt(b.target) + '</div></div>' +
+        '<button class="claim' + (s.got ? ' got' : '') + '" data-b="' + b.id + '" type="button"' + (s.ready ? '' : ' disabled') + '>' + (s.got ? 'Claimed' : 'K ' + fmt(b.reward)) + '</button></div>';
+    });
+    $('#badges').innerHTML = html;
+    $('#badgeSub').textContent = got + ' of ' + BADGES.length + ' claimed. Reach a milestone, then claim its one-time payout.';
+    Array.prototype.forEach.call(document.querySelectorAll('.claim'), function (el) {
+      el.addEventListener('click', function () {
+        var b = BADGES.filter(function (x) { return x.id === el.getAttribute('data-b'); })[0];
+        if (!b || !badgeState(b).ready) return;
+        S.claimed[b.id] = true; credit(b.reward, 'Badge: ' + b.name, true);
+        renderAll();
+      });
+    });
+  }
+
+  /* ---------- passbook ---------- */
+  function renderLedger() {
+    $('#ledger').innerHTML = S.ledger.map(function (e) {
+      var pos = e.a >= 0;
+      return '<li><div><div class="t">' + e.t + '</div><div class="d">' + e.d + '</div></div><div class="a ' + (pos ? 'in' : 'out') + '">' +
+        (pos ? '+' : '\u2212') + 'K ' + fmt(Math.abs(e.a)) + '</div></li>';
+    }).join('');
+  }
+
+  /* ---------- tab dots ---------- */
+  function setDot(id, n) { var d = $('#d-' + id); d.textContent = n > 1 ? n : ''; d.classList.toggle('on', n > 0); if (n === 1) d.textContent = '!'; }
+  function renderDots() {
+    var todayDate = getToday();
+    setDot('checkin', S.lastCheckin === todayDate ? 0 : 1);
+    setDot('vault', S.spinDay === todayDate ? 0 : 1);
+    setDot('scratch', S.cards.filter(function (c) { return !c.done; }).length);
+    setDot('badges', BADGES.filter(function (b) { return badgeState(b).ready; }).length);
+  }
+
+  /* ---------- render all / tabs ---------- */
+  function renderAll(forceScratch) {
+    renderHero(false); renderCheckin(); renderVault(); renderScratch(!!forceScratch); renderBadges(); renderLedger(); renderDots();
+  }
+  function showTab(name) {
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) { t.setAttribute('aria-selected', t.getAttribute('data-tab') === name ? 'true' : 'false'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.view'), function (v) { v.classList.toggle('active', v.id === 'view-' + name); });
+    window.scrollTo(0, 0);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) { t.addEventListener('click', function () { showTab(t.getAttribute('data-tab')); }); });
+
+  /* ---------- hero buttons ---------- */
+  $('#eye').addEventListener('click', function () { S.hidden = !S.hidden; save(); renderHero(false); });
+  $('#refresh').addEventListener('click', function () {
+    var ic = this.querySelector('svg'); ic.parentNode.classList.remove('spin-once'); void ic.offsetWidth; ic.parentNode.classList.add('spin-once');
+    fetchRealBalance(); toast(S.hidden ? 'Balance synced.' : 'Balance synced.');
+  });
+  $('#copy').addEventListener('click', function () {
+    try { navigator.clipboard.writeText(currentUser).then(function () { toast('ID copied: ' + currentUser); }, function () { toast('Copy blocked.'); }); }
+    catch (e) { toast('Copy blocked.'); }
+  });
+
+  /* ---------- init ---------- */
+  buildWheel();
+  fetchRealBalance(); // Initial Server Sync
+  renderAll(true);
+  if (S.pendingSpin) { var p = S.pendingSpin; finishSpin(p); }
+})();
+</script>
+</body>
+</html>
 

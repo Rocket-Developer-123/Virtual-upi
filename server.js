@@ -14,6 +14,11 @@ const pool = new Pool({
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+// Route for the new Quests/Earn ecosystem
+app.get('/quests', (req, res) => {
+    res.sendFile(__dirname + '/quests.html');
+});
+
 
 // --- AUTHENTICATION ---
 app.post('/register', async (req, res) => {

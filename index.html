@@ -170,12 +170,13 @@
         .contact-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--tile); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; margin-right: 12px; }
         
         /* Fixed Viewport Heights for Smooth Scrolling */
-        .scan-payment-screen { position: fixed; inset: 0; background: var(--surface); display: flex; flex-direction: column; z-index: 250; color: var(--text); height: 100vh; height: 100svh; overflow-y: auto; }
+        .scan-payment-screen { position: fixed; inset: 0; background: var(--surface); display: flex; flex-direction: column; z-index: 9999; color: var(--text); overflow-y: auto; }
         .scan-header { padding: 20px; text-align: center; position: relative; border-bottom: 1px solid var(--line); flex-shrink: 0; }
         .amount-display-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; min-height: 150px; }
         .amount-text { font-size: 60px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px; }
-        
-        .numpad-container { background: var(--bg); border-radius: 24px 24px 0 0; padding: 25px 20px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); margin-top: auto; flex-shrink: 0; }
+
+        .numpad-container { background: var(--bg); border-radius: 24px 24px 0 0; padding: 25px 20px 45px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); margin-top: auto; flex-shrink: 0; }
+
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
         .num-key { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; font-size: 26px; font-weight: 600; color: var(--text); padding: 18px 0; cursor: pointer; }
         .num-key:active { background: var(--line); transform: scale(0.95); }

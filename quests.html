@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RPAY Quests</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  =====================================================================
+  RPAY QUESTS — API CONTRACT
+  =====================================================================
+  This page holds NO game state in the browser. Every balance, streak,
+  spin, card and badge lives in your database and is fetched fresh on
+  load and after every action. The only thing read from localStorage
+  is 'rpay_currentUser' — the same identity handoff your dashboard and
+  other pages already use — so the user isn't asked to log in twice.
+
+  Your server needs to expose:
+
+  GET  /api/quests/state/:upi_id
+    -> 200 { success:true,
+             balance: number,          // main wallet
+             reward_balance: number,   // reward wallet
+             streak: number,           // current check-in streak
+             best_streak: number,
+             last_checkin_day: number|null,  // epoch day, floor(ms/86400000), UTC
+             spin_day: number|null,          // epoch day of last free spin
+             payments: number,         // lifetime payment count
+             volume: number,           // lifetime payment volume
+             scratched: number,        // lifetime cards scratched
+             cards: [{ id, prize, done }],   // scratch cards owned
+             claimed_badges: ["first", ...],
+             ledger: [{ id, date, label, amount }]  // newest first
+           }
+
+  POST /api/quests/checkin        { upi_id }
+    -> { success, reward }  |  { success:false, error }
+       Server decides the day, the streak, and the reward amount —
+       the client never sends these.
+
+  POST /api/quests/spin           { upi_id }
+    -> { success, prize }  |  { success:false, error }
+       Server picks the prize (weighted random) and enforces one
+       free spin per UTC day.
+
+  POST /api/quests/scratch/buy    { upi_id }
+    -> { success, card:{ id, prize } }  |  { success:false, error }
+       Server deducts K 50 from reward_balance and assigns the prize.
+
+  POST /api/quests/scratch/reveal { upi_id, card_id }
+    -> { success, prize }  |  { success:false, error }
+       Server credits the card's prize to reward_balance.
+
+  POST /api/quests/badge/claim    { upi_id, badge_id }
+    -> { success, reward }  |  { success:false, error }
+       Server re-checks eligibility before paying out.
+
+  POST /api/quests/redeem         { upi_id, pin, amount }
+    -> { success }  |  { success:false, error }
+       Moves reward_balance -> balance. PIN is required here because
+       it's the only action that touches the main wallet.
+  =====================================================================
+-->
+<style>
+:root {
+  --bg:#EAF0F8; --surface:#FFFFFF; --surface2:#F2F6FB; --ink:#0B1B35; --muted:#5B6B87;
+  --line:#D7E0EC; --grid:rgba(11,27,53,.04); --accent:#0A7C99; --fill:#22D3EE; --on-fill:#04223A;
+  --good:#0E8A57; --bad:#C2384A; --navy1:#123A7A; --navy2:#081B3E; --hero-ink:#EAF4FF;
+  --shadow:0 10px 28px -16px rgba(11,27,53,.35);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#04101F; --surface:#0C1D33; --surface2:#122A48; --ink:#E7F1FF; --muted:#8FA5C4;
+    --line:#1E3559; --grid:rgba(56,232,255,.05); --shadow:0 10px 28px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#04101F; --surface:#0C1D33; --surface2:#122A48; --ink:#E7F1FF; --muted:#8FA5C4;
+  --line:#1E3559; --grid:rgba(56,232,255,.05); --shadow:0 10px 28px -16px rgba(0,0,0,.7);
+}
+html { scroll-padding-top:env(safe-area-inset-top,0px); }
+*,*::before,*::after { box-sizing:border-box; }
+body {
+  margin:0; background-color:var(--bg); color:var(--ink);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:30px 30px;
+  font-family:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  font-size:16px; line-height:1.45; -webkit-font-smoothing:antialiased; padding-bottom:96px;
+}
+button { font:inherit; color:inherit; cursor:pointer; background:none; border:0; padding:0; -webkit-tap-highlight-color:transparent; }
+:focus-visible { outline:3px solid var(--fill); outline-offset:2px; border-radius:8px; }
+h1,h2,h3,.num { font-family:'Chakra Petch','Figtree',sans-serif; }
+h2 { font-size:21px; margin:0 0 4px; }
+.sub { margin:0 0 16px; color:var(--muted); font-size:14px; max-width:44ch; }
+.hidden { display:none !important; }
+
+.app { max-width:460px; margin:0 auto; padding:0 16px; }
+.top { display:flex; align-items:center; justify-content:space-between; padding:14px 0 12px; }
+.brand { font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:19px; letter-spacing:.3px; }
+.pill-btn { border:1px solid var(--line); background:var(--surface); border-radius:999px; padding:7px 14px; font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:6px; }
+.pill-btn:hover { border-color:var(--accent); }
+.pill-btn svg { width:15px; height:15px; }
+
+/* wallets */
+.wallets { display:grid; gap:10px; margin-bottom:20px; }
+.wallet { border-radius:18px; padding:16px; color:var(--hero-ink); display:flex; align-items:center; gap:14px;
+  background:radial-gradient(120% 100% at 90% -10%, rgba(34,211,238,.28), transparent 55%), linear-gradient(160deg,var(--navy1),var(--navy2));
+  box-shadow:var(--shadow); }
+.wallet.reward { background:radial-gradient(120% 100% at 90% -10%, rgba(34,211,238,.35), transparent 55%), linear-gradient(160deg,#0A7C99,#052F45);
+  border:1px solid rgba(34,211,238,.4); }
+.coin { width:52px; height:52px; border-radius:50%; overflow:hidden; flex-shrink:0; background:#04122a;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(34,211,238,.4); }
+.coin img { width:135%; height:135%; object-fit:cover; }
+.coin svg { width:70%; height:70%; }
+.wlbl { font-size:12.5px; color:#A9C1E4; }
+.wnum { font-size:24px; font-weight:700; font-family:'Chakra Petch',sans-serif; margin-top:2px; font-variant-numeric:tabular-nums; }
+.redeem-btn { margin-left:auto; background:var(--fill); color:var(--on-fill); border:0; border-radius:12px; padding:10px 16px;
+  font-weight:700; font-family:'Chakra Petch',sans-serif; font-size:14px; white-space:nowrap; }
+.redeem-btn:disabled { background:rgba(255,255,255,.15); color:rgba(255,255,255,.4); }
+
+.view { display:none; } .view.active { display:block; }
+.panel { background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:16px; box-shadow:var(--shadow); }
+.btn { width:100%; border-radius:14px; padding:14px 16px; font-weight:700; font-size:15.5px;
+  background:var(--fill); color:var(--on-fill); font-family:'Chakra Petch',sans-serif; }
+.btn:hover:not(:disabled) { filter:brightness(1.05); }
+.btn:disabled { background:var(--surface2); color:var(--muted); cursor:not-allowed; }
+.btn.ghost { background:transparent; color:var(--ink); border:1px solid var(--line); }
+.note { margin:12px 0 0; font-size:13.5px; color:var(--muted); }
+.skeleton { color:var(--muted); font-size:14px; padding:6px 2px; }
+
+/* check-in */
+.streak-head { display:flex; align-items:baseline; gap:9px; margin-bottom:14px; }
+.streak-head .num { font-size:40px; font-weight:700; color:var(--accent); line-height:1; }
+.streak-head span { color:var(--muted); font-size:14px; }
+.days { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:16px; }
+.day { text-align:center; border:1px solid var(--line); border-radius:12px; padding:8px 0 7px; background:var(--surface2); }
+.day small { display:block; color:var(--muted); font-size:11px; }
+.day b { display:block; font-family:'Chakra Petch',sans-serif; font-size:13.5px; margin-top:2px; }
+.day.done { background:var(--fill); border-color:var(--fill); color:var(--on-fill); }
+.day.done small { color:var(--on-fill); opacity:.75; }
+.day.next { border:2px solid var(--fill); }
+
+/* vault */
+.wheel-wrap { position:relative; width:min(100%,300px); aspect-ratio:1; margin:4px auto 16px; }
+.wheel { width:100%; height:100%; transition:transform 4.5s cubic-bezier(.1,.7,.1,1); display:block; filter:drop-shadow(0 10px 18px rgba(4,34,58,.3)); }
+.hub { position:absolute; inset:0; margin:auto; width:26%; aspect-ratio:1; border-radius:50%; background:#081B3E;
+  box-shadow:0 0 0 5px var(--surface),0 0 18px rgba(34,211,238,.5); display:grid; place-items:center; overflow:hidden; }
+.hub img { width:100%; height:100%; object-fit:cover; }
+.pointer { position:absolute; top:-7px; left:50%; width:0; height:0; margin-left:-12px; z-index:2;
+  border-left:12px solid transparent; border-right:12px solid transparent; border-top:24px solid var(--fill);
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+.win { text-align:center; font-family:'Chakra Petch',sans-serif; font-size:17px; min-height:26px; margin:-2px 0 10px; color:var(--accent); font-weight:600; }
+
+/* scratch */
+.scratch { position:relative; aspect-ratio:2/1; border-radius:16px; overflow:hidden; background:linear-gradient(150deg,var(--navy1),var(--navy2)); border:1px solid var(--line); }
+.prize { position:absolute; inset:0; display:grid; place-content:center; text-align:center; color:#EAF4FF; }
+.prize small { color:#A9C1E4; font-size:12.5px; }
+.prize b { font-family:'Chakra Petch',sans-serif; font-size:38px; color:#22D3EE; line-height:1.1; }
+.scratch canvas { position:absolute; inset:0; width:100%; height:100%; touch-action:none; cursor:crosshair; transition:opacity .5s; }
+.scratch canvas.gone { opacity:0; pointer-events:none; }
+.empty { text-align:center; padding:6px 4px 2px; }
+.empty p { color:var(--muted); margin:0 0 14px; font-size:14px; }
+
+/* badges */
+.badges { display:grid; gap:10px; }
+.badge { display:grid; grid-template-columns:52px 1fr auto; gap:12px; align-items:center; background:var(--surface);
+  border:1px solid var(--line); border-radius:16px; padding:12px; }
+.badge.ready { border-color:var(--fill); }
+.hex svg { width:52px; height:52px; }
+.hex text { font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:17px; text-anchor:middle; dominant-baseline:central; }
+.badge h3 { margin:0; font-size:15px; }
+.badge p { margin:1px 0 6px; font-size:12.5px; color:var(--muted); }
+.bar { height:6px; border-radius:6px; background:var(--surface2); overflow:hidden; }
+.bar i { display:block; height:100%; background:var(--fill); border-radius:6px; transition:width .5s; }
+.badge .cnt { font-size:11.5px; color:var(--muted); margin-top:4px; }
+.claim { border:0; border-radius:12px; padding:9px 12px; font-weight:700; font-family:'Chakra Petch',sans-serif; background:var(--fill); color:var(--on-fill); font-size:13px; }
+.claim:disabled { background:var(--surface2); color:var(--muted); }
+.claim.got { background:transparent; color:var(--good); border:1px solid var(--good); }
+
+/* passbook */
+.ledger { list-style:none; margin:0; padding:0; }
+.ledger li { display:flex; justify-content:space-between; gap:12px; padding:12px 2px; border-bottom:1px solid var(--line); }
+.ledger li:last-child { border-bottom:0; }
+.ledger .t { font-weight:600; font-size:14.5px; }
+.ledger .d { font-size:12px; color:var(--muted); }
+.ledger .a { font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:15px; white-space:nowrap; }
+.in { color:var(--good); } .out { color:var(--bad); }
+
+/* tabs */
+.tabs { position:fixed; bottom:0; left:0; right:0; margin:0 auto; max-width:460px; z-index:20;
+  display:grid; grid-template-columns:repeat(5,1fr); background:var(--surface); border-top:1px solid var(--line);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px)); }
+.tab { position:relative; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0 4px;
+  font-size:11px; font-weight:600; color:var(--muted); }
+.tab svg { width:20px; height:20px; }
+.tab[aria-selected="true"] { color:var(--accent); }
+.tab[aria-selected="true"]::before { content:''; position:absolute; top:-7px; width:26px; height:3px; border-radius:3px; background:var(--fill); }
+.dot { position:absolute; top:1px; left:calc(50% + 7px); min-width:15px; height:15px; padding:0 4px; border-radius:8px; background:var(--fill);
+  color:var(--on-fill); font-size:10px; font-weight:800; display:none; align-items:center; justify-content:center; }
+.dot.on { display:inline-flex; }
+
+/* toast */
+.toast { position:fixed; left:50%; bottom:calc(84px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,16px); opacity:0; pointer-events:none;
+  background:var(--navy2); color:#EAF4FF; border:1px solid #22D3EE; border-radius:14px; padding:10px 16px; font-weight:600; font-size:14px;
+  transition:.25s; z-index:400; max-width:calc(100vw - 32px); text-align:center; box-shadow:0 10px 22px -10px rgba(0,0,0,.55); }
+.toast.show { opacity:1; transform:translate(-50%,0); }
+
+/* modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(4,17,38,.65); display:flex; align-items:flex-end; justify-content:center; z-index:200; backdrop-filter:blur(3px); }
+.modal-content { background:var(--surface); width:100%; max-width:480px; border-radius:22px 22px 0 0; padding:22px; position:relative; text-align:center; }
+.modal-close { position:absolute; top:14px; right:14px; background:var(--surface2); color:var(--ink); border:0; width:30px; height:30px; border-radius:50%; font-weight:700; }
+.modal-content h3 { margin:0 0 4px; }
+.pin-input { width:100%; border:1px solid var(--line); background:var(--surface2); color:var(--ink); border-radius:10px;
+  text-align:center; font-size:24px; letter-spacing:14px; padding:14px 0 14px 14px; margin-bottom:14px; }
+.pin-numpad { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+.num-key { padding:13px 0; font-size:21px; background:var(--surface2); border:1px solid var(--line); border-radius:12px; font-weight:600; color:var(--accent); }
+.num-key:active { background:var(--line); }
+.num-key.blank { background:transparent; border:0; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <span class="brand">RPAY Quests</span>
+    <button class="pill-btn" type="button" id="toDashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Dashboard
+    </button>
+  </header>
+
+  <div class="wallets">
+    <div class="wallet">
+      <div class="coin"><img src="1789966012698.png" alt="" onerror="this.remove()"></div>
+      <div>
+        <div class="wlbl">Main balance</div>
+        <div class="wnum" id="mainBal">K —</div>
+      </div>
+    </div>
+    <div class="wallet reward">
+      <div>
+        <div class="wlbl" style="color:#BEF3FF">Reward wallet</div>
+        <div class="wnum" id="rewardBal">K —</div>
+      </div>
+      <button class="redeem-btn" type="button" id="redeemBtn" disabled>Redeem</button>
+    </div>
+  </div>
+
+  <main>
+    <section class="view active" id="view-checkin" role="tabpanel" aria-labelledby="t-checkin">
+      <h2>Daily check-in</h2>
+      <p class="sub">Rewards climb each day to K 200 on day 7, then the cycle repeats.</p>
+      <div class="panel" id="checkinPanel"><p class="skeleton">Loading…</p></div>
+    </section>
+
+    <section class="view" id="view-vault" role="tabpanel" aria-labelledby="t-vault">
+      <h2>Spin the Vault</h2>
+      <p class="sub">One free spin every day. Prizes run from K 10 to a K 1,000 jackpot.</p>
+      <div class="panel">
+        <div class="wheel-wrap">
+          <div class="pointer" aria-hidden="true"></div>
+          <svg class="wheel" id="wheel" viewBox="0 0 300 300" aria-hidden="true"></svg>
+          <div class="hub"><img src="1789966012698.png" alt="" onerror="this.remove()"></div>
+        </div>
+        <div class="win" id="win" aria-live="polite"></div>
+        <button class="btn" id="spinBtn" type="button" disabled>Loading…</button>
+        <p class="note" id="spinNote"></p>
+      </div>
+    </section>
+
+    <section class="view" id="view-scratch" role="tabpanel" aria-labelledby="t-scratch">
+      <h2>Scratch cards</h2>
+      <p class="sub">Buy a card for K 50 Rewards. Win up to K 500 Rewards.</p>
+      <div class="panel" id="scratchPanel"><p class="skeleton">Loading…</p></div>
+    </section>
+
+    <section class="view" id="view-badges" role="tabpanel" aria-labelledby="t-badges">
+      <h2>Badges</h2>
+      <p class="sub" id="badgeSub">Loading…</p>
+      <div class="badges" id="badges"></div>
+    </section>
+
+    <section class="view" id="view-passbook" role="tabpanel" aria-labelledby="t-passbook">
+      <h2>Passbook</h2>
+      <p class="sub">Recent quest rewards and redemptions.</p>
+      <div class="panel"><ul class="ledger" id="ledger"><li class="skeleton" style="border:0">Loading…</li></ul></div>
+    </section>
+  </main>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Quest sections">
+  <button class="tab" role="tab" id="t-checkin" data-tab="checkin" aria-selected="true" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18M9 15l2 2 4-4"/></svg>
+    Check-in<span class="dot" id="d-checkin"></span></button>
+  <button class="tab" role="tab" id="t-vault" data-tab="vault" aria-selected="false" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+    Vault<span class="dot" id="d-vault"></span></button>
+  <button class="tab" role="tab" id="t-scratch" data-tab="scratch" aria-selected="false" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 15l3-4 3 3 2-2 2 3"/></svg>
+    Scratch<span class="dot" id="d-scratch"></span></button>
+  <button class="tab" role="tab" id="t-badges" data-tab="badges" aria-selected="false" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4.5v9L12 20l-8-4.5v-9z"/><path d="M9 11l2 2 4-4"/></svg>
+    Badges<span class="dot" id="d-badges"></span></button>
+  <button class="tab" role="tab" id="t-passbook" data-tab="passbook" aria-selected="false" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h12a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+    Passbook</button>
+</nav>
+
+<div id="pinModal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <button class="modal-close" type="button" id="pinClose">✕</button>
+    <h3>Redeem to main wallet</h3>
+    <p class="sub" style="margin:0 0 16px">Moving <span id="redeemAmtLbl" style="font-weight:700;color:var(--accent)"></span> from your reward wallet.</p>
+    <input type="password" id="pinInput" class="pin-input" readonly placeholder="••••" maxlength="4">
+    <div class="pin-numpad">
+      <button class="num-key" type="button" data-k="1">1</button><button class="num-key" type="button" data-k="2">2</button><button class="num-key" type="button" data-k="3">3</button>
+      <button class="num-key" type="button" data-k="4">4</button><button class="num-key" type="button" data-k="5">5</button><button class="num-key" type="button" data-k="6">6</button>
+      <button class="num-key" type="button" data-k="7">7</button><button class="num-key" type="button" data-k="8">8</button><button class="num-key" type="button" data-k="9">9</button>
+      <button class="num-key blank" type="button" tabindex="-1"></button><button class="num-key" type="button" data-k="0">0</button><button class="num-key" type="button" data-k="back">⌫</button>
+    </div>
+    <button class="btn" type="button" id="confirmRedeem">Confirm PIN</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var currentUser = localStorage.getItem('rpay_currentUser');
+  if (!currentUser) { window.location.href = '/'; return; }
+
+  var $ = function (s) { return document.querySelector(s); };
+  var fmt = function (n) { n = Number(n) || 0; return n.toLocaleString('en-US', { maximumFractionDigits: 2 }); };
+
+  var toastTimer;
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2400);
+  }
+
+  function getToday() {
+    var d = new Date();
+    return Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) / 86400000);
+  }
+
+  async function api(path, body) {
+    var opts = { headers: { 'Content-Type': 'application/json' } };
+    if (body) { opts.method = 'POST'; opts.body = JSON.stringify(body); }
+    var res = await fetch(path, opts);
+    var data = null;
+    try { data = await res.json(); } catch (e) { data = null; }
+    if (!res.ok || !data) return { success: false, error: 'Network error. Please try again.' };
+    return data;
+  }
+
+  var REWARDS = [20, 30, 40, 60, 80, 120, 200];
+  var PRIZES = [10, 50, 20, 100, 25, 1000, 75, 250];
+  var BADGES = [
+    { id: 'first', name: 'First Transfer', desc: 'Make your first payment', target: 1, get: function (s) { return s.payments; } },
+    { id: 'ten', name: 'Ten-Timer', desc: 'Make 10 payments', target: 10, get: function (s) { return s.payments; } },
+    { id: 'fifty', name: 'Half-Century', desc: 'Make 50 payments', target: 50, get: function (s) { return s.payments; } },
+    { id: 'vol', name: 'Big Mover', desc: 'Send K 5,000 in total', target: 5000, get: function (s) { return s.volume; } },
+    { id: 'week', name: 'Week Warrior', desc: 'Reach a 7-day check-in streak', target: 7, get: function (s) { return s.best_streak; } },
+    { id: 'shark', name: 'Card Shark', desc: 'Scratch 5 cards', target: 5, get: function (s) { return s.scratched; } }
+  ];
+
+  var state = null;   // last state fetched from the server
+  var spinning = false;
+  var rot = 0;
+
+  async function loadState() {
+    var data = await api('/api/quests/state/' + encodeURIComponent(currentUser));
+    if (!data.success) { toast(data.error || 'Could not load quest data.'); return; }
+    state = data;
+    renderAll();
+  }
+
+  function renderAll() {
+    if (!state) return;
+    $('#mainBal').textContent = 'K ' + fmt(state.balance);
+    $('#rewardBal').textContent = 'K ' + fmt(state.reward_balance);
+    $('#redeemBtn').disabled = !(state.reward_balance > 0);
+    renderCheckin();
+    renderVault();
+    renderScratch();
+    renderBadges();
+    renderLedger();
+    renderDots();
+  }
+
+  /* ---------- check-in ---------- */
+  function renderCheckin() {
+    var today = getToday();
+    var checkedToday = state.last_checkin_day === today;
+    var eff = (state.last_checkin_day === today || state.last_checkin_day === today - 1) ? state.streak : 0;
+    var weekPos = checkedToday ? ((eff - 1) % 7 + 7) % 7 + 1 : eff % 7;
+    var nextIdx = checkedToday ? -1 : weekPos;
+    var reward = REWARDS[eff % 7];
+    var days = '';
+    for (var i = 0; i < 7; i++) {
+      var cls = 'day' + (i < weekPos ? ' done' : '') + (i === nextIdx ? ' next' : '');
+      days += '<div class="' + cls + '"><small>Day ' + (i + 1) + '</small><b>K ' + REWARDS[i] + '</b></div>';
+    }
+    $('#checkinPanel').innerHTML =
+      '<div class="streak-head"><div class="num">' + eff + '</div><span>day streak</span></div>' +
+      '<div class="days">' + days + '</div>' +
+      '<button class="btn" id="claimDaily" type="button"' + (checkedToday ? ' disabled' : '') + '>' +
+      (checkedToday ? 'Claimed today' : 'Claim K ' + reward) + '</button>' +
+      '<p class="note">' + (checkedToday ? 'Come back tomorrow to keep your streak alive.' : 'A missed day resets your streak to 0.') + '</p>';
+    var b = $('#claimDaily');
+    if (b) b.addEventListener('click', async function () {
+      b.disabled = true; b.textContent = 'Claiming…';
+      var res = await api('/api/quests/checkin', { upi_id: currentUser });
+      if (res.success) { toast('+K ' + res.reward + ' Daily check-in'); await loadState(); }
+      else { toast(res.error || 'Could not check in.'); b.disabled = false; renderCheckin(); }
+    });
+  }
+
+  /* ---------- vault ---------- */
+  function polar(a, r) { var d = a * Math.PI / 180; return [(150 + r * Math.sin(d)).toFixed(2), (150 - r * Math.cos(d)).toFixed(2)]; }
+  function buildWheel() {
+    var svg = '<circle cx="150" cy="150" r="149" fill="#081B3E" stroke="#22D3EE" stroke-width="2"/>';
+    for (var i = 0; i < 8; i++) {
+      var a1 = i * 45, p1 = polar(a1, 140), p2 = polar(a1 + 45, 140);
+      var big = PRIZES[i] >= 250;
+      var fill = PRIZES[i] === 1000 ? '#22D3EE' : (i % 2 ? '#0C2352' : '#123064');
+      var ink = PRIZES[i] === 1000 ? '#04223A' : '#DFF6FF';
+      svg += '<path d="M150 150 L' + p1[0] + ' ' + p1[1] + ' A140 140 0 0 1 ' + p2[0] + ' ' + p2[1] + ' Z" fill="' + fill + '" stroke="#2B4A8C" stroke-width="1"/>';
+      svg += '<text x="150" y="58" text-anchor="middle" font-family="Chakra Petch,sans-serif" font-weight="700" font-size="' + (big ? 15 : 17) + '" fill="' + ink + '" transform="rotate(' + (a1 + 22.5) + ' 150 150)">K ' + fmt(PRIZES[i]) + '</text>';
+    }
+    $('#wheel').innerHTML = svg;
+  }
+  function renderVault() {
+    var today = getToday();
+    var canSpin = state.spin_day !== today && !spinning;
+    var b = $('#spinBtn');
+    b.disabled = !canSpin;
+    b.textContent = spinning ? 'Spinning…' : (state.spin_day === today ? 'Spun today' : 'Spin the Vault');
+    $('#spinNote').textContent = state.spin_day === today && !spinning
+      ? 'Your free spin is used. It resets tomorrow.'
+      : 'Your free spin for today is ready.';
+  }
+  async function doSpin() {
+    var today = getToday();
+    if (spinning || state.spin_day === today) return;
+    spinning = true; $('#win').textContent = ''; renderVault();
+    var res = await api('/api/quests/spin', { upi_id: currentUser });
+    if (!res.success) {
+      spinning = false; toast(res.error || 'Could not spin.'); renderVault(); return;
+    }
+    var idx = PRIZES.indexOf(res.prize);
+    if (idx === -1) idx = 0;
+    var target = (360 - (idx * 45 + 22.5) + 360) % 360;
+    rot = rot - (rot % 360) + 360 * 5 + target;
+    var w = $('#wheel');
+    w.style.transition = 'transform 4.5s cubic-bezier(.1,.7,.1,1)';
+    w.style.transform = 'rotate(' + rot + 'deg)';
+    setTimeout(async function () {
+      spinning = false;
+      $('#win').textContent = res.prize === 1000 ? 'Jackpot! +K 1,000' : 'You won K ' + fmt(res.prize);
+      toast('+K ' + res.prize + ' Vault spin');
+      await loadState();
+    }, 4700);
+  }
+
+  /* ---------- scratch ---------- */
+  function renderScratch() {
+    var card = (state.cards || [])[0];
+    var p = $('#scratchPanel');
+    var canBuy = state.reward_balance >= 50;
+    if (!card) {
+      p.innerHTML = '<div class="empty"><p>No cards yet. Buy one with your reward wallet.</p>' +
+        '<button class="btn" id="buyCard" type="button"' + (canBuy ? '' : ' disabled') + '>Buy card — K 50 Rewards</button></div>';
+      var bb = $('#buyCard');
+      if (bb) bb.addEventListener('click', async function () {
+        bb.disabled = true; bb.textContent = 'Buying…';
+        var res = await api('/api/quests/scratch/buy', { upi_id: currentUser });
+        if (res.success) { toast('Card ready — scratch to reveal'); await loadState(); }
+        else { toast(res.error || 'Could not buy a card.'); await loadState(); }
+      });
+      return;
+    }
+    var left = (state.cards || []).length - 1;
+    p.innerHTML =
+      '<div class="scratch"><div class="prize"><small>' + (card.done ? 'You won' : 'Scratch to reveal') + '</small><b>K ' + fmt(card.prize) + '</b></div>' +
+      (card.done ? '' : '<canvas id="sc" width="360" height="180" aria-label="Scratch area"></canvas>') + '</div>' +
+      '<div style="margin-top:14px;display:grid;gap:8px">' +
+      (card.done
+        ? '<button class="btn" id="nextCard" type="button">' + (left ? 'Next card' : 'Done') + '</button>'
+        : '<button class="btn ghost" id="revealNow" type="button">Reveal now</button>') + '</div>' +
+      '<p class="note">' + (left ? left + ' more card' + (left > 1 ? 's' : '') + ' waiting.' : 'This is your last card.') + '</p>';
+    if (card.done) {
+      $('#nextCard').addEventListener('click', function () {
+        state.cards.shift(); renderScratch(); renderDots();
+      });
+    } else {
+      initCanvas(card);
+      $('#revealNow').addEventListener('click', function () { revealCard(card); });
+    }
+  }
+  var revealing = false;
+  async function revealCard(card) {
+    if (card.done || revealing) return;
+    revealing = true;
+    var cv = $('#sc'); if (cv) cv.classList.add('gone');
+    var res = await api('/api/quests/scratch/reveal', { upi_id: currentUser, card_id: card.id });
+    revealing = false;
+    if (res.success) {
+      toast('+K ' + res.prize + ' Scratch card');
+      await loadState();
+    } else {
+      toast(res.error || 'Could not reveal this card.');
+      await loadState();
+    }
+  }
+  function initCanvas(card) {
+    var cv = $('#sc'); if (!cv) return;
+    var ctx = cv.getContext('2d'), w = cv.width, h = cv.height;
+    var g = ctx.createLinearGradient(0, 0, w, h);
+    g.addColorStop(0, '#E4EBF3'); g.addColorStop(.5, '#A7B6CA'); g.addColorStop(1, '#D3DCE8');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2;
+    for (var x = -h; x < w; x += 14) { ctx.beginPath(); ctx.moveTo(x, h); ctx.lineTo(x + h, 0); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(6,18,46,.7)'; ctx.font = '700 24px "Chakra Petch", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('SCRATCH HERE', w / 2, h / 2);
+    var down = false, last = null, moves = 0;
+    function pos(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * w / r.width, (e.clientY - r.top) * h / r.height]; }
+    function draw(e) {
+      var p = pos(e);
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineWidth = 42; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath(); ctx.moveTo(last ? last[0] : p[0], last ? last[1] : p[1]); ctx.lineTo(p[0] + .01, p[1]); ctx.stroke();
+      last = p;
+    }
+    function cleared() {
+      var d = ctx.getImageData(0, 0, w, h).data, n = 0, t = 0;
+      for (var i = 3; i < d.length; i += 64) { t++; if (d[i] < 40) n++; }
+      return n / t;
+    }
+    cv.addEventListener('pointerdown', function (e) { down = true; last = null; cv.setPointerCapture(e.pointerId); draw(e); });
+    cv.addEventListener('pointermove', function (e) { if (!down) return; draw(e); if (++moves % 10 === 0 && cleared() > .5) { down = false; revealCard(card); } });
+    function up() { if (!down) return; down = false; if (cleared() > .5) revealCard(card); }
+    cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  }
+
+  /* ---------- badges ---------- */
+  function badgeProgress(b) {
+    var v = Math.min(b.get(state) || 0, b.target);
+    var got = (state.claimed_badges || []).indexOf(b.id) !== -1;
+    return { v: v, ready: v >= b.target && !got, got: got };
+  }
+  function renderBadges() {
+    var html = '', got = 0;
+    BADGES.forEach(function (b) {
+      var s = badgeProgress(b); if (s.got) got++;
+      var fill = s.got ? '#22D3EE' : 'none', stroke = s.got || s.ready ? '#22D3EE' : 'var(--line)', ink = s.got ? '#04223A' : (s.ready ? 'var(--accent)' : 'var(--muted)');
+      html += '<div class="badge' + (s.ready ? ' ready' : '') + '"><div class="hex"><svg viewBox="0 0 56 56"><polygon points="28,3 51,16 51,40 28,53 5,40 5,16" fill="' + fill + '" stroke="' + stroke + '" stroke-width="3"/><text x="28" y="29" fill="' + ink + '">' + fmt(b.target) + '</text></svg></div>' +
+        '<div><h3>' + b.name + '</h3><p>' + b.desc + '</p><div class="bar"><i style="width:' + (s.v / b.target * 100) + '%"></i></div><div class="cnt">' + fmt(s.v) + ' / ' + fmt(b.target) + '</div></div>' +
+        '<button class="claim' + (s.got ? ' got' : '') + '" data-b="' + b.id + '" type="button"' + (s.ready ? '' : ' disabled') + '>' + (s.got ? 'Claimed' : 'Claim') + '</button></div>';
+    });
+    $('#badges').innerHTML = html;
+    $('#badgeSub').textContent = got + ' of ' + BADGES.length + ' claimed.';
+    Array.prototype.forEach.call(document.querySelectorAll('.claim'), function (el) {
+      el.addEventListener('click', async function () {
+        var b = BADGES.filter(function (x) { return x.id === el.getAttribute('data-b'); })[0];
+        if (!b || !badgeProgress(b).ready) return;
+        el.disabled = true; el.textContent = '…';
+        var res = await api('/api/quests/badge/claim', { upi_id: currentUser, badge_id: b.id });
+        if (res.success) { toast('+K ' + res.reward + ' ' + b.name); await loadState(); }
+        else { toast(res.error || 'Could not claim this badge.'); await loadState(); }
+      });
+    });
+  }
+
+  /* ---------- passbook ---------- */
+  function renderLedger() {
+    var entries = state.ledger || [];
+    if (!entries.length) { $('#ledger').innerHTML = '<li style="border:0" class="skeleton">No activity yet.</li>'; return; }
+    $('#ledger').innerHTML = entries.map(function (e) {
+      var pos = e.amount >= 0;
+      return '<li><div><div class="t">' + e.label + '</div><div class="d">' + e.date + '</div></div><div class="a ' + (pos ? 'in' : 'out') + '">' +
+        (pos ? '+' : '\u2212') + 'K ' + fmt(Math.abs(e.amount)) + '</div></li>';
+    }).join('');
+  }
+
+  /* ---------- tab dots ---------- */
+  function setDot(id, n) { var d = $('#d-' + id); d.textContent = n > 1 ? n : (n === 1 ? '!' : ''); d.classList.toggle('on', n > 0); }
+  function renderDots() {
+    var today = getToday();
+    setDot('checkin', state.last_checkin_day === today ? 0 : 1);
+    setDot('vault', state.spin_day === today ? 0 : 1);
+    setDot('scratch', (state.cards || []).filter(function (c) { return !c.done; }).length);
+    setDot('badges', BADGES.filter(function (b) { return badgeProgress(b).ready; }).length);
+  }
+
+  /* ---------- tabs ---------- */
+  function showTab(name) {
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) { t.setAttribute('aria-selected', t.getAttribute('data-tab') === name ? 'true' : 'false'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.view'), function (v) { v.classList.toggle('active', v.id === 'view-' + name); });
+    window.scrollTo(0, 0);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) { t.addEventListener('click', function () { showTab(t.getAttribute('data-tab')); }); });
+
+  /* ---------- redeem modal ---------- */
+  var pin = '';
+  function openRedeem() {
+    if (!state || !(state.reward_balance > 0)) return;
+    pin = ''; $('#pinInput').value = '';
+    $('#redeemAmtLbl').textContent = 'K ' + fmt(state.reward_balance);
+    $('#pinModal').classList.remove('hidden');
+  }
+  function closeRedeem() { $('#pinModal').classList.add('hidden'); }
+  Array.prototype.forEach.call(document.querySelectorAll('.num-key[data-k]'), function (k) {
+    k.addEventListener('click', function () {
+      var v = k.getAttribute('data-k');
+      if (v === 'back') pin = pin.slice(0, -1);
+      else if (pin.length < 4) pin += v;
+      $('#pinInput').value = pin;
+    });
+  });
+  $('#pinClose').addEventListener('click', closeRedeem);
+  $('#redeemBtn').addEventListener('click', openRedeem);
+  $('#confirmRedeem').addEventListener('click', async function () {
+    if (pin.length !== 4) { toast('Enter your 4-digit PIN.'); return; }
+    var amount = state.reward_balance;
+    closeRedeem();
+    toast('Redeeming…');
+    var res = await api('/api/quests/redeem', { upi_id: currentUser, pin: pin, amount: amount });
+    if (res.success) { toast('Redeemed K ' + fmt(amount) + ' to main wallet'); await loadState(); }
+    else { toast(res.error || 'Redeem failed. Check your PIN.'); }
+  });
+
+  $('#toDashboard').addEventListener('click', function () { window.location.href = '/'; });
+  $('#spinBtn').addEventListener('click', doSpin);
+
+  buildWheel();
+  loadState();
+})();
+</script>
+</body>
+</html>

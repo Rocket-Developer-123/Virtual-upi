@@ -185,4 +185,42 @@ app.post('/admin/transactions', async (req, res) => {
     res.json({ success: true, data: result.rows });
 });
 
+// --- QUEST SYSTEM ROUTES ---
+
+// 1. Sync both balances
+app.get('/api/quests/sync/:upi_id', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT balance, reward_balance FROM users WHERE upi_id = $1', [req.params.upi_id]);
+        if (result.rows.length > 0) res.json({ success: true, balances: result.rows[0] });
+        else res.json({ success: false, error: 'User not found' });
+    } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// 2. Earn Reward (No PIN needed for playing games)
+app.post('/api/quests/earn', async (req, res) => {
+    const { upi_id, amount } = req.body;
+    try {
+        await pool.query('UPDATE users SET reward_balance = reward_balance + $1 WHERE upi_id = $2', [amount, upi_id]);
+        res.json({ success: true });
+    } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
+// 3. Redeem to Main Balance (PIN REQUIRED)
+app.post('/api/quests/redeem', async (req, res) => {
+    const { upi_id, pin, amount } = req.body;
+    try {
+        const user = await pool.query('SELECT pin, reward_balance FROM users WHERE upi_id = $1', [upi_id]);
+        if (user.rows.length === 0 || user.rows[0].pin !== pin) {
+            return res.json({ success: false, error: 'Invalid Security PIN' });
+        }
+        if (parseFloat(user.rows[0].reward_balance) < amount) {
+            return res.json({ success: false, error: 'Insufficient Reward Balance' });
+        }
+
+        // Deduct from rewards, add to main balance
+        await pool.query('UPDATE users SET reward_balance = reward_balance - $1, balance = balance + $1 WHERE upi_id = $2', [amount, upi_id]);
+        res.json({ success: true });
+    } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
 app.listen(process.env.PORT || 3000, () => console.log('API live'));

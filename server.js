@@ -190,9 +190,9 @@ app.post('/admin/transactions', async (req, res) => {
 // 1. Sync both balances
 app.get('/api/quests/sync/:upi_id', async (req, res) => {
     try {
-        const result = await pool.query('SELECT balance, reward_balance FROM users WHERE upi_id = $1', [req.params.upi_id]);
+        const result = await pool.query('SELECT balance, reward_balance FROM accounts WHERE upi_id = $1', [req.params.upi_id]);
         if (result.rows.length > 0) res.json({ success: true, balances: result.rows[0] });
-        else res.json({ success: false, error: 'User not found' });
+        else res.json({ success: false, error: 'Account not found' });
     } catch(e) { res.json({ success: false, error: e.message }); }
 });
 
@@ -200,7 +200,7 @@ app.get('/api/quests/sync/:upi_id', async (req, res) => {
 app.post('/api/quests/earn', async (req, res) => {
     const { upi_id, amount } = req.body;
     try {
-        await pool.query('UPDATE users SET reward_balance = reward_balance + $1 WHERE upi_id = $2', [amount, upi_id]);
+        await pool.query('UPDATE accounts SET reward_balance = reward_balance + $1 WHERE upi_id = $2', [amount, upi_id]);
         res.json({ success: true });
     } catch(e) { res.json({ success: false, error: e.message }); }
 });
@@ -209,7 +209,7 @@ app.post('/api/quests/earn', async (req, res) => {
 app.post('/api/quests/redeem', async (req, res) => {
     const { upi_id, pin, amount } = req.body;
     try {
-        const user = await pool.query('SELECT pin, reward_balance FROM users WHERE upi_id = $1', [upi_id]);
+        const user = await pool.query('SELECT pin, reward_balance FROM accounts WHERE upi_id = $1', [upi_id]);
         if (user.rows.length === 0 || user.rows[0].pin !== pin) {
             return res.json({ success: false, error: 'Invalid Security PIN' });
         }
@@ -218,7 +218,7 @@ app.post('/api/quests/redeem', async (req, res) => {
         }
 
         // Deduct from rewards, add to main balance
-        await pool.query('UPDATE users SET reward_balance = reward_balance - $1, balance = balance + $1 WHERE upi_id = $2', [amount, upi_id]);
+        await pool.query('UPDATE accounts SET reward_balance = reward_balance - $1, balance = balance + $1 WHERE upi_id = $2', [amount, upi_id]);
         res.json({ success: true });
     } catch(e) { res.json({ success: false, error: e.message }); }
 });

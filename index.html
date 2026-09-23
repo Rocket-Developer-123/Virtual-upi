@@ -162,7 +162,7 @@
         .btn-danger { background: var(--neg); color: white; } .btn-success { background: var(--pos); color: white; } .btn-dark { background: var(--surface); border: 1px solid var(--line); color: var(--text); }
         .link-text { color: var(--blue); font-weight: 600; cursor: pointer; text-decoration: underline; }
         
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 200; backdrop-filter: blur(4px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 10500 !important; backdrop-filter: blur(4px); padding-bottom: env(safe-area-inset-bottom, 0px); }
         .modal-content { background: var(--surface); width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 24px; position: relative; max-height: calc(100svh - 20px); overflow-y: auto; color: var(--text); }
         .modal-close { position: absolute; top: 15px; right: 15px; background: var(--bg); color: var(--text); border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; cursor: pointer; }
         

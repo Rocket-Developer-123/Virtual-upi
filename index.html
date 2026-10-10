@@ -1068,6 +1068,22 @@
             const res = await fetch('/admin/delete', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id }) });
             if((await res.json()).success) { alert("Account Terminated."); adminViewUsers(); }
         }
+        function proceedToLoginPin() {
+    const upiId = document.getElementById('log-upi').value.trim();
+    
+    // 1. Check if the user actually typed an ID
+    if (upiId === "") {
+        return alert("Please enter your Kinex ID first.");
+    }
+    
+    // 2. Clear the PIN input field so it's fresh
+    const pinInput = document.getElementById('log-pin');
+    if (pinInput) pinInput.value = "";
+    
+    // 3. Hide the ID screen and show the PIN Numpad modal
+    // Note: If your PIN modal has a different ID, change 'loginPinModal' to match it
+    openModal('loginPinModal'); 
+}
     </script>
 </body>
 </html>

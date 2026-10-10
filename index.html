@@ -647,14 +647,38 @@
         function resetSuggestions() { selectedUpi = ""; $('suggestion-box').classList.add('hidden'); }
 
         // Login Step Logic
-        function proceedToLoginPin() {
-            const id = $('log-upi').value.trim();
-            if(!id) return alert("Please enter your ID.");
-            $('login-id-display').innerText = id;
-            $('log-pin').value = ""; // clear previous
-            $('login-step-1').classList.add('hidden');
-            $('login-step-2').classList.remove('hidden');
-        }
+       function proceedToLoginPin() {
+    console.log("1. Proceed button was clicked!");
+    
+    // Check if the input ID matches your HTML
+    const upiInput = document.getElementById('log-upi');
+    if (!upiInput) {
+        console.error("CRITICAL ERROR: Cannot find an HTML element with id='log-upi'");
+        return alert("Developer Error: ID mismatch for log-upi");
+    }
+
+    const upiId = upiInput.value.trim();
+    if (upiId === "") {
+        return alert("Please enter your Kinex ID first.");
+    }
+    
+    console.log("2. ID successfully captured:", upiId);
+
+    // Try to transition the screen
+    try {
+        // IF YOU USE MODALS:
+        // openModal('loginPinModal'); 
+        
+        // IF YOU USE FULL SCREENS (Standard RPAY flow):
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('pinModal').classList.remove('hidden'); 
+        
+        console.log("3. Screen transition successful!");
+    } catch (e) {
+        console.error("4. Transition failed. Check your screen/modal IDs.", e);
+        alert("Developer Error: Screen transition failed. Check console.");
+    }
+}
         function backToLoginStep1() {
             $('login-step-2').classList.add('hidden');
             $('login-step-1').classList.remove('hidden');

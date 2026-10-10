@@ -503,11 +503,11 @@
     </div>
 
 }
-    <div id="loading-screen" class="fullscreen-overlay hidden">
-        <div class="spinner"></div>
-        <h3 style="color: var(--accent);">Processing Payment...</h3>
-        <p style="color: var(--muted); font-size: 13px;">Securely connecting to Kinex Network</p>
-    </div>
+    <div id="loading-screen" class="fullscreen-overlay hidden" style="z-index: 10600;">
+    <div class="spinner"></div>
+    <h3 id="load-title" style="color: var(--accent);">Processing Payment...</h3>
+    <p id="load-desc" style="color: var(--muted); font-size: 13px;">Securely connecting to Kinex Network</p>
+</div>
 
     <div id="success-screen" class="fullscreen-overlay hidden">
         <div class="success-card">
@@ -942,33 +942,55 @@
         }
 
         async function executeScanPay() {
-            const pin = $('scan-pay-pin').value;
-            if(pin.length !== 4) return alert("Tap your 4-digit PIN.");
-            closeModal('pinConfirmModal'); 
-$('scan-pay-screen').classList.add('hidden'); 
+    const pin = $('scan-pay-pin').value;
+    if(pin.length !== 4) return alert("Tap your 4-digit PIN.");
+    
+    closeModal('pinConfirmModal'); 
+    $('scan-pay-screen').classList.add('hidden'); 
+    
+    // Set dynamic text for payments
+    $('load-title').innerText = "Processing Payment...";
+    $('load-desc').innerText = "Securely connecting to Kinex Network";
+    $('loading-screen').classList.remove('hidden');
 
-// 1. SET THE DYNAMIC PAYMENT TEXT
-$('load-title').innerText = "Processing Payment...";
-$('load-desc').innerText = "Securely connecting to Kinex Network";
+    try {
+        const res = await fetch('/pay', { 
+            method: 'POST', 
+            headers:{'Content-Type':'application/json'}, 
+            body: JSON.stringify({
+                sender: currentUser, 
+                receiver: currentScanReceiver, 
+                pin: pin, 
+                amount: parseFloat(currentScanAmount)
+            }) 
+        });
+        const data = await res.json();
 
-// 2. SHOW THE LOADING SCREEN
-$('loading-screen').classList.remove('hidden');
-            const res = await fetch('/pay', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({sender: currentUser, receiver: currentScanReceiver, pin: pin, amount: parseFloat(currentScanAmount)}) });
-            const data = await res.json();
-
-            setTimeout(() => {
-                $('loading-screen').classList.add('hidden');
-                if(data.success) {
-                    const audio = $('success-audio'); if(audio) { audio.currentTime = 0; audio.play().catch(e=>{}); }$('receipt-amount').innerText = "K " + fmt(parseFloat(currentScanAmount));
-                    $('receipt-receiver').innerText = escapeHTML(currentScanReceiver);$('receipt-sender').innerText = escapeHTML(currentUser);
-                    $('receipt-time').innerText = new Date().toLocaleString();$('success-screen').classList.remove('hidden');
+        setTimeout(() => {
+            $('loading-screen').classList.add('hidden');
+            if(data.success) {
+                const audio = $('success-audio'); 
+                if(audio) { audio.currentTime = 0; audio.play().catch(e=>{}); }
+                
+                $('receipt-amount').innerText = "K " + fmt(parseFloat(currentScanAmount));
+                $('receipt-receiver').innerText = escapeHTML(currentScanReceiver);
+                $('receipt-sender').innerText = escapeHTML(currentUser);
+                $('receipt-time').innerText = new Date().toLocaleString();
+                $('success-screen').classList.remove('hidden');
+            } else {
+                const errorMsg = data.error || "Unknown error";
+                if (errorMsg.toLowerCase().includes("frozen")) {
+                    alert("SECURITY ALERT: Account frozen for investigation.");
                 } else {
-                    const errorMsg = data.error || "Unknown error";
-                    if (errorMsg.toLowerCase().includes("frozen")) alert("SECURITY ALERT: Account frozen for investigation.");
-                    else alert("Payment Failed: " + errorMsg);
+                    alert("Payment Failed: " + errorMsg);
                 }
-            }, 1500);
-        }
+            }
+        }, 1500);
+    } catch (e) {
+        $('loading-screen').classList.add('hidden');
+        alert("Network error processing payment.");
+    }
+}
 
         function closeSuccess() { $('success-screen').classList.add('hidden'); updateBalance(); loadHistory(); }
 

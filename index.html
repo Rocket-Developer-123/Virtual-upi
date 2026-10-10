@@ -648,36 +648,21 @@
 
         // Login Step Logic
        function proceedToLoginPin() {
-    console.log("1. Proceed button was clicked!");
-    
-    // Check if the input ID matches your HTML
-    const upiInput = document.getElementById('log-upi');
-    if (!upiInput) {
-        console.error("CRITICAL ERROR: Cannot find an HTML element with id='log-upi'");
-        return alert("Developer Error: ID mismatch for log-upi");
-    }
-
-    const upiId = upiInput.value.trim();
+    const upiId = document.getElementById('log-upi').value.trim();
     if (upiId === "") {
         return alert("Please enter your Kinex ID first.");
     }
     
-    console.log("2. ID successfully captured:", upiId);
-
-    // Try to transition the screen
-    try {
-        // IF YOU USE MODALS:
-        // openModal('loginPinModal'); 
-        
-        // IF YOU USE FULL SCREENS (Standard RPAY flow):
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('pinModal').classList.remove('hidden'); 
-        
-        console.log("3. Screen transition successful!");
-    } catch (e) {
-        console.error("4. Transition failed. Check your screen/modal IDs.", e);
-        alert("Developer Error: Screen transition failed. Check console.");
-    }
+    // Clear the PIN field
+    const pinInput = document.getElementById('log-pin');
+    if (pinInput) pinInput.value = "";
+    
+    // Transition the UI from Step 1 to Step 2
+    document.getElementById('login-step-1').classList.add('hidden');
+    document.getElementById('login-step-2').classList.remove('hidden');
+    
+    // Display the ID on the PIN screen
+    document.getElementById('login-id-display').innerText = upiId;
 }
         function backToLoginStep1() {
             $('login-step-2').classList.add('hidden');
@@ -1091,22 +1076,7 @@
             const res = await fetch('/admin/delete', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id }) });
             if((await res.json()).success) { alert("Account Terminated."); adminViewUsers(); }
         }
-        function proceedToLoginPin() {
-    const upiId = document.getElementById('log-upi').value.trim();
-    
-    // 1. Check if the user actually typed an ID
-    if (upiId === "") {
-        return alert("Please enter your Kinex ID first.");
-    }
-    
-    // 2. Clear the PIN input field so it's fresh
-    const pinInput = document.getElementById('log-pin');
-    if (pinInput) pinInput.value = "";
-    
-    // 3. Hide the ID screen and show the PIN Numpad modal
-    // Note: If your PIN modal has a different ID, change 'loginPinModal' to match it
-    openModal('loginPinModal'); 
-}
+        
     </script>
 </body>
 </html>

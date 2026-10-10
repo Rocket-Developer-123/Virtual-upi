@@ -502,6 +502,7 @@
         </div>
     </div>
 
+}
     <div id="loading-screen" class="fullscreen-overlay hidden">
         <div class="spinner"></div>
         <h3 style="color: var(--accent);">Processing Payment...</h3>
@@ -704,6 +705,7 @@
         }
         function selectSuggestion(suggestedUpi) { selectedUpi = suggestedUpi; proceedToRegPin(); }
 
+}
         async function login() {
             const upi_id = $('log-upi').value.trim();
             const pin = $('log-pin').value;
@@ -942,8 +944,15 @@
         async function executeScanPay() {
             const pin = $('scan-pay-pin').value;
             if(pin.length !== 4) return alert("Tap your 4-digit PIN.");
-            closeModal('pinConfirmModal'); $('scan-pay-screen').classList.add('hidden');$('loading-screen').classList.remove('hidden');
+            closeModal('pinConfirmModal'); 
+$('scan-pay-screen').classList.add('hidden'); 
 
+// 1. SET THE DYNAMIC PAYMENT TEXT
+$('load-title').innerText = "Processing Payment...";
+$('load-desc').innerText = "Securely connecting to Kinex Network";
+
+// 2. SHOW THE LOADING SCREEN
+$('loading-screen').classList.remove('hidden');
             const res = await fetch('/pay', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({sender: currentUser, receiver: currentScanReceiver, pin: pin, amount: parseFloat(currentScanAmount)}) });
             const data = await res.json();
 

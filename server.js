@@ -43,16 +43,21 @@ app.post('/register', async (req, res) => {
             });
         }
 
-        // Validate or normalize chosen Kinex ID
-        let cleanHandle = (upi_id || '').toLowerCase().trim().replace(/[^a-z0-9._]/g, '');
+        // Clean and ensure single @rpay suffix
+        let cleanHandle = (upi_id || '').toLowerCase().trim();
+        // Remove '@rpay' if the frontend sent it, then strip illegal characters
+        cleanHandle = cleanHandle.replace(/@rpay$/, '').replace(/[^a-z0-9._]/g, '');
+
         if (!cleanHandle) {
             cleanHandle = name.toLowerCase().replace(/[^a-z0-9]/g, '');
             if (!cleanHandle) cleanHandle = "user" + Math.floor(Math.random() * 9000 + 1000);
         }
-        if (!cleanHandle.endsWith('@rpay')) cleanHandle += '@rpay';
+        
+        // Append exactly one @rpay
+        cleanHandle = cleanHandle + '@rpay';
 
-        // Check if chosen ID is taken
-        const check = await pool.query('SELECT upi_id FROM accounts WHERE upi_id = \$1', [cleanHandle]);
+        // Check if chosen ID is already in the database
+        const check = await pool.query('SELECT upi_id FROM accounts WHERE upi_id = $1', [cleanHandle]);
         if (check.rows.length > 0) {
             const base = cleanHandle.replace('@rpay', '');
             const suggestions = [

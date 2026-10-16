@@ -785,20 +785,25 @@ function toggleAuth(view) {
             const name = $('reg-name').value.trim();
             const phone = $('reg-phone').value.replace(/\D/g, '');
             const dob = $('reg-dob').value;
-            let rawHandle = $('reg-custom-id').value.trim().toLowerCase().replace(/[^a-z0-9._]/g, '');
+            let rawHandle = $('reg-custom-id').value.trim().toLowerCase();
+
+            // Strip @rpay if user typed it into the input box
+            rawHandle = rawHandle.replace(/@rpay$/, '').replace(/[^a-z0-9._]/g, '');
 
             if (!name) return alert("Please enter your Full Legal Name.");
             if (phone.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
             if (!dob) return alert("Please select your Date of Birth.");
+            
             if (!rawHandle) rawHandle = name.toLowerCase().replace(/[^a-z0-9]/g, '');
             if (!rawHandle) rawHandle = "user" + Math.floor(Math.random() * 9000 + 1000);
 
-            selectedUpi = rawHandle.endsWith('@rpay') ? rawHandle : (rawHandle + '@rpay');
+            selectedUpi = rawHandle + '@rpay';
 
             $('reg-name-display').innerText = name;
             $('reg-handle-display').innerText = selectedUpi;
             $('reg-pin').value = "";
-            $('reg-step-1').classList.add('hidden');$('reg-step-2').classList.remove('hidden');
+            $('reg-step-1').classList.add('hidden');
+            $('reg-step-2').classList.remove('hidden');
         }
 
         function backToRegStep1() {

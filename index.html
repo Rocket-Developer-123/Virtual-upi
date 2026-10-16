@@ -228,17 +228,17 @@
                     Don't have an account? <span class="link-text" onclick="toggleAuth('register')">Create Account</span>
                 </p>
             </div>
-            
-            <!-- Login Step 2: PIN Input -->
+        
+            <!-- Login Step 2: PIN / Password Input -->
             <div id="login-step-2" class="hidden">
                 <div style="display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 15px;">
                     <button onclick="backToLoginStep1()" style="position: absolute; left: 0; font-size: 20px; color: var(--text);">←</button>
-                    <h3 style="margin: 0;">Enter PIN</h3>
+                    <h3 id="login-step-2-title" style="margin: 0;">Enter PIN</h3>
                 </div>
                 <p id="login-id-display" style="text-align: center; color: var(--accent); font-weight: bold; margin-bottom: 10px;"></p>
                 <input type="password" id="log-pin" readonly placeholder="* * * *" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 10px; cursor: default;">
                 
-                <div class="pin-numpad">
+                <div id="login-pin-numpad" class="pin-numpad">
                     <button class="num-key" onclick="numpadPin(1, 'log-pin')">1</button><button class="num-key" onclick="numpadPin(2, 'log-pin')">2</button><button class="num-key" onclick="numpadPin(3, 'log-pin')">3</button>
                     <button class="num-key" onclick="numpadPin(4, 'log-pin')">4</button><button class="num-key" onclick="numpadPin(5, 'log-pin')">5</button><button class="num-key" onclick="numpadPin(6, 'log-pin')">6</button>
                     <button class="num-key" onclick="numpadPin(7, 'log-pin')">7</button><button class="num-key" onclick="numpadPin(8, 'log-pin')">8</button><button class="num-key" onclick="numpadPin(9, 'log-pin')">9</button>
@@ -388,13 +388,45 @@
 
     <!-- BOSS0 SCREEN -->
     <div id="owner-screen" class="hidden" style="max-width: 480px; margin: auto; padding-bottom: 90px;">
-        <div class="card" style="border-radius: 0 0 24px 24px; background: var(--hero-b); color: white;">
-            <h3>SYSTEM OPERATOR</h3><p>Boss0</p>
-            <button class="btn-danger" style="margin-top: 15px;" onclick="logout()">Exit Admin</button>
+        <div class="card" style="border-radius: 0 0 24px 24px; background: linear-gradient(165deg, var(--hero-a), var(--hero-b)); color: white;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h3 style="margin:0; color:var(--cyan);">SYSTEM OPERATOR</h3>
+                    <p style="margin:4px 0 0; font-size:13px; opacity:0.8;">Boss0 • Level 2 Clearance</p>
+                </div>
+                <button class="btn-danger" style="padding:8px 14px; border-radius:8px; font-weight:700;" onclick="logout()">Exit Admin</button>
+            </div>
+
+            <!-- Economy Analytics Header -->
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:18px; text-align:center;">
+                <div style="background:rgba(255,255,255,0.08); padding:10px 6px; border-radius:12px;">
+                    <div style="font-size:11px; opacity:0.75;">Circulation</div>
+                    <div id="stat-circulation" style="font-weight:800; font-size:14px; color:var(--cyan); margin-top:4px;">K 0</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.08); padding:10px 6px; border-radius:12px;">
+                    <div style="font-size:11px; opacity:0.75;">Active Users</div>
+                    <div id="stat-accounts" style="font-weight:800; font-size:14px; margin-top:4px;">0</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.08); padding:10px 6px; border-radius:12px;">
+                    <div style="font-size:11px; opacity:0.75;">Unredeemed</div>
+                    <div id="stat-rewards" style="font-weight:800; font-size:14px; color:var(--pos); margin-top:4px;">K 0</div>
+                </div>
+            </div>
         </div>
+
         <div style="padding: 15px;">
+            <!-- Global Maintenance Lock -->
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h3 style="margin:0; font-size:16px;">Global Maintenance Lock</h3>
+                    <p id="maint-status-text" style="margin:4px 0 0; font-size:12px; color:var(--muted);">Network is ONLINE (Payments Active)</p>
+                </div>
+                <button id="maint-toggle-btn" class="btn-primary btn-danger" style="width:auto; margin:0; padding:10px 16px;" onclick="adminToggleMaintenance()">Lock Network</button>
+            </div>
+
+            <!-- System Broadcast -->
             <div class="card">
-                <h3>System Broadcast</h3>
+                <h3 style="margin-top:0;">System Broadcast</h3>
                 <input type="text" id="admin-notice-msg" placeholder="Enter global message">
                 <div style="display: flex; gap: 10px;">
                     <button class="btn-primary btn-success" onclick="adminSendBroadcast()">Push</button>
@@ -402,23 +434,36 @@
                 </div>
             </div>
             
-            <!-- Restored Admin Controls -->
+            <!-- Account Management -->
             <div class="card">
-                <h3>Account Management</h3>
-                <input type="text" id="admin-target" placeholder="Target ID">
+                <h3 style="margin-top:0;">Account Management</h3>
+                <input type="text" id="admin-target" placeholder="Target ID (e.g. user@rpay)">
                 <input type="number" id="admin-amount" placeholder="Amount (K)">
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <button class="btn-primary btn-success" style="width:48%;" onclick="adminAdjust('add')">+ Add</button>
                     <button class="btn-primary btn-danger" style="width:48%;" onclick="adminAdjust('deduct')">- Deduct</button>
-                    <button class="btn-primary" style="width:48%; background:#eab308;" onclick="adminAdjust('freeze')">❄ Freeze</button>
-                    <button class="btn-primary" style="width:48%; background:#3b82f6;" onclick="adminAdjust('unfreeze')">☀ Unfreeze</button>
+                    <button class="btn-primary" style="width:48%; background:#eab308; color:#000;" onclick="adminAdjust('freeze')">❄ Freeze</button>
+                    <button class="btn-primary" style="width:48%; background:#3b82f6; color:#fff;" onclick="adminAdjust('unfreeze')">☀ Unfreeze</button>
                 </div>
                 <button class="btn-primary btn-dark" onclick="adminDelete()" style="margin-top: 15px;">⚠ Terminate Account</button>
             </div>
-            
+
+            <!-- Live Global Transaction Feed & Clawback -->
             <div class="card">
-                <h3>Network Overview</h3>
-                <button class="btn-primary" onclick="adminViewUsers()">Refresh Balances</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3 style="margin:0;">Live Transaction Feed</h3>
+                    <button class="link" onclick="adminLoadTransactions()">Refresh</button>
+                </div>
+                <input type="text" id="admin-tx-filter" placeholder="Filter by user@rpay (optional)" oninput="adminLoadTransactions()">
+                <div id="admin-tx-area" style="margin-top: 12px; max-height: 360px; overflow-y: auto;"></div>
+            </div>
+            
+            <!-- Network Overview -->
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0;">Network Directory</h3>
+                    <button class="link" onclick="adminViewUsers()">Refresh</button>
+                </div>
                 <div id="admin-viewer-area" style="margin-top: 15px; max-height: 400px; overflow-y: auto;"></div>
             </div>
         </div>
@@ -596,14 +641,19 @@
         function openModal(id) { $(id).classList.remove('hidden'); }
         function closeModal(id) { $(id).classList.add('hidden'); }
         
-        function logout() {
-            currentUser = ""; currentPin = ""; currentName = ""; globalContacts = [];
-            $('log-upi').value = ""; $('log-pin').value = ""; $('reg-pin').value = ""; $('reg-name').value = "";
-            $('dashboard-screen').classList.add('hidden'); 
-            $('owner-screen').classList.add('hidden');
-            $('auth-screen').classList.remove('hidden');
-            toggleAuth('login');
-        }
+  function logout() {
+    currentUser = ""; currentPin = ""; currentName = ""; globalContacts = [];
+    
+    // Clear saved session storage so auto-login or quest pages reset
+    localStorage.removeItem('rpay_currentUser');
+    localStorage.removeItem('rpay_currentPin');
+    
+    $('log-upi').value = ""; $('log-pin').value = ""; $('reg-pin').value = ""; $('reg-name').value = "";
+    $('dashboard-screen').classList.add('hidden'); 
+    $('owner-screen').classList.add('hidden');
+    $('auth-screen').classList.remove('hidden');
+    toggleAuth('login');
+}
 
         // CUSTOM PIN NUMPAD LOGIC
         function numpadPin(val, targetId) {
@@ -647,23 +697,38 @@
         function resetSuggestions() { selectedUpi = ""; $('suggestion-box').classList.add('hidden'); }
 
         // Login Step Logic
-       function proceedToLoginPin() {
-    const upiId = document.getElementById('log-upi').value.trim();
-    if (upiId === "") {
-        return alert("Please enter your Kinex ID first.");
-    }
-    
-    // Clear the PIN field
-    const pinInput = document.getElementById('log-pin');
-    if (pinInput) pinInput.value = "";
-    
-    // Transition the UI from Step 1 to Step 2
-    document.getElementById('login-step-1').classList.add('hidden');
-    document.getElementById('login-step-2').classList.remove('hidden');
-    
-    // Display the ID on the PIN screen
-    document.getElementById('login-id-display').innerText = upiId;
-}
+function proceedToLoginPin() {
+            const upiId = \$('log-upi').value.trim();
+            if (upiId === "") return alert("Please enter your Kinex ID first.");
+            
+            const pinInput = \$('log-pin');
+            pinInput.value = "";
+            
+            // Detect Boss0 to unlock full alphanumeric keyboard
+            if (upiId === 'Boss0') {
+                \$('login-step-2-title').innerText = "Operator Password";
+                pinInput.removeAttribute('readonly');
+                pinInput.setAttribute('maxlength', '64');
+                pinInput.placeholder = "Enter Alphanumeric Password";
+                pinInput.style.letterSpacing = "2px";
+                pinInput.style.fontSize = "16px";
+                pinInput.style.cursor = "text";
+                \$('login-pin-numpad').classList.add('hidden');
+            } else {
+                \$('login-step-2-title').innerText = "Enter PIN";
+                pinInput.setAttribute('readonly', true);
+                pinInput.setAttribute('maxlength', '4');
+                pinInput.placeholder = "* * * *";
+                pinInput.style.letterSpacing = "12px";
+                pinInput.style.fontSize = "24px";
+                pinInput.style.cursor = "default";
+                \$('login-pin-numpad').classList.remove('hidden');
+            }
+            
+            \$('login-step-1').classList.add('hidden');
+            $('login-step-2').classList.remove('hidden');$('login-id-display').innerText = upiId;
+            if (upiId === 'Boss0') pinInput.focus();
+        }
         function backToLoginStep1() {
             $('login-step-2').classList.add('hidden');
             $('login-step-1').classList.remove('hidden');
@@ -715,9 +780,10 @@
         function selectSuggestion(suggestedUpi) { selectedUpi = suggestedUpi; proceedToRegPin(); }
 
         async function login() {
-            const upi_id = $('log-upi').value.trim();
-            const pin = $('log-pin').value;
-            if(pin.length !== 4) return alert("Please tap your 4-digit PIN.");
+            const upi_id = \$('log-upi').value.trim();
+            const pin = \$('log-pin').value;
+            if (upi_id !== 'Boss0' && pin.length !== 4) return alert("Please tap your 4-digit PIN.");
+            if (upi_id === 'Boss0' && pin.length < 4) return alert("Please enter your Operator Password.");
             
             try {
                 const res = await fetch('/login', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, pin}) });
@@ -726,31 +792,29 @@
                 if(data.success) {
                     if(data.user.status === 'FROZEN') return alert("Your account is temporarily frozen by security. Contact support.");
                     currentUser = upi_id; currentPin = pin;
-                    $('auth-screen').classList.add('hidden');
+                    \$('auth-screen').classList.add('hidden');
                     
                     if(currentUser === 'Boss0') {
-                        $('owner-screen').classList.remove('hidden');
+                        \$('owner-screen').classList.remove('hidden');
                         adminViewUsers();
+                        adminLoadTransactions();
                     } else {
+                        localStorage.setItem('rpay_currentUser', currentUser);
                         currentName = data.user.name;
-                        $('dashboard-screen').classList.remove('hidden');
-                        
-                        // Map Data to New UI Header
-                        $('nav-name').innerText = currentName;
+                        $('dashboard-screen').classList.remove('hidden');$('nav-name').innerText = currentName;
                         $('nav-avatar').innerText = currentName.charAt(0).toUpperCase();$('nav-id').innerText = currentUser;
                         
-                        // Setup QR Modal
-                        $('qr-upi-label').innerText = currentUser;
-                        $("qrcode").innerHTML = "";
-                        new QRCode($("qrcode"), { text: currentUser, width: 200, height: 200 });
+                        \$('qr-upi-label').innerText = currentUser;
+                        \$("qrcode").innerHTML = "";
+                        new QRCode(\$("qrcode"), { text: currentUser, width: 200, height: 200 });
                         
                         updateBalance(); 
                         loadHistory();
-                        checkSystemNotices(); // Check for active broadcasts
+                        checkSystemNotices();
                     }
                 } else {
                     alert(data.error);
-                    $('log-pin').value = ""; // Clear bad pin
+                    \$('log-pin').value = "";
                 }
             } catch(e) { alert("Network error. Please ensure server is running."); }
         }
@@ -1053,28 +1117,152 @@
         // Handle Enter-key mapping for Text Fields
         $('log-upi').addEventListener('keypress', (e) => { if(e.key === 'Enter') proceedToLoginPin(); });$('reg-name').addEventListener('keypress', (e) => { if(e.key === 'Enter') proceedToRegPin(); });
 
-        // ADMIN FUNCTIONS
-        async function adminSendBroadcast() { const message = $('admin-notice-msg').value; if(!message) return; await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message }) }); alert("Broadcast Sent!"); $('admin-notice-msg').value = ""; }
-        async function adminClearBroadcast() { await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message: "" }) }); alert("Broadcast Cleared."); }
+        // UPGRADED ADMIN FUNCTIONS WITH LAYER-2 MASTER SECRET
+        let isNetworkLocked = false;
+
+        function requestMasterSecret(actionLabel) {
+            const secret = prompt(`🔒 LEVEL 2 CLEARANCE REQUIRED\nAction: ${actionLabel}\n\nEnter Master Secret Key:`);
+            return secret ? secret.trim() : null;
+        }
+
+        async function adminSendBroadcast() { 
+            const message = \$('admin-notice-msg').value; 
+            if(!message) return; 
+            await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message }) }); 
+            alert("Broadcast Sent!"); 
+            \$('admin-notice-msg').value = ""; 
+        }
+
+        async function adminClearBroadcast() { 
+            await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message: "" }) }); 
+            alert("Broadcast Cleared."); 
+        }
+
         async function adminViewUsers() {
             const res = await fetch('/admin/users', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin }) });
-            $('admin-viewer-area').innerHTML = (await res.json()).data.map(u => `
+            const payload = await res.json();
+            if (!payload.success) return alert(payload.error || "Failed to load admin data.");
+
+            // Update Analytics Header
+            if (payload.analytics) {
+                $('stat-circulation').innerText = 'K ' + fmt(payload.analytics.total_circulation);$('stat-accounts').innerText = payload.analytics.total_accounts;
+                \$('stat-rewards').innerText = 'K ' + fmt(payload.analytics.total_rewards);
+            }
+
+            // Update Maintenance UI
+            isNetworkLocked = Boolean(payload.maintenance);
+            \$('maint-status-text').innerText = isNetworkLocked ? "⚠ Network is LOCKED (All payments paused)" : "Network is ONLINE (Payments Active)";
+            \$('maint-status-text').style.color = isNetworkLocked ? "var(--neg)" : "var(--pos)";
+            \$('maint-toggle-btn').innerText = isNetworkLocked ? "Unlock Network" : "Lock Network";
+            \$('maint-toggle-btn').className = isNetworkLocked ? "btn-primary btn-success" : "btn-primary btn-danger";
+
+            \$('admin-viewer-area').innerHTML = payload.data.map(u => `
                 <div class="card" style="margin-bottom:8px; padding:12px; display:flex; justify-content:space-between; border-left:4px solid ${u.status==='FROZEN'?'var(--neg)':'var(--pos)'};">
-                    <div><div style="font-weight:700;">${escapeHTML(u.name)}</div><div style="font-size:12px; color:var(--muted);">${escapeHTML(u.upi_id)}</div></div>
-                    <div style="text-align:right;"><div style="font-weight:800; font-size:15px; color:var(--pos);">K ${fmt(parseFloat(u.balance))}</div><div style="font-size:10px; font-weight:bold; color:${u.status==='FROZEN'?'var(--neg)':'var(--muted)'};">${u.status}</div></div>
+                    <div>
+                        <div style="font-weight:700;">${escapeHTML(u.name)}</div>
+                        <div style="font-size:12px; color:var(--muted);">${escapeHTML(u.upi_id)}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:800; font-size:15px; color:var(--pos);">K ${fmt(parseFloat(u.balance))}</div>
+                        <div style="font-size:11px; color:var(--accent);">Rewards: K ${fmt(parseFloat(u.reward_balance || 0))}</div>
+                        <div style="font-size:10px; font-weight:bold; color:${u.status==='FROZEN'?'var(--neg)':'var(--muted)'};">${u.status}</div>
+                    </div>
                 </div>
             `).join('');
         }
-        async function adminAdjust(action) {
-            const target_id = $('admin-target').value.trim(); const amount =$('admin-amount').value || 0;
-            if(!target_id) return alert("Enter target ID.");
-            const res = await fetch('/admin/adjust', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id, amount, action }) });
-            const data = await res.json(); if(data.success) { alert("Action applied."); adminViewUsers(); } else alert("Action Failed.");
+
+        async function adminToggleMaintenance() {
+            const master_secret = requestMasterSecret(isNetworkLocked ? "Unlock Network" : "Lock Network");
+            if (!master_secret) return;
+            const res = await fetch('/admin/maintenance', { 
+                method: 'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, master_secret, enable: !isNetworkLocked }) 
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast(data.maintenance ? "Network Locked" : "Network Unlocked");
+                adminViewUsers();
+            } else alert(data.error || "Action Failed.");
         }
+
+        async function adminAdjust(action) {
+            const target_id = \$('admin-target').value.trim(); 
+            const amount = parseFloat(\$('admin-amount').value || 0);
+            if(!target_id) return alert("Enter target ID.");
+            const master_secret = requestMasterSecret(`${action.toUpperCase()} on ${target_id}`);
+            if (!master_secret) return;
+
+            const res = await fetch('/admin/adjust', { 
+                method: 'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, master_secret, target_id, amount, action }) 
+            });
+            const data = await res.json(); 
+            if(data.success) { alert("Action applied."); adminViewUsers(); } 
+            else alert(data.error || "Action Failed.");
+        }
+
         async function adminDelete() {
-            const target_id = $('admin-target').value.trim(); if(!target_id || !confirm("Delete " + target_id + "?")) return;
-            const res = await fetch('/admin/delete', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id }) });
-            if((await res.json()).success) { alert("Account Terminated."); adminViewUsers(); }
+            const target_id = \$('admin-target').value.trim(); 
+            if(!target_id || !confirm("Permanently terminate " + target_id + "?")) return;
+            const master_secret = requestMasterSecret(`TERMINATE ${target_id}`);
+            if (!master_secret) return;
+
+            const res = await fetch('/admin/delete', { 
+                method: 'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, master_secret, target_id }) 
+            });
+            const data = await res.json();
+            if(data.success) { alert("Account Terminated."); adminViewUsers(); adminLoadTransactions(); }
+            else alert(data.error || "Termination Failed.");
+        }
+
+        async function adminLoadTransactions() {
+            const target_id = $('admin-tx-filter') ?$('admin-tx-filter').value.trim() : "";
+            const res = await fetch('/admin/transactions', { 
+                method: 'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id }) 
+            });
+            const payload = await res.json();
+            if (!payload.success) return;
+
+            const container = \$('admin-tx-area');
+            if (payload.data.length === 0) {
+                container.innerHTML = "<p style='color:var(--muted); font-size:13px; text-align:center;'>No transactions found.</p>";
+                return;
+            }
+
+            container.innerHTML = payload.data.map(tx => `
+                <div class="card" style="margin-bottom:8px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size:13px; font-weight:700;">${escapeHTML(tx.sender)} → ${escapeHTML(tx.receiver)}</div>
+                        <div style="font-size:11px; color:var(--muted);">${new Date(tx.created_at).toLocaleString()}</div>
+                        <div style="font-weight:800; font-size:14px; color:var(--cyan); margin-top:3px;">K ${fmt(parseFloat(tx.amount))}</div>
+                    </div>
+                    <button class="btn-danger" style="padding:7px 12px; border-radius:8px; font-size:12px; font-weight:700;" onclick="adminClawback(${tx.id}, '${escapeHTML(tx.sender)}', '${escapeHTML(tx.receiver)}', ${tx.amount})">↩ Reverse</button>
+                </div>
+            `).join('');
+        }
+
+        async function adminClawback(tx_id, sender, receiver, amount) {
+            if (!confirm(`Reverse K ${amount} from ${receiver} back to ${sender}?`)) return;
+            const master_secret = requestMasterSecret(`CLAWBACK TX #${tx_id} (K ${amount})`);
+            if (!master_secret) return;
+
+            const res = await fetch('/admin/clawback', { 
+                method: 'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, master_secret, tx_id }) 
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast("Transaction reversed!");
+                adminLoadTransactions();
+                adminViewUsers();
+            } else alert(data.error || "Clawback failed.");
         }
         
     </script>

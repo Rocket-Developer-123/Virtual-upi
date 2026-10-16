@@ -66,7 +66,10 @@ app.post('/pay', async (req, res) => {
     const { sender, receiver, pin, amount } = req.body;
     const client = await pool.connect();
     try {
-        await client.query('BEGIN');
+        await client.query('BEGIN');          
+                // NEW: Global Maintenance Lock Check         
+                if (globalMaintenanceMode) throw new Error("RPAY Network is currently under maintenance. Transfers are temporarily paused.");
+
 
         // 1. Check Sender Status
         const auth = await client.query('SELECT balance, status FROM accounts WHERE upi_id = $1 AND pin = $2', [sender, pin]);
@@ -122,69 +125,146 @@ app.get('/notices/active', async (req, res) => {
 });
 
 // ==========================================
-// ADMIN / BOSS0 ENDPOINTS
+// UPGRADED ADMIN / BOSS0 ENDPOINTS
 // ==========================================
+let globalMaintenanceMode = false;
+const MASTER_SECRET = process.env.ADMIN_MASTER_SECRET || 'Rpay-master-55';
+
+// Helper to verify Boss0 against the database password instead of hardcoded '5555'
+async function verifyBoss(admin_id, admin_pin, requireSecret = false, master_secret = '') {
+    if (admin_id !== 'Boss0') return { ok: false, error: 'Unauthorized user.' };
+    const res = await pool.query('SELECT pin FROM accounts WHERE upi_id = \$1', ['Boss0']);
+    if (res.rows.length === 0 || res.rows[0].pin !== admin_pin) {
+        return { ok: false, error: 'Invalid Admin Password.' };
+    }
+    if (requireSecret && master_secret !== MASTER_SECRET) {
+        return { ok: false, error: 'Invalid Master Secret Key!' };
+    }
+    return { ok: true };
+}
+
+// 1. View Users + Economy Analytics + Maintenance Status
 app.post('/admin/users', async (req, res) => {
     const { admin_id, admin_pin } = req.body;
-    if (admin_id !== 'Boss0' || admin_pin !== '5555') return res.status(401).json({ success: false });
-    const result = await pool.query('SELECT upi_id, name, balance, status FROM accounts ORDER BY balance DESC');
-    res.json({ success: true, data: result.rows });
+    const auth = await verifyBoss(admin_id, admin_pin);
+    if (!auth.ok) return res.status(401).json({ success: false, error: auth.error });
+
+    try {
+        const result = await pool.query('SELECT upi_id, name, balance, COALESCE(reward_balance, 0) AS reward_balance, status FROM accounts ORDER BY balance DESC');
+        const stats = await pool.query(`
+            SELECT 
+                COUNT(*)::int AS total_accounts,
+                COALESCE(SUM(balance), 0)::float AS total_circulation,
+                COALESCE(SUM(reward_balance), 0)::float AS total_rewards
+            FROM accounts WHERE upi_id != 'Boss0'
+        `);
+        res.json({ 
+            success: true, 
+            data: result.rows,
+            analytics: stats.rows[0],
+            maintenance: globalMaintenanceMode
+        });
+    } catch (e) {
+        res.status(400).json({ success: false, error: e.message });
+    }
 });
 
+// 2. Toggle Global Maintenance Lock (Requires Master Secret)
+app.post('/admin/maintenance', async (req, res) => {
+    const { admin_id, admin_pin, master_secret, enable } = req.body;
+    const auth = await verifyBoss(admin_id, admin_pin, true, master_secret);
+    if (!auth.ok) return res.status(401).json({ success: false, error: auth.error });
+
+    globalMaintenanceMode = Boolean(enable);
+    res.json({ success: true, maintenance: globalMaintenanceMode });
+});
+
+// 3. System Broadcast
 app.post('/admin/broadcast', async (req, res) => {
     const { admin_id, admin_pin, message } = req.body;
-    if (admin_id !== 'Boss0' || admin_pin !== '5555') return res.status(401).json({ success: false });
+    const auth = await verifyBoss(admin_id, admin_pin);
+    if (!auth.ok) return res.status(401).json({ success: false, error: auth.error });
 
     await pool.query('UPDATE system_notices SET is_active = FALSE');
-    if (message) await pool.query('INSERT INTO system_notices (message, is_active) VALUES ($1, TRUE)', [message]);
+    if (message) await pool.query('INSERT INTO system_notices (message, is_active) VALUES (\$1, TRUE)', [message]);
     res.json({ success: true });
 });
 
+// 4. Account Management (Requires Master Secret)
 app.post('/admin/adjust', async (req, res) => {
-    const { admin_id, admin_pin, target_id, amount, action } = req.body;
-    if (admin_id !== 'Boss0' || admin_pin !== '5555') return res.status(401).json({ success: false });
+    const { admin_id, admin_pin, master_secret, target_id, amount, action } = req.body;
+    const auth = await verifyBoss(admin_id, admin_pin, true, master_secret);
+    if (!auth.ok) return res.status(401).json({ success: false, error: auth.error });
 
     try {
-        const target = target_id.trim(); // Cleans up accidental spaces
+        const target = target_id.trim();
         let result;
+        if (action === 'add') result = await pool.query('UPDATE accounts SET balance = balance + \$1 WHERE upi_id = \$2 RETURNING *', [amount, target]);
+        if (action === 'deduct') result = await pool.query('UPDATE accounts SET balance = balance - \$1 WHERE upi_id = \$2 RETURNING *', [amount, target]);
+        if (action === 'freeze') result = await pool.query('UPDATE accounts SET status = \$1 WHERE upi_id = \$2 RETURNING *', ['FROZEN', target]);
+        if (action === 'unfreeze') result = await pool.query('UPDATE accounts SET status = \$1 WHERE upi_id = \$2 RETURNING *', ['ACTIVE', target]);
 
-        // Using RETURNING * lets us check if a row was actually found and updated
-        if (action === 'add') result = await pool.query('UPDATE accounts SET balance = balance + $1 WHERE upi_id = $2 RETURNING *', [amount, target]);
-        if (action === 'deduct') result = await pool.query('UPDATE accounts SET balance = balance - $1 WHERE upi_id = $2 RETURNING *', [amount, target]);
-        if (action === 'freeze') result = await pool.query('UPDATE accounts SET status = $1 WHERE upi_id = $2 RETURNING *', ['FROZEN', target]);
-        if (action === 'unfreeze') result = await pool.query('UPDATE accounts SET status = $1 WHERE upi_id = $2 RETURNING *', ['ACTIVE', target]);
-
-        // If 0 rows were updated, the ID was typed wrong
         if (result && result.rowCount === 0) {
             return res.status(400).json({ success: false, error: "Target not found. Did you type the full @rpay handle?" });
         }
-
         res.json({ success: true });
     } catch (e) {
         res.status(400).json({ success: false, error: e.message });
     }
 });
 
-
+// 5. Terminate Account (Requires Master Secret)
 app.post('/admin/delete', async (req, res) => {
-    const { admin_id, admin_pin, target_id } = req.body;
-    if (admin_id !== 'Boss0' || admin_pin !== '5555') return res.status(401).json({ success: false });
+    const { admin_id, admin_pin, master_secret, target_id } = req.body;
+    const auth = await verifyBoss(admin_id, admin_pin, true, master_secret);
+    if (!auth.ok) return res.status(401).json({ success: false, error: auth.error });
 
-    await pool.query('DELETE FROM accounts WHERE upi_id = $1', [target_id]);
-    await pool.query('DELETE FROM transactions WHERE sender = $1 OR receiver = $1', [target_id]);
+    await pool.query('DELETE FROM accounts WHERE upi_id = \$1', [target_id.trim()]);
+    await pool.query('DELETE FROM transactions WHERE sender = \$1 OR receiver = \$1', [target_id.trim()]);
     res.json({ success: true });
 });
 
+// 6. Live Global Transaction Feed
 app.post('/admin/transactions', async (req, res) => {
     const { admin_id, admin_pin, target_id } = req.body;
-    if (admin_id !== 'Boss0' || admin_pin !== '5555') return res.status(401).json({ success: false });
+    const auth = await verifyBoss(admin_id, admin_pin);
+    if (!auth.ok) return res.status(401).json({ success: false, error: auth.error });
 
     let result = target_id
-        ? await pool.query('SELECT * FROM transactions WHERE sender = $1 OR receiver = $1 ORDER BY created_at DESC', [target_id])
+        ? await pool.query('SELECT * FROM transactions WHERE sender = \$1 OR receiver = \$1 ORDER BY created_at DESC LIMIT 50', [target_id.trim()])
         : await pool.query('SELECT * FROM transactions ORDER BY created_at DESC LIMIT 50');
     res.json({ success: true, data: result.rows });
 });
 
+// 7. One-Click Clawback / Reverse Transaction (Requires Master Secret)
+app.post('/admin/clawback', async (req, res) => {
+    const { admin_id, admin_pin, master_secret, tx_id } = req.body;
+    const auth = await verifyBoss(admin_id, admin_pin, true, master_secret);
+    if (!auth.ok) return res.status(401).json({ success: false, error: auth.error });
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const txQuery = await client.query('SELECT * FROM transactions WHERE id = \$1 FOR UPDATE', [tx_id]);
+        if (txQuery.rows.length === 0) throw new Error("Transaction not found or already reversed.");
+
+        const tx = txQuery.rows[0];
+        const amt = parseFloat(tx.amount);
+
+        // Pull money back from receiver and return to sender
+        await client.query('UPDATE accounts SET balance = balance - \$1 WHERE upi_id = \$2', [amt, tx.receiver]);
+        await client.query('UPDATE accounts SET balance = balance + \$1 WHERE upi_id = \$2', [amt, tx.sender]);
+        await client.query('DELETE FROM transactions WHERE id = \$1', [tx_id]);
+
+        await client.query('COMMIT');
+        res.json({ success: true });
+    } catch (e) {
+        await client.query('ROLLBACK');
+        res.status(400).json({ success: false, error: e.message });
+    } finally {
+        client.release();
+    }
+});
 // ==========================================
 // QUEST SYSTEM — fully server-side, persisted in Postgres
 // (quest_state / quest_cards / quest_ledger — see quests-schema.sql)

@@ -755,8 +755,8 @@ function toggleAuth(view) {
         }
 
         function autoSuggestHandle() {
-            const name = \$('reg-name').value.trim();
-            const customInput = \$('reg-custom-id');
+            const name = $('reg-name').value.trim();
+            const customInput = $('reg-custom-id');
             // Auto-fill only if user hasn't explicitly customized it
             if (!customInput.dataset.manualEdited) {
                 customInput.value = name.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -765,7 +765,7 @@ function toggleAuth(view) {
 
         // Track if user manually edits custom ID
         document.addEventListener('DOMContentLoaded', () => {
-            const customIdEl = \$('reg-custom-id');
+            const customIdEl = $('reg-custom-id');
             if (customIdEl) {
                 customIdEl.addEventListener('input', () => {
                     customIdEl.dataset.manualEdited = "true";
@@ -782,10 +782,10 @@ function toggleAuth(view) {
 
         // Register Step Logic
         function proceedToRegPin() {
-            const name = \$('reg-name').value.trim();
-            const phone = \$('reg-phone').value.replace(/\D/g, '');
-            const dob = \$('reg-dob').value;
-            let rawHandle = \$('reg-custom-id').value.trim().toLowerCase().replace(/[^a-z0-9._]/g, '');
+            const name = $('reg-name').value.trim();
+            const phone = $('reg-phone').value.replace(/\D/g, '');
+            const dob = $('reg-dob').value;
+            let rawHandle = $('reg-custom-id').value.trim().toLowerCase().replace(/[^a-z0-9._]/g, '');
 
             if (!name) return alert("Please enter your Full Legal Name.");
             if (phone.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
@@ -795,9 +795,9 @@ function toggleAuth(view) {
 
             selectedUpi = rawHandle.endsWith('@rpay') ? rawHandle : (rawHandle + '@rpay');
 
-            \$('reg-name-display').innerText = name;
-            \$('reg-handle-display').innerText = selectedUpi;
-            \$('reg-pin').value = "";
+            $('reg-name-display').innerText = name;
+            $('reg-handle-display').innerText = selectedUpi;
+            $('reg-pin').value = "";
             $('reg-step-1').classList.add('hidden');$('reg-step-2').classList.remove('hidden');
         }
 
@@ -807,7 +807,7 @@ function toggleAuth(view) {
 
         function selectSuggestion(suggestedHandle) {
             selectedUpi = suggestedHandle;
-            const customInput = \$('reg-custom-id');
+            const customInput = $('reg-custom-id');
             if (customInput) {
                 customInput.value = suggestedHandle.replace('@rpay', '');
                 customInput.dataset.manualEdited = "true";
@@ -816,18 +816,18 @@ function toggleAuth(view) {
         }
 
         async function register() {
-            const name = \$('reg-name').value.trim();
-            const phone = \$('reg-phone').value.replace(/\D/g, '');
-            const dob = \$('reg-dob').value;
-            const account_type = \$('reg-account-type').value;
-            const pin = \$('reg-pin').value;
+            const name = $('reg-name').value.trim();
+            const phone = $('reg-phone').value.replace(/\D/g, '');
+            const dob = $('reg-dob').value;
+            const account_type = $('reg-account-type').value;
+            const pin = $('reg-pin').value;
 
             if (pin.length !== 4) return alert("Please tap a 4-digit PIN.");
 
             // Activate loading overlay
-            \$('load-title').innerText = "Creating Account...";
-            \$('load-desc').innerText = "Verifying KYC & Generating Kinex Wallet";
-            \$('loading-screen').classList.remove('hidden');
+            $('load-title').innerText = "Creating Account...";
+            $('load-desc').innerText = "Verifying KYC & Generating Kinex Wallet";
+            $('loading-screen').classList.remove('hidden');
 
             try {
                 const res = await fetch('/register', {
@@ -843,16 +843,16 @@ function toggleAuth(view) {
                     })
                 });
                 const data = await res.json();
-                \$('loading-screen').classList.add('hidden');
+                $('loading-screen').classList.add('hidden');
 
                 if (data.success) {
                     alert(`Account Created Successfully!\n\nYour Kinex ID: ${data.upi_id}\nStarting Balance: K 500.00 Bonus`);
                     toggleAuth('login');
-                    \$('reg-name').value = "";
-                    \$('reg-phone').value = "";
-                    \$('reg-dob').value = "";
-                    \$('reg-custom-id').value = "";
-                    \$('reg-pin').value = "";
+                    $('reg-name').value = "";
+                    $('reg-phone').value = "";
+                    $('reg-dob').value = "";
+                    $('reg-custom-id').value = "";
+                    $('reg-pin').value = "";
                     if ($('reg-custom-id')) delete$('reg-custom-id').dataset.manualEdited;
                 } else {
                     if (data.suggestions) {
@@ -865,7 +865,7 @@ function toggleAuth(view) {
                     }
                 }
             } catch (e) {
-                \$('loading-screen').classList.add('hidden');
+                $('loading-screen').classList.add('hidden');
                 alert("Network error. Please ensure the server is online.");
             }
         }

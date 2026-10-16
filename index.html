@@ -674,11 +674,14 @@
         function openModal(id) { $(id).classList.remove('hidden'); }
         function closeModal(id) { $(id).classList.add('hidden'); }
         
-  function logout() {
+  let isIntentionalNav = false;
+
+function logout() {
     currentUser = ""; currentPin = ""; currentName = ""; globalContacts = [];
     
-    // Clear saved session storage so auto-login or quest pages reset
+    // Clear saved session
     localStorage.removeItem('rpay_currentUser');
+    localStorage.removeItem('rpay_currentName');
     localStorage.removeItem('rpay_currentPin');
     
     $('log-upi').value = ""; $('log-pin').value = ""; $('reg-pin').value = ""; $('reg-name').value = "";
@@ -782,44 +785,67 @@
         function selectSuggestion(suggestedUpi) { selectedUpi = suggestedUpi; proceedToRegPin(); }
 
         async function login() {
-            const upi_id = $('log-upi').value.trim();
-            const pin = $('log-pin').value;
-            if (upi_id !== 'Boss0' && pin.length !== 4) return alert("Please tap your 4-digit PIN.");
-            if (upi_id === 'Boss0' && pin.length < 4) return alert("Please enter your Operator Password.");
+    const upi_id = $('log-upi').value.trim();
+    const pin = $('log-pin').value;
+    if (upi_id !== 'Boss0' && pin.length !== 4) return alert("Please tap your 4-digit PIN.");
+    if (upi_id === 'Boss0' && pin.length < 4) return alert("Please enter your Operator Password.");
+    
+    // 1. Show Loading Screen
+    $('load-title').innerText = "Authenticating...";
+    $('load-desc').innerText = "Verifying ID & Security Credentials";
+    $('loading-screen').classList.remove('hidden');
+
+    try {
+        const res = await fetch('/login', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({ upi_id, pin }) 
+        });
+        const data = await res.json();
+        
+        // 2. Hide Loading Screen
+        $('loading-screen').classList.add('hidden');
+        
+        if (data.success) {
+            if (data.user.status === 'FROZEN') return alert("Your account is temporarily frozen by security. Contact support.");
+            currentUser = upi_id; 
+            currentPin = pin;
+            $('auth-screen').classList.add('hidden');
             
-            try {
-                const res = await fetch('/login', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, pin}) });
-                const data = await res.json();
+            if (currentUser === 'Boss0') {
+                $('owner-screen').classList.remove('hidden');
+                adminViewUsers();
+                adminLoadTransactions();
+            } else {
+                currentName = data.user.name;
                 
-                if(data.success) {
-                    if(data.user.status === 'FROZEN') return alert("Your account is temporarily frozen by security. Contact support.");
-                    currentUser = upi_id; currentPin = pin;
-                    $('auth-screen').classList.add('hidden');
-                    
-                    if(currentUser === 'Boss0') {
-                        $('owner-screen').classList.remove('hidden');
-                        adminViewUsers();
-                        adminLoadTransactions();
-                    } else {
-                        localStorage.setItem('rpay_currentUser', currentUser);
-                        currentName = data.user.name;
-                        $('dashboard-screen').classList.remove('hidden');$('nav-name').innerText = currentName;
-                        $('nav-avatar').innerText = currentName.charAt(0).toUpperCase();$('nav-id').innerText = currentUser;
-                        
-                        $('qr-upi-label').innerText = currentUser;
-                        $("qrcode").innerHTML = "";
-                        new QRCode($("qrcode"), { text: currentUser, width: 200, height: 200 });
-                        
-                        updateBalance(); 
-                        loadHistory();
-                        checkSystemNotices();
-                    }
-                } else {
-                    alert(data.error);
-                    $('log-pin').value = "";
-                }
-            } catch(e) { alert("Network error. Please ensure server is running."); }
+                // Save session to localStorage so refresh doesn't log the user out
+                localStorage.setItem('rpay_currentUser', currentUser);
+                localStorage.setItem('rpay_currentName', currentName);
+                
+                $('dashboard-screen').classList.remove('hidden');
+                
+                $('nav-name').innerText = currentName;
+                $('nav-avatar').innerText = currentName.charAt(0).toUpperCase();
+                $('nav-id').innerText = currentUser;
+                
+                $('qr-upi-label').innerText = currentUser;
+                $("qrcode").innerHTML = "";
+                new QRCode($("qrcode"), { text: currentUser, width: 200, height: 200 });
+                
+                updateBalance(); 
+                loadHistory();
+                checkSystemNotices();
+            }
+        } else {
+            alert(data.error);
+            $('log-pin').value = "";
         }
+    } catch (e) { 
+        $('loading-screen').classList.add('hidden');
+        alert("Network error. Please ensure server is running."); 
+    }
+}
 
         /* ---- DASHBOARD DATA BINDING ---- */
         let hiddenBal = false;
@@ -1266,6 +1292,42 @@
                 adminViewUsers();
             } else alert(data.error || "Clawback failed.");
         }
+
+    // 1. ACCIDENTAL REFRESH / TAB CLOSE BLOCKER
+window.addEventListener('beforeunload', (e) => {
+    // Only warn if user is actively logged in and not clicking an internal app link
+    if (currentUser !== "" && !isIntentionalNav) {
+        e.preventDefault();
+        e.returnValue = ''; // Triggers standard browser confirmation dialog
+    }
+});
+
+// 2. AUTO-RESTORE SESSION ON PAGE LOAD
+window.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem('rpay_currentUser');
+    const savedName = localStorage.getItem('rpay_currentName');
+    
+    // Auto-restore standard user accounts (Boss0 always requires fresh password auth)
+    if (savedUser && savedUser !== 'Boss0') {
+        currentUser = savedUser;
+        currentName = savedName || savedUser.split('@')[0];
+        
+        $('auth-screen').classList.add('hidden');
+        $('dashboard-screen').classList.remove('hidden');
+        
+        $('nav-name').innerText = currentName;
+        $('nav-avatar').innerText = currentName.charAt(0).toUpperCase();
+        $('nav-id').innerText = currentUser;
+        
+        $('qr-upi-label').innerText = currentUser;
+        $("qrcode").innerHTML = "";
+        new QRCode($("qrcode"), { text: currentUser, width: 200, height: 200 });
+        
+        updateBalance();
+        loadHistory();
+        checkSystemNotices();
+    }
+});
         
     </script>
 </body>

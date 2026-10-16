@@ -204,6 +204,78 @@
         .check-circle { width: 70px; height: 70px; background: var(--pos); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px; }
 
         @media (min-width:520px){ body{background:var(--bg)} .app{box-shadow:0 0 0 1px var(--line)} }
+    /* ---------- Native Camera App QR Scanner UI ---------- */
+        .cam-scanner-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 10550 !important;
+            display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;
+        }
+        #reader {
+            position: absolute; inset: 0; width: 100% !important; height: 100% !important;
+            border: none !important; background: #000; z-index: 1;
+        }
+        #reader video {
+            width: 100% !important; height: 100% !important; object-fit: cover !important;
+        }
+        .cam-top-bar {
+            position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between;
+            padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 16px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.75) 0%, transparent 100%);
+        }
+        .cam-circle-btn {
+            width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.16);
+            backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); color: #fff;
+            display: grid; place-items: center; font-size: 20px; transition: transform 0.15s, background 0.2s;
+        }
+        .cam-circle-btn:active { transform: scale(0.92); }
+        .cam-circle-btn.active-torch { background: var(--cyan); color: #04142A; border-color: var(--cyan); box-shadow: 0 0 16px var(--cyan); }
+        .cam-status-pill {
+            background: rgba(4, 20, 42, 0.75); backdrop-filter: blur(8px); border: 1px solid rgba(34, 211, 238, 0.4);
+            color: #fff; padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; letter-spacing: 0.3px;
+        }
+        .cam-viewfinder-wrap {
+            position: relative; z-index: 4; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;
+        }
+        .cam-reticle {
+            width: 245px; height: 245px; border-radius: 24px; position: relative;
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.55); border: 1px solid rgba(255, 255, 255, 0.2); overflow: hidden;
+        }
+        .cam-corner { position: absolute; width: 34px; height: 34px; border-color: var(--cyan); border-style: solid; border-width: 0; }
+        .cam-corner.tl { top: 0; left: 0; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 20px; }
+        .cam-corner.tr { top: 0; right: 0; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 20px; }
+        .cam-corner.bl { bottom: 0; left: 0; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 20px; }
+        .cam-corner.br { bottom: 0; right: 0; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 20px; }
+        .cam-laser {
+            position: absolute; left: 8%; right: 8%; height: 2px; background: var(--cyan);
+            box-shadow: 0 0 12px 2px var(--cyan); animation: camLaserScan 2.2s ease-in-out infinite;
+        }
+        @keyframes camLaserScan { 0%, 100% { top: 10%; opacity: 0.6; } 50% { top: 90%; opacity: 1; } }
+        .cam-bottom-deck {
+            position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-around;
+            padding: 24px 28px calc(32px + env(safe-area-inset-bottom, 0px));
+            background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+        }
+        .cam-side-btn {
+            display: flex; flex-direction: column; align-items: center; gap: 6px; color: #fff; font-size: 12px; font-weight: 600;
+        }
+        .cam-side-btn .ico-ring {
+            width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.14);
+            backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); display: grid; place-items: center;
+        }
+        .cam-side-btn:active .ico-ring { transform: scale(0.92); }
+        .cam-shutter-btn {
+            width: 76px; height: 76px; border-radius: 50%; border: 4px solid #fff; padding: 5px;
+            display: grid; place-items: center; background: rgba(255,255,255,0.15); transition: transform 0.15s;
+        }
+        .cam-shutter-inner {
+            width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), var(--blue));
+            box-shadow: 0 0 20px rgba(34,211,238,0.7); display: grid; place-items: center; color: #04142A;
+        }
+        .cam-shutter-btn:active { transform: scale(0.9); }
+        .locked-amt-banner {
+            background: var(--tile); border: 1px dashed var(--accent); color: var(--accent);
+            padding: 12px 16px; border-radius: 12px; font-size: 13px; font-weight: 700;
+            text-align: center; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -502,12 +574,21 @@
         </div>
     </div>
 
+    <!-- UPGRADED RECEIVE QR MODAL (Supports Dynamic Locked Amount QRs) -->
     <div id="qrModal" class="modal hidden">
         <div class="modal-content" style="text-align: center;">
             <button class="modal-close" onclick="closeModal('qrModal')">✕</button>
-            <h3 style="margin-bottom: 15px;">Receive Kinex</h3>
-            <div id="qrcode" style="background: white; padding: 15px; border-radius: 12px; display: inline-block; margin: 15px auto;"></div>
-            <p id="qr-upi-label" style="font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 10px;"></p>
+            <h3 style="margin-bottom: 10px;">Receive Kinex</h3>
+            <div id="qrcode" style="background: white; padding: 15px; border-radius: 12px; display: inline-block; margin: 10px auto;"></div>
+            <p id="qr-upi-label" style="font-size: 14px; font-weight: 700; color: var(--accent); margin: 6px 0 14px;"></p>
+            
+            <div style="border-top: 1px solid var(--line); padding-top: 12px; text-align: left;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--muted);">SET EXACT AMOUNT (OPTIONAL - LOCKS PAYER KEYPAD)</label>
+                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                    <input type="number" id="qr-req-amt" placeholder="Enter amount (K)" min="1" style="margin: 0;" oninput="updateReceiveQR()">
+                    <button class="btn-dark" style="padding: 0 14px; border-radius: 8px; font-size: 13px; font-weight: 600;" onclick="$('qr-req-amt').value=''; updateReceiveQR();">Clear</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -519,27 +600,78 @@
         </div>
     </div>
 
-    <div id="scannerModal" class="modal hidden">
-        <div class="modal-content" style="text-align: center;">
-            <button class="modal-close" onclick="stopScanner()">✕</button>
-            <h3 style="margin-bottom: 15px;">Scan QR Code</h3>
-            <div id="reader" style="width: 100%; border-radius: 12px; overflow: hidden; background: #000;"></div>
+    <!-- NATIVE CAMERA APP QR SCANNER -->
+    <div id="scannerModal" class="cam-scanner-overlay hidden">
+        <!-- Live Camera Stream Container -->
+        <div id="reader"></div>
+        <!-- Hidden div for scanning uploaded files -->
+        <div id="file-qr-reader" class="hidden"></div>
+
+        <!-- Top Camera Overlay Bar -->
+        <div class="cam-top-bar">
+            <button type="button" class="cam-circle-btn" onclick="stopScanner()" aria-label="Back">←</button>
+            <div class="cam-status-pill" id="cam-status-lbl">Align QR code in frame</div>
+            <button type="button" class="cam-circle-btn" id="cam-torch-btn" onclick="toggleCameraTorch()" aria-label="Toggle Flashlight">⚡</button>
+        </div>
+
+        <!-- Center Viewfinder Reticle -->
+        <div class="cam-viewfinder-wrap">
+            <div class="cam-reticle" id="cam-reticle-box">
+                <div class="cam-corner tl"></div>
+                <div class="cam-corner tr"></div>
+                <div class="cam-corner bl"></div>
+                <div class="cam-corner br"></div>
+                <div class="cam-laser"></div>
+            </div>
+        </div>
+
+        <!-- Bottom Camera Control Deck -->
+        <div class="cam-bottom-deck">
+            <input type="file" id="qr-file-input" accept="image/*" class="hidden" onchange="scanQrFromFile(event)">
+            
+            <!-- Left: Gallery / Files Button -->
+            <button type="button" class="cam-side-btn" onclick="$('qr-file-input').click()">
+                <span class="ico-ring">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                </span>
+                Files
+            </button>
+
+            <!-- Center: Scan / Capture Shutter Button -->
+            <button type="button" class="cam-shutter-btn" onclick="triggerManualScanPulse()" aria-label="Scan QR">
+                <span class="cam-shutter-inner">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M4 12h16"/></svg>
+                </span>
+            </button>
+
+            <!-- Right: Flip Front/Back Camera Button -->
+            <button type="button" class="cam-side-btn" onclick="switchCameraFacing()">
+                <span class="ico-ring">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg>
+                </span>
+                Flip Cam
+            </button>
         </div>
     </div>
 
-    <!-- SCAN PAYMENT SCREENS -->
+    <!-- SCAN PAYMENT SCREEN (With Fixed-Amount Numpad Lock) -->
     <div id="scan-pay-screen" class="scan-payment-screen hidden">
         <div class="scan-header">
-            <button class="back-btn" onclick="closeScanPay()">←</button>
-            <p style="font-size: 13px; color: var(--muted);">Paying to</p>
+            <button class="back-btn" onclick="closeScanPay()" style="position: absolute; left: 20px; top: 20px; font-size: 22px;">←</button>
+            <p style="font-size: 13px; color: var(--muted); margin: 0;">Paying to</p>
             <h3 id="scan-target-upi" style="color: var(--accent); font-size: 16px; margin-top: 2px;"></h3>
         </div>
-        <div class="amount-display-container">
-            <h1 class="amount-text">K <span id="scan-amount-display">0</span></h1>
+        <div class="amount-display-container" style="flex-direction: column;">
+            <h1 class="amount-text" style="margin: 0;">K <span id="scan-amount-display">0</span></h1>
+            <!-- Shown only when QR code locks the amount -->
+            <div id="locked-amt-notice" class="locked-amt-banner hidden">
+                🔒 Fixed QR Amount (Cannot be edited)
+            </div>
         </div>
         <div class="numpad-container">
             <button class="btn-primary" onclick="proceedToPin()" style="font-size: 18px; padding: 16px; border-radius: 12px;">Proceed to Pay</button>
-            <div class="numpad">
+            <!-- Numpad automatically hides when scanning a QR with an embedded amount -->
+            <div id="scan-numpad-grid" class="numpad">
                 <button class="num-key" onclick="numpad(1)">1</button><button class="num-key" onclick="numpad(2)">2</button><button class="num-key" onclick="numpad(3)">3</button>
                 <button class="num-key" onclick="numpad(4)">4</button><button class="num-key" onclick="numpad(5)">5</button><button class="num-key" onclick="numpad(6)">6</button>
                 <button class="num-key" onclick="numpad(7)">7</button><button class="num-key" onclick="numpad(8)">8</button><button class="num-key" onclick="numpad(9)">9</button>
@@ -1106,104 +1238,277 @@ function toggleAuth(view) {
             openScanPayScreen($('contact-search').value.trim()); 
         }
 
-        /* ---- PAYMENT EXECUTION ---- */
-        let currentScanAmount = "0"; let currentScanReceiver = "";
+/* ---- PAYMENT EXECUTION (With Locked QR Amount & Security Checks) ---- */
+        let currentScanAmount = "0"; 
+        let currentScanReceiver = "";
+        let isScanAmountLocked = false;
+        let isPayingMutex = false;
+
+        function updateReceiveQR() {
+            if (!currentUser) return;
+            const reqAmt = parseFloat($('qr-req-amt') ?$('qr-req-amt').value : 0);
+            let qrData = currentUser;
+            if (Number.isFinite(reqAmt) && reqAmt > 0) {
+                const cleanAmt = Math.round(reqAmt * 100) / 100;
+                qrData = `upi://pay?pa=${encodeURIComponent(currentUser)}&am=${cleanAmt}`;
+                $('qr-upi-label').innerText = `${currentUser} • Requesting K ${fmt(cleanAmt)}`;
+            } else {
+                $('qr-upi-label').innerText = currentUser;
+            }
+            $("qrcode").innerHTML = "";
+            new QRCode($("qrcode"), { text: qrData, width: 200, height: 200 });
+        }
         
-        function openScanPayScreen(upiId) { 
-            currentScanReceiver = upiId; 
-            currentScanAmount = "0"; 
-            $('scan-target-upi').innerText = upiId; 
-            $('scan-amount-display').innerText = "0"; 
-            $('scan-pay-screen').classList.remove('hidden'); 
+        function openScanPayScreen(upiId, lockedAmount = null) {
+            const cleanTarget = String(upiId || '').trim();
+            if (!cleanTarget || !cleanTarget.includes('@')) {
+                return toast("Invalid Kinex ID format.");
+            }
+            if (cleanTarget.toLowerCase() === currentUser.toLowerCase()) {
+                return alert("Security Block: You cannot pay your own Kinex ID.");
+            }
+
+            currentScanReceiver = cleanTarget;
+            $('scan-target-upi').innerText = cleanTarget;
+
+            // If QR code includes a valid amount, LOCK the numpad so user cannot edit it
+            if (lockedAmount !== null && lockedAmount !== undefined && lockedAmount !== "") {
+                const parsedAmt = Math.round(parseFloat(lockedAmount) * 100) / 100;
+                if (!Number.isFinite(parsedAmt) || parsedAmt < 1) {
+                    return alert("Invalid QR Code: Specified amount must be at least K 1.00.");
+                }
+                currentScanAmount = String(parsedAmt);
+                isScanAmountLocked = true;
+                $('scan-numpad-grid').classList.add('hidden');$('locked-amt-notice').classList.remove('hidden');
+            } else {
+                currentScanAmount = "0";
+                isScanAmountLocked = false;
+                $('scan-numpad-grid').classList.remove('hidden');$('locked-amt-notice').classList.add('hidden');
+            }
+
+            $('scan-amount-display').innerText = currentScanAmount;
+            $('scan-pay-screen').classList.remove('hidden');
         }
         
         function closeScanPay() { 
+            isScanAmountLocked = false;
             $('scan-pay-screen').classList.add('hidden'); 
         }
         
         function numpad(val) {
-            if (val === 'back') { currentScanAmount = currentScanAmount.slice(0, -1); if (currentScanAmount === "") currentScanAmount = "0"; } 
-            else { if (currentScanAmount === "0") currentScanAmount = val.toString(); else if (currentScanAmount.length < 6) currentScanAmount += val.toString(); }
+            // Security Guard: Ignore all keypad presses if QR amount is locked
+            if (isScanAmountLocked) return;
+
+            if (val === 'back') { 
+                currentScanAmount = currentScanAmount.slice(0, -1); 
+                if (currentScanAmount === "") currentScanAmount = "0"; 
+            } else { 
+                if (currentScanAmount === "0") currentScanAmount = val.toString(); 
+                else if (currentScanAmount.length < 6) currentScanAmount += val.toString(); 
+            }
             $('scan-amount-display').innerText = currentScanAmount;
         }
         
         function proceedToPin() {
-            if (currentScanAmount === "0" || currentScanAmount === "") return alert("Enter an amount.");
-            $('pin-confirm-amt').innerText = currentScanAmount; $('pin-confirm-upi').innerText = currentScanReceiver; $('scan-pay-pin').value = "";
+            const numericAmt = parseFloat(currentScanAmount);
+            if (!Number.isFinite(numericAmt) || numericAmt < 1) {
+                return alert("Please enter a valid amount (Minimum K 1.00).");
+            }
+            $('pin-confirm-amt').innerText = fmt(numericAmt);$('pin-confirm-upi').innerText = currentScanReceiver; 
+            $('scan-pay-pin').value = "";
             openModal('pinConfirmModal');
         }
 
         async function executeScanPay() {
-    const pin = $('scan-pay-pin').value;
-    if(pin.length !== 4) return alert("Tap your 4-digit PIN.");
-    
-    closeModal('pinConfirmModal'); 
-    $('scan-pay-screen').classList.add('hidden'); 
-    
-    // Set dynamic text for payments
-    $('load-title').innerText = "Processing Payment...";
-    $('load-desc').innerText = "Securely connecting to Kinex Network";
-    $('loading-screen').classList.remove('hidden');
-
-    try {
-        const res = await fetch('/pay', { 
-            method: 'POST', 
-            headers:{'Content-Type':'application/json'}, 
-            body: JSON.stringify({
-                sender: currentUser, 
-                receiver: currentScanReceiver, 
-                pin: pin, 
-                amount: parseFloat(currentScanAmount)
-            }) 
-        });
-        const data = await res.json();
-
-        setTimeout(() => {
-            $('loading-screen').classList.add('hidden');
-            if(data.success) {
-                const audio = $('success-audio'); 
-                if(audio) { audio.currentTime = 0; audio.play().catch(e=>{}); }
-                
-                $('receipt-amount').innerText = "K " + fmt(parseFloat(currentScanAmount));
-                $('receipt-receiver').innerText = escapeHTML(currentScanReceiver);
-                $('receipt-sender').innerText = escapeHTML(currentUser);
-                $('receipt-time').innerText = new Date().toLocaleString();
-                $('success-screen').classList.remove('hidden');
-            } else {
-                const errorMsg = data.error || "Unknown error";
-                if (errorMsg.toLowerCase().includes("frozen")) {
-                    alert("SECURITY ALERT: Account frozen for investigation.");
-                } else {
-                    alert("Payment Failed: " + errorMsg);
-                }
+            if (isPayingMutex) return; // Prevent double-tap race condition
+            const pin = $('scan-pay-pin').value;
+            if (pin.length !== 4) return alert("Tap your 4-digit PIN.");
+            
+            const finalAmount = Math.round(parseFloat(currentScanAmount) * 100) / 100;
+            if (!Number.isFinite(finalAmount) || finalAmount < 1) {
+                return alert("Invalid payment amount.");
             }
-        }, 1500);
-    } catch (e) {
-        $('loading-screen').classList.add('hidden');
-        alert("Network error processing payment.");
-    }
-}
+
+            isPayingMutex = true;
+            closeModal('pinConfirmModal'); 
+            $('scan-pay-screen').classList.add('hidden');$('load-title').innerText = "Processing Payment...";
+            $('load-desc').innerText = "Securely connecting to Kinex Network";
+            $('loading-screen').classList.remove('hidden');
+
+            try {
+                const res = await fetch('/pay', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({
+                        sender: currentUser, 
+                        receiver: currentScanReceiver, 
+                        pin: pin, 
+                        amount: finalAmount
+                    }) 
+                });
+                const data = await res.json();
+
+                setTimeout(() => {
+                    isPayingMutex = false;
+                    $('loading-screen').classList.add('hidden');
+                    if (data.success) {
+                        const audio = $('success-audio'); 
+                        if (audio) { audio.currentTime = 0; audio.play().catch(e => {}); }
+                        
+                        $('receipt-amount').innerText = "K " + fmt(finalAmount);
+                        $('receipt-receiver').innerText = escapeHTML(currentScanReceiver);$('receipt-sender').innerText = escapeHTML(currentUser);
+                        $('receipt-time').innerText = new Date().toLocaleString();$('success-screen').classList.remove('hidden');
+                    } else {
+                        const errorMsg = data.error || "Unknown error";
+                        if (errorMsg.toLowerCase().includes("frozen")) {
+                            alert("SECURITY ALERT: Account frozen for investigation.");
+                        } else {
+                            alert("Payment Failed: " + errorMsg);
+                        }
+                    }
+                }, 1200);
+            } catch (e) {
+                isPayingMutex = false;
+                $('loading-screen').classList.add('hidden');
+                alert("Network error processing payment.");
+            }
+        }
 
         function closeSuccess() { $('success-screen').classList.add('hidden'); updateBalance(); loadHistory(); }
 
-        /* ---- QR SCANNER ---- */
-        function startScanner() {
-            openModal('scannerModal');
-            if (!html5QrcodeScanner) html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 220, height: 220 } }, false);
-            html5QrcodeScanner.render((decodedText) => {
-                stopScanner();
-                if (decodedText.startsWith("upi://pay")) {
-                    const params = new URLSearchParams(decodedText.split('?')[1]);
-                    if (params.get('pa') && params.get('am')) {
-                        currentScanReceiver = params.get('pa'); currentScanAmount = params.get('am');
-                        $('scan-target-upi').innerText = currentScanReceiver; $('scan-amount-display').innerText = currentScanAmount;
-                        $('scan-pay-screen').classList.remove('hidden'); return;
-                    }
-                }
-                openScanPayScreen(decodedText);
-            }, (error) => {});
+        /* ---- NATIVE CAMERA APP QR SCANNER ---- */
+        let html5QrCode = null;
+        let currentCameraFacing = "environment"; // 'environment' (back) or 'user' (front)
+        let isTorchOn = false;
+        let isScannerBusy = false;
+
+        async function startScanner() {
+            $('scannerModal').classList.remove('hidden');$('cam-status-lbl').innerText = "Starting camera...";
+            isTorchOn = false;
+            $('cam-torch-btn').classList.remove('active-torch');
+
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            await launchCameraStream(currentCameraFacing);
         }
-        function stopScanner() { if (html5QrcodeScanner) html5QrcodeScanner.clear(); closeModal('scannerModal'); }
+
+        async function launchCameraStream(facingMode) {
+            if (isScannerBusy) return;
+            isScannerBusy = true;
+            try {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    await html5QrCode.stop();
+                }
+                await html5QrCode.start(
+                    { facingMode: facingMode },
+                    { fps: 12, qrbox: { width: 240, height: 240 }, aspectRatio: window.innerHeight / window.innerWidth },
+                    (decodedText) => {
+                        handleDecodedQR(decodedText);
+                    },
+                    (errorMessage) => {}
+                );
+                $('cam-status-lbl').innerText = "Align QR code in frame";
+            } catch (err) {
+                $('cam-status-lbl').innerText = "Camera unavailable — Use Files";
+                toast("Could not access camera. You can upload a QR image from Files.");
+            } finally {
+                isScannerBusy = false;
+            }
+        }
+
+        async function switchCameraFacing() {
+            currentCameraFacing = (currentCameraFacing === "environment") ? "user" : "environment";
+            $('cam-status-lbl').innerText = currentCameraFacing === "user" ? "Front Camera" : "Back Camera";
+            await launchCameraStream(currentCameraFacing);
+        }
+
+        async function toggleCameraTorch() {
+            if (!html5QrCode || !html5QrCode.isScanning) return toast("Camera is not active.");
+            try {
+                isTorchOn = !isTorchOn;
+                await html5QrCode.applyVideoConstraints({
+                    advanced: [{ torch: isTorchOn }]
+                });
+                $('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
+            } catch (e) {
+                isTorchOn = false;
+                $('cam-torch-btn').classList.remove('active-torch');
+                toast("Flashlight not supported on this camera/device.");
+            }
+        }
+
+        function triggerManualScanPulse() {
+            const box = $('cam-reticle-box');
+            box.style.transform = "scale(0.93)";
+            box.style.borderColor = "var(--cyan)";
+            $('cam-status-lbl').innerText = "Scanning frame...";
+            if (navigator.vibrate) navigator.vibrate(30);
+            setTimeout(() => {
+                box.style.transform = "scale(1)";
+                $('cam-status-lbl').innerText = "Align QR code in frame";
+            }, 350);
+        }
+
+        async function scanQrFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            $('cam-status-lbl').innerText = "Reading image file...";
+
+            try {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    await html5QrCode.stop();
+                }
+                const fileScanner = new Html5Qrcode("file-qr-reader");
+                const decodedText = await fileScanner.scanFile(file, true);
+                fileScanner.clear();
+                event.target.value = ""; // reset file input
+                handleDecodedQR(decodedText);
+            } catch (err) {
+                event.target.value = "";
+                alert("No valid QR code found in the selected photo.");
+                await launchCameraStream(currentCameraFacing);
+            }
+        }
+
+        async function stopScanner() {
+            try {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    await html5QrCode.stop();
+                }
+            } catch (e) {}
+            $('scannerModal').classList.add('hidden');
+        }
+
+        async function handleDecodedQR(decodedText) {
+            if (navigator.vibrate) navigator.vibrate(50);
+            await stopScanner();
+
+            const raw = String(decodedText || '').trim();
+
+            // Case 1: Standard UPI URI (e.g., upi://pay?pa=merchant@rpay&am=250)
+            if (raw.toLowerCase().startsWith("upi://pay")) {
+                const queryString = raw.split('?')[1] || "";
+                const params = new URLSearchParams(queryString);
+                const pa = params.get('pa');
+                const am = params.get('am');
+
+                if (!pa || !pa.includes('@')) {
+                    return alert("Invalid QR Code: Missing recipient Kinex ID.");
+                }
+                // If 'am' exists in QR, pass it as lockedAmount so numpad is hidden!
+                return openScanPayScreen(pa, am);
+            }
+
+            // Case 2: Direct Kinex Handle (e.g., user@rpay)
+            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(raw)) {
+                return openScanPayScreen(raw, null);
+            }
+
+            // Case 3: Unrecognized or Malicious QR Code
+            alert("Unrecognized QR Code. Please scan a valid Kinex Network (@rpay) QR code.");
+        }
 
         // TWO-STEP PROFILE PIN CHANGE
         function startPinChange() {

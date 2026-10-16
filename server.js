@@ -102,32 +102,56 @@ app.post('/pay', async (req, res) => {
     const { sender, receiver, pin, amount } = req.body;
     const client = await pool.connect();
     try {
-        await client.query('BEGIN');          
-                // NEW: Global Maintenance Lock Check         
-                if (globalMaintenanceMode) throw new Error("RPAY Network is currently under maintenance. Transfers are temporarily paused.");
+        await client.query('BEGIN');
 
+        // 1. Global Maintenance Lock Check
+        if (typeof globalMaintenanceMode !== 'undefined' && globalMaintenanceMode) {
+            throw new Error("RPAY Network is currently under maintenance. Transfers are temporarily paused.");
+        }
 
-        // 1. Check Sender Status
-        const auth = await client.query('SELECT balance, status FROM accounts WHERE upi_id = $1 AND pin = $2', [sender, pin]);
+        // 2. Clean & Validate Handles
+        const cleanSender = String(sender || '').trim();
+        const cleanReceiver = String(receiver || '').trim();
+        if (!cleanSender || !cleanReceiver) throw new Error("Missing sender or receiver ID.");
+        if (cleanSender.toLowerCase() === cleanReceiver.toLowerCase()) {
+            throw new Error("Security Block: You cannot transfer Kinex to your own account.");
+        }
+
+        // 3. Validate & Sanitize Amount (Prevents negative/zero/fractional exploits)
+        const rawAmount = Number(amount);
+        if (!Number.isFinite(rawAmount) || rawAmount <= 0) {
+            throw new Error("Invalid payment amount. Must be greater than K 0.");
+        }
+        const sanitizedAmount = Math.round(rawAmount * 100) / 100;
+        if (sanitizedAmount < 1) {
+            throw new Error("Minimum transfer amount is K 1.00.");
+        }
+
+        // 4. Check Sender Status (FOR UPDATE prevents double-click race conditions)
+        const auth = await client.query('SELECT balance, status FROM accounts WHERE upi_id = $1 AND pin = $2 FOR UPDATE', [cleanSender, pin]);
         if (auth.rows.length === 0) throw new Error("Invalid PIN.");
         if (auth.rows[0].status === 'FROZEN') throw new Error("Your account is frozen.");
-        // Anti-farming protection: maintain a minimum balance reserve of K 50
-        if (auth.rows[0].balance - amount < 50) {
+        
+        const currentBal = parseFloat(auth.rows[0].balance);
+        if (currentBal < sanitizedAmount) throw new Error("Insufficient Funds.");
+
+        // 5. Anti-farming protection: maintain a minimum balance reserve of K 50
+        if (currentBal - sanitizedAmount < 50) {
             throw new Error("A minimum balance of K 50.00 must remain in your account.");
         }
 
-        // 2. Check Receiver Status
-        const receiverCheck = await client.query('SELECT status FROM accounts WHERE upi_id = $1', [receiver]);
+        // 6. Check Receiver Status
+        const receiverCheck = await client.query('SELECT status FROM accounts WHERE upi_id = $1 FOR UPDATE', [cleanReceiver]);
         if (receiverCheck.rows.length === 0) throw new Error("Receiver does not exist.");
         if (receiverCheck.rows[0].status === 'FROZEN') throw new Error("Receiver account is currently frozen and cannot accept funds.");
 
-        // 3. Process Transfer
-        await client.query('UPDATE accounts SET balance = balance - $1 WHERE upi_id = $2', [amount, sender]);
-        await client.query('UPDATE accounts SET balance = balance + $1 WHERE upi_id = $2', [amount, receiver]);
-        await client.query('INSERT INTO transactions (sender, receiver, amount) VALUES ($1, $2, $3)', [sender, receiver, amount]);
-                // Auto-insert payment into chat history
+        // 7. Process Transfer
+        await client.query('UPDATE accounts SET balance = balance - $1 WHERE upi_id = $2', [sanitizedAmount, cleanSender]);
+        await client.query('UPDATE accounts SET balance = balance + $1 WHERE upi_id = $2', [sanitizedAmount, cleanReceiver]);
+        await client.query('INSERT INTO transactions (sender, receiver, amount) VALUES ($1, $2, $3)', [cleanSender, cleanReceiver, sanitizedAmount]);
+
         await client.query('COMMIT');
-        res.json({ success: true });
+        res.json({ success: true, amount: sanitizedAmount });
     } catch (e) {
         await client.query('ROLLBACK');
         res.status(400).json({ success: false, error: e.message });

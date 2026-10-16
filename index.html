@@ -248,18 +248,39 @@
             </div>
         </div>
 
-        <!-- REGISTER SECTION -->
+        <!-- REGISTER SECTION (KYC ONBOARDING) -->
         <div id="register-section" class="card hidden">
             <h2>Join Kinex</h2>
             
-            <!-- Register Step 1: Name Input -->
+            <!-- Register Step 1: KYC Details -->
             <div id="reg-step-1">
-                <input type="text" id="reg-name" placeholder="Full Name" oninput="resetSuggestions()">
-                <div id="suggestion-box" class="hidden" style="margin-top: 5px; text-align: left;">
-                    <p style="font-size: 13px; color: var(--neg); margin-bottom: 8px; font-weight: 600;">That name is taken. Choose one:</p>
-                    <div id="suggestion-buttons" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;"></div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--muted);">FULL LEGAL NAME</label>
+                <input type="text" id="reg-name" placeholder="Enter Full Legal Name" oninput="autoSuggestHandle()">
+
+                <label style="font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 6px; display: block;">CUSTOM KINEX ID</label>
+                <div style="position: relative; display: flex; align-items: center;">
+                    <input type="text" id="reg-custom-id" placeholder="yourname" style="padding-right: 65px; margin: 4px 0;">
+                    <span style="position: absolute; right: 12px; font-weight: 700; color: var(--muted); font-size: 14px; pointer-events: none;">@rpay</span>
                 </div>
-                <button class="btn-primary" onclick="proceedToRegPin()">Proceed</button>
+
+                <div id="suggestion-box" class="hidden" style="margin-top: 4px; text-align: left;">
+                    <p style="font-size: 12px; color: var(--neg); margin-bottom: 6px; font-weight: 600;">That ID is taken. Pick one:</p>
+                    <div id="suggestion-buttons" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;"></div>
+                </div>
+
+                <label style="font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 6px; display: block;">MOBILE NUMBER (WHATSAPP)</label>
+                <input type="tel" id="reg-phone" placeholder="10-digit mobile number" maxlength="10">
+
+                <label style="font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 6px; display: block;">DATE OF BIRTH</label>
+                <input type="date" id="reg-dob" style="cursor: pointer;">
+
+                <label style="font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 6px; display: block;">ACCOUNT TYPE</label>
+                <select id="reg-account-type" style="width: 100%; padding: 14px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--line); font-size: 15px; background: var(--bg); color: var(--text);">
+                    <option value="PERSONAL">Personal Wallet</option>
+                    <option value="MERCHANT">Merchant / Business</option>
+                </select>
+
+                <button class="btn-primary" onclick="proceedToRegPin()">Proceed to Create PIN</button>
                 <p style="font-size: 13px; text-align: center; margin-top: 15px;">
                     Already registered? <span class="link-text" onclick="toggleAuth('login')">Login</span>
                 </p>
@@ -269,9 +290,10 @@
             <div id="reg-step-2" class="hidden">
                 <div style="display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 15px;">
                     <button onclick="backToRegStep1()" style="position: absolute; left: 0; font-size: 20px; color: var(--text);">←</button>
-                    <h3 style="margin: 0;">Create PIN</h3>
+                    <h3 style="margin: 0;">Create 4-Digit PIN</h3>
                 </div>
-                <p id="reg-name-display" style="text-align: center; color: var(--accent); font-weight: bold; margin-bottom: 10px;"></p>
+                <p id="reg-name-display" style="text-align: center; color: var(--accent); font-weight: bold; margin-bottom: 2px;"></p>
+                <p id="reg-handle-display" style="text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 12px;"></p>
                 <input type="password" id="reg-pin" readonly placeholder="* * * *" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 10px; cursor: default;">
                 
                 <div class="pin-numpad">
@@ -280,7 +302,7 @@
                     <button class="num-key" onclick="numpadPin(7, 'reg-pin')">7</button><button class="num-key" onclick="numpadPin(8, 'reg-pin')">8</button><button class="num-key" onclick="numpadPin(9, 'reg-pin')">9</button>
                     <button class="num-key" style="background: transparent; border: none;"></button><button class="num-key" onclick="numpadPin(0, 'reg-pin')">0</button><button class="num-key" onclick="numpadPin('back', 'reg-pin')">⌫</button>
                 </div>
-                <button class="btn-primary" onclick="register()">Sign Up (K 10,000 Bonus)</button>
+                <button class="btn-primary" onclick="register()">Sign Up (K 500 Bonus)</button>
             </div>
         </div>
     </div>
@@ -716,22 +738,41 @@ function logout() {
         function dismissNotice() { $('system-notice').classList.add('hidden'); }
 
         // AUTHENTICATION FLOW
-        function toggleAuth(view) {
-            $('login-section').classList.toggle('hidden', view === 'register');
-            $('register-section').classList.toggle('hidden', view === 'login');
+function toggleAuth(view) {
+            $('login-section').classList.toggle('hidden', view === 'register');$('register-section').classList.toggle('hidden', view === 'login');
             
             // Reset to Step 1 for both
-            $('login-step-1').classList.remove('hidden');
-            $('login-step-2').classList.add('hidden');
-            $('reg-step-1').classList.remove('hidden');
-            $('reg-step-2').classList.add('hidden');
+            $('login-step-1').classList.remove('hidden');$('login-step-2').classList.add('hidden');
+            $('reg-step-1').classList.remove('hidden');$('reg-step-2').classList.add('hidden');
             
             resetSuggestions();
         }
 
         let selectedUpi = "";
-        function resetSuggestions() { selectedUpi = ""; $('suggestion-box').classList.add('hidden'); }
+        function resetSuggestions() { 
+            selectedUpi = ""; 
+            if ($('suggestion-box'))$('suggestion-box').classList.add('hidden'); 
+        }
 
+        function autoSuggestHandle() {
+            const name = \$('reg-name').value.trim();
+            const customInput = \$('reg-custom-id');
+            // Auto-fill only if user hasn't explicitly customized it
+            if (!customInput.dataset.manualEdited) {
+                customInput.value = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            }
+        }
+
+        // Track if user manually edits custom ID
+        document.addEventListener('DOMContentLoaded', () => {
+            const customIdEl = \$('reg-custom-id');
+            if (customIdEl) {
+                customIdEl.addEventListener('input', () => {
+                    customIdEl.dataset.manualEdited = "true";
+                    resetSuggestions();
+                });
+            }
+        });
         // Login Step Logic
 
         function backToLoginStep1() {
@@ -741,46 +782,92 @@ function logout() {
 
         // Register Step Logic
         function proceedToRegPin() {
-            const name = $('reg-name').value.trim();
-            if(!name) return alert("Please enter your name.");
-            $('reg-name-display').innerText = name;
-            $('reg-pin').value = ""; // clear previous
-            $('reg-step-1').classList.add('hidden');
-            $('reg-step-2').classList.remove('hidden');
+            const name = \$('reg-name').value.trim();
+            const phone = \$('reg-phone').value.replace(/\D/g, '');
+            const dob = \$('reg-dob').value;
+            let rawHandle = \$('reg-custom-id').value.trim().toLowerCase().replace(/[^a-z0-9._]/g, '');
+
+            if (!name) return alert("Please enter your Full Legal Name.");
+            if (phone.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
+            if (!dob) return alert("Please select your Date of Birth.");
+            if (!rawHandle) rawHandle = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (!rawHandle) rawHandle = "user" + Math.floor(Math.random() * 9000 + 1000);
+
+            selectedUpi = rawHandle.endsWith('@rpay') ? rawHandle : (rawHandle + '@rpay');
+
+            \$('reg-name-display').innerText = name;
+            \$('reg-handle-display').innerText = selectedUpi;
+            \$('reg-pin').value = "";
+            $('reg-step-1').classList.add('hidden');$('reg-step-2').classList.remove('hidden');
         }
+
         function backToRegStep1() {
-            $('reg-step-2').classList.add('hidden');
-            $('reg-step-1').classList.remove('hidden');
+            $('reg-step-2').classList.add('hidden');$('reg-step-1').classList.remove('hidden');
+        }
+
+        function selectSuggestion(suggestedHandle) {
+            selectedUpi = suggestedHandle;
+            const customInput = \$('reg-custom-id');
+            if (customInput) {
+                customInput.value = suggestedHandle.replace('@rpay', '');
+                customInput.dataset.manualEdited = "true";
+            }
+            proceedToRegPin();
         }
 
         async function register() {
-            const name = $('reg-name').value.trim();
-            const pin = $('reg-pin').value;
-            if(pin.length !== 4) return alert("Please tap a 4-digit PIN.");
-            
-            let upi_id = selectedUpi;
-            if (!upi_id) {
-                let cleanNamePart = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                if (!cleanNamePart) cleanNamePart = "user" + Math.floor(Math.random() * 9000 + 1000);
-                upi_id = cleanNamePart + '@rpay';
-            }
+            const name = \$('reg-name').value.trim();
+            const phone = \$('reg-phone').value.replace(/\D/g, '');
+            const dob = \$('reg-dob').value;
+            const account_type = \$('reg-account-type').value;
+            const pin = \$('reg-pin').value;
+
+            if (pin.length !== 4) return alert("Please tap a 4-digit PIN.");
+
+            // Activate loading overlay
+            \$('load-title').innerText = "Creating Account...";
+            \$('load-desc').innerText = "Verifying KYC & Generating Kinex Wallet";
+            \$('loading-screen').classList.remove('hidden');
 
             try {
-                const res = await fetch('/register', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({upi_id, name, pin}) });
+                const res = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        upi_id: selectedUpi,
+                        name,
+                        pin,
+                        phone,
+                        dob,
+                        account_type
+                    })
+                });
                 const data = await res.json();
-                
-                if(data.success) { 
-                    alert("Account Created!\n\nYour permanent ID is:\n" + upi_id); 
-                    toggleAuth('login'); 
-                    $('reg-name').value = ""; $('reg-pin').value = "";
+                \$('loading-screen').classList.add('hidden');
+
+                if (data.success) {
+                    alert(`Account Created Successfully!\n\nYour Kinex ID: ${data.upi_id}\nStarting Balance: K 500.00 Bonus`);
+                    toggleAuth('login');
+                    \$('reg-name').value = "";
+                    \$('reg-phone').value = "";
+                    \$('reg-dob').value = "";
+                    \$('reg-custom-id').value = "";
+                    \$('reg-pin').value = "";
+                    if ($('reg-custom-id')) delete$('reg-custom-id').dataset.manualEdited;
                 } else {
                     if (data.suggestions) {
-                        backToRegStep1(); // return to name step to show suggestions
-                        $('suggestion-box').classList.remove('hidden');
-                        $('suggestion-buttons').innerHTML = data.suggestions.map(s => `<button style="background:var(--tile); color:var(--accent); border:1px solid var(--line); border-radius:6px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;" onclick="selectSuggestion('${escapeHTML(s)}')">${escapeHTML(s)}</button>`).join('');
-                    } else { alert(data.error || "Registration failed."); }
+                        backToRegStep1();
+                        $('suggestion-box').classList.remove('hidden');$('suggestion-buttons').innerHTML = data.suggestions.map(s => 
+                            `<button type="button" style="background:var(--tile); color:var(--accent); border:1px solid var(--line); border-radius:6px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;" onclick="selectSuggestion('${escapeHTML(s)}')">${escapeHTML(s)}</button>`
+                        ).join('');
+                    } else {
+                        alert(data.error || "Registration failed.");
+                    }
                 }
-            } catch(e) { alert("Network error. Please ensure server is running."); }
+            } catch (e) {
+                \$('loading-screen').classList.add('hidden');
+                alert("Network error. Please ensure the server is online.");
+            }
         }
         function selectSuggestion(suggestedUpi) { selectedUpi = suggestedUpi; proceedToRegPin(); }
 

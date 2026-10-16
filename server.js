@@ -22,27 +22,58 @@ app.get('/quests', (req, res) => {
 
 // --- AUTHENTICATION ---
 app.post('/register', async (req, res) => {
-    const { upi_id, name, pin } = req.body;
+    let { upi_id, name, pin, phone, dob, account_type } = req.body;
     try {
-        // 1. Check if the UPI ID is already taken
-        const check = await pool.query('SELECT upi_id FROM accounts WHERE upi_id = $1', [upi_id]);
+        if (!name || !pin || !phone || !dob) {
+            return res.status(400).json({ success: false, error: "Please fill in all KYC details." });
+        }
 
+        // Clean & validate 10-digit phone number
+        phone = String(phone).replace(/\D/g, '');
+        if (phone.length < 10) {
+            return res.status(400).json({ success: false, error: "Enter a valid 10-digit mobile number." });
+        }
+
+        // Anti-farming check: prevent multiple accounts with the same phone number
+        const phoneCheck = await pool.query('SELECT upi_id FROM accounts WHERE phone = \$1', [phone]);
+        if (phoneCheck.rows.length > 0) {
+            return res.status(400).json({ 
+                success: false, 
+                error: `This mobile number is already linked to account: ${phoneCheck.rows[0].upi_id}` 
+            });
+        }
+
+        // Validate or normalize chosen Kinex ID
+        let cleanHandle = (upi_id || '').toLowerCase().trim().replace(/[^a-z0-9._]/g, '');
+        if (!cleanHandle) {
+            cleanHandle = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (!cleanHandle) cleanHandle = "user" + Math.floor(Math.random() * 9000 + 1000);
+        }
+        if (!cleanHandle.endsWith('@rpay')) cleanHandle += '@rpay';
+
+        // Check if chosen ID is taken
+        const check = await pool.query('SELECT upi_id FROM accounts WHERE upi_id = \$1', [cleanHandle]);
         if (check.rows.length > 0) {
-            // 2. Generate 3 unique suggestions if taken
-            const base = upi_id.replace('@rpay', '');
+            const base = cleanHandle.replace('@rpay', '');
             const suggestions = [
                 base + Math.floor(Math.random() * 100) + '@rpay',
                 base + Math.floor(Math.random() * 1000) + '@rpay',
-                base + (Math.floor(Math.random() * 9000) + 1000) + '@rpay' // 4 digit number
+                base + (Math.floor(Math.random() * 9000) + 1000) + '@rpay'
             ];
             return res.json({ success: false, error: "ID taken", suggestions });
         }
 
-        // 3. If available, create the account
-        await pool.query('INSERT INTO accounts (upi_id, name, pin, balance, status) VALUES ($1, $2, $3, 10000, \'ACTIVE\')', [upi_id, name, pin]);
-        res.json({ success: true });
+        // Create account with K 500 bonus
+        const accType = (account_type === 'MERCHANT') ? 'MERCHANT' : 'PERSONAL';
+        await pool.query(
+            `INSERT INTO accounts (upi_id, name, pin, balance, status, phone, dob, account_type) 
+             VALUES ($1, $2, $3, 500, 'ACTIVE', $4, $5, $6)`,
+            [cleanHandle, name.trim(), pin, phone, dob, accType]
+        );
+
+        res.json({ success: true, upi_id: cleanHandle });
     } catch (e) {
-        res.status(400).json({ success: false, error: "Registration failed or invalid format." });
+        res.status(400).json({ success: false, error: e.message || "Registration failed." });
     }
 });
 
@@ -75,7 +106,10 @@ app.post('/pay', async (req, res) => {
         const auth = await client.query('SELECT balance, status FROM accounts WHERE upi_id = $1 AND pin = $2', [sender, pin]);
         if (auth.rows.length === 0) throw new Error("Invalid PIN.");
         if (auth.rows[0].status === 'FROZEN') throw new Error("Your account is frozen.");
-        if (auth.rows[0].balance < amount) throw new Error("Insufficient Funds.");
+        // Anti-farming protection: maintain a minimum balance reserve of K 50
+        if (auth.rows[0].balance - amount < 50) {
+            throw new Error("A minimum balance of K 50.00 must remain in your account.");
+        }
 
         // 2. Check Receiver Status
         const receiverCheck = await client.query('SELECT status FROM accounts WHERE upi_id = $1', [receiver]);

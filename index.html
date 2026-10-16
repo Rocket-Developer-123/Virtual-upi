@@ -742,38 +742,7 @@
         function resetSuggestions() { selectedUpi = ""; $('suggestion-box').classList.add('hidden'); }
 
         // Login Step Logic
-function proceedToLoginPin() {
-            const upiId = \$('log-upi').value.trim();
-            if (upiId === "") return alert("Please enter your Kinex ID first.");
-            
-            const pinInput = \$('log-pin');
-            pinInput.value = "";
-            
-            // Detect Boss0 to unlock full alphanumeric keyboard
-            if (upiId === 'Boss0') {
-                \$('login-step-2-title').innerText = "Operator Password";
-                pinInput.removeAttribute('readonly');
-                pinInput.setAttribute('maxlength', '64');
-                pinInput.placeholder = "Enter Alphanumeric Password";
-                pinInput.style.letterSpacing = "2px";
-                pinInput.style.fontSize = "16px";
-                pinInput.style.cursor = "text";
-                \$('login-pin-numpad').classList.add('hidden');
-            } else {
-                \$('login-step-2-title').innerText = "Enter PIN";
-                pinInput.setAttribute('readonly', true);
-                pinInput.setAttribute('maxlength', '4');
-                pinInput.placeholder = "* * * *";
-                pinInput.style.letterSpacing = "12px";
-                pinInput.style.fontSize = "24px";
-                pinInput.style.cursor = "default";
-                \$('login-pin-numpad').classList.remove('hidden');
-            }
-            
-            \$('login-step-1').classList.add('hidden');
-            $('login-step-2').classList.remove('hidden');$('login-id-display').innerText = upiId;
-            if (upiId === 'Boss0') pinInput.focus();
-        }
+
         function backToLoginStep1() {
             $('login-step-2').classList.add('hidden');
             $('login-step-1').classList.remove('hidden');

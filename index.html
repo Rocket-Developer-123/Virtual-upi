@@ -172,26 +172,23 @@
         .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); }
         .contact-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--tile); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; margin-right: 12px; }
         
+        /* Fixed Viewport Heights for Smooth Scrolling */
         .scan-payment-screen { position: fixed; inset: 0; background: var(--surface); display: flex; flex-direction: column; z-index: 9999; color: var(--text); overflow-y: auto; }
         .scan-header { padding: 20px; text-align: center; position: relative; border-bottom: 1px solid var(--line); flex-shrink: 0; }
         .amount-display-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; min-height: 150px; }
         .amount-text { font-size: 60px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px; }
+
         .numpad-container { background: var(--bg); border-radius: 24px 24px 0 0; padding: 25px 20px 45px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); margin-top: auto; flex-shrink: 0; }
 
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
         .num-key { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; font-size: 26px; font-weight: 600; color: var(--text); padding: 18px 0; cursor: pointer; }
         .num-key:active { background: var(--line); transform: scale(0.95); }
 
+        /* Compact Custom PIN Numpad */
         .pin-numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; margin-bottom: 15px; }
         .pin-numpad .num-key { padding: 12px 0; font-size: 22px; background: var(--tile); border: 1px solid var(--line); border-radius: 12px; font-weight: 600; color: var(--accent); cursor: pointer; transition: 0.1s; }
         .pin-numpad .num-key:active { background: var(--line); transform: scale(0.95); }
         
-        /* New PIN DOTS Styles */
-        .pin-dots { display: flex; justify-content: center; gap: 16px; margin: 10px 0 20px; }
-        .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); transition: 0.15s; }
-        .pin-dot.filled { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 14px var(--cyan); }
-        .notif-dot { position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: var(--neg); }
-
         .toast{
             position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom,0px)); z-index:20400;
             transform:translate(-50%,12px); opacity:0; pointer-events:none;
@@ -237,6 +234,12 @@
         .cam-shutter-inner { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), var(--blue)); box-shadow: 0 0 20px rgba(34,211,238,0.7); display: grid; place-items: center; color: #04142A; }
         .cam-shutter-btn:active { transform: scale(0.9); }
         .locked-amt-banner { background: var(--tile); border: 1px dashed var(--accent); color: var(--accent); padding: 12px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; text-align: center; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        /* New PIN DOTS Styles */
+        .pin-dots { display: flex; justify-content: center; gap: 16px; margin: 10px 0 20px; }
+        .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); transition: 0.15s; }
+        .pin-dot.filled { background: var(--cyan); border-color: var(--cyan); box-shadow: 0 0 14px var(--cyan); }
+        .notif-dot { position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: var(--neg); }
     </style>
 </head>
 <body>
@@ -619,7 +622,7 @@
         </div>
     </div>
 
-    <!-- SCAN PAYMENT SCREEN (With Fixed-Amount Numpad Lock) -->
+    <!-- SCAN PAYMENT SCREEN -->
     <div id="scan-pay-screen" class="scan-payment-screen hidden">
         <div class="scan-header">
             <button class="back-btn" onclick="closeScanPay()" style="position: absolute; left: 20px; top: 20px; font-size: 22px;">←</button>
@@ -644,7 +647,7 @@
         </div>
     </div>
 
-    <!-- PAYMENT PIN CONFIRMATION -->
+    <!-- PAYMENT PIN CONFIRMATION (WITH NEW PAY BUTTON) -->
     <div id="pinConfirmModal" class="modal hidden" style="z-index: 300;">
         <div class="modal-content" style="text-align: center;">
             <button class="modal-close" onclick="closeModal('pinConfirmModal')">✕</button>
@@ -660,14 +663,14 @@
                 <button class="num-key" onclick="numpadPin(1, 'scan-pay-pin')">1</button><button class="num-key" onclick="numpadPin(2, 'scan-pay-pin')">2</button><button class="num-key" onclick="numpadPin(3, 'scan-pay-pin')">3</button>
                 <button class="num-key" onclick="numpadPin(4, 'scan-pay-pin')">4</button><button class="num-key" onclick="numpadPin(5, 'scan-pay-pin')">5</button><button class="num-key" onclick="numpadPin(6, 'scan-pay-pin')">6</button>
                 <button class="num-key" onclick="numpadPin(7, 'scan-pay-pin')">7</button><button class="num-key" onclick="numpadPin(8, 'scan-pay-pin')">8</button><button class="num-key" onclick="numpadPin(9, 'scan-pay-pin')">9</button>
-                <button class="num-key" style="background: transparent; border: none;"></button><button class="num-key" onclick="numpadPin(0, 'scan-pay-pin')">0</button><button class="num-key" onclick="numpadPin('back', 'scan-pay-pin')">⌫</button>
+                <button class="num-key" style="background: var(--pos); color: #fff; border: none; font-size: 16px; font-weight: 700;" onclick="executeScanPay()">Pay</button><button class="num-key" onclick="numpadPin(0, 'scan-pay-pin')">0</button><button class="num-key" onclick="numpadPin('back', 'scan-pay-pin')">⌫</button>
             </div>
         </div>
     </div>
 
     <!-- LOADING & SUCCESS SCREENS -->
     <div id="loading-screen" class="fullscreen-overlay hidden" style="z-index: 10600;">
-        <div class="spinner"></div>
+        <div class="spinner" id="balIco"></div>
         <h3 id="load-title" style="color: var(--accent);">Processing Payment...</h3>
         <p id="load-desc" style="color: var(--muted); font-size: 13px;">Securely connecting to Kinex Network</p>
     </div>
@@ -686,13 +689,12 @@
         </div>
     </div>
 
-    <!-- PROFILE MODAL (Two-Step Change PIN) -->
+    <!-- PROFILE MODAL (Two-Step Change PIN & Logout) -->
     <div id="profileModal" class="modal hidden">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
             <h3 style="margin-bottom: 15px;">My Profile & Settings</h3>
             
-            <!-- Default Profile View -->
             <div id="profile-main">
                 <div style="text-align: center; margin: 15px 0;">
                     <div class="avatar" id="profile-modal-avatar" style="width: 60px; height: 60px; font-size: 24px; margin: 0 auto 10px;">U</div>
@@ -704,14 +706,12 @@
                 <button class="btn-primary btn-danger" style="margin-top: 15px;" data-action="logout">Log out</button>
             </div>
 
-            <!-- PIN Change Workflow -->
             <div id="profile-pin-flow" class="hidden">
                 <div style="display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 15px;">
                     <button onclick="cancelPinChange()" style="position: absolute; left: 0; font-size: 20px; color: var(--text);">←</button>
                     <h3 id="profile-pin-title" style="margin: 0;">Enter Current PIN</h3>
                 </div>
                 
-                <!-- Old PIN Sec -->
                 <div id="profile-old-pin-sec">
                     <input type="hidden" id="old-pin" value="">
                     <div class="pin-dots" id="old-pin-dots">
@@ -725,7 +725,6 @@
                     </div>
                 </div>
 
-                <!-- New PIN Sec -->
                 <div id="profile-new-pin-sec" class="hidden">
                     <input type="hidden" id="new-pin" value="">
                     <div class="pin-dots" id="new-pin-dots">
@@ -822,7 +821,6 @@
             toggleAuth('login');
         }
 
-        // CUSTOM PIN NUMPAD LOGIC (Controls dots & auto-submits)
         function numpadPin(val, targetId) {
             const input = $(targetId);
             let current = input.value;
@@ -840,7 +838,6 @@
                 renderPinDots('reg-pin-dots', len);
             } else if (targetId === 'scan-pay-pin') {
                 renderPinDots('pay-pin-dots', len);
-                if (len === 4) setTimeout(executeScanPay, 200);
             } else if (targetId === 'old-pin') {
                 renderPinDots('old-pin-dots', len);
                 if (len === 4) setTimeout(proceedToNewPin, 200);
@@ -850,7 +847,6 @@
             }
         }
 
-        // SYSTEM BROADCAST HANDLERS
         async function checkSystemNotices() { 
             try { 
                 const res = await fetch('/notices/active'); 
@@ -862,7 +858,6 @@
             } catch(e) {} 
         }
 
-        // AUTHENTICATION FLOW
         function toggleAuth(view) {
             $('login-section').classList.toggle('hidden', view === 'register');
             $('register-section').classList.toggle('hidden', view === 'login');
@@ -1093,20 +1088,24 @@
         async function updateBalance() {
             if (busyBal) return;
             busyBal = true;
-            $('balIco').classList.add('spin');$('amountWrap').classList.add('is-loading');
+            $('balIco').classList.add('spin');
             
             try {
                 const res = await fetch('/balance/' + encodeURIComponent(currentUser));
                 const data = await res.json();
-                currentBalanceVal = parseFloat(data.balance);
+                const fetchedBal = parseFloat(data.balance);
                 
                 setTimeout(() => {
-                    $('balIco').classList.remove('spin');$('amountWrap').classList.remove('is-loading');
+                    $('balIco').classList.remove('spin');
                     const time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
                     $('asof').textContent = `Updated ${time}`;
                     busyBal = false;
-                    countUp(currentBalanceVal);
-                }, 700);
+                    
+                    if (currentBalanceVal !== fetchedBal || $('amount').textContent === '0.00') {
+                        currentBalanceVal = fetchedBal;
+                        countUp(currentBalanceVal);
+                    }
+                }, 500);
             } catch(e) {
                 busyBal = false;
                 $('balIco').classList.remove('spin');
@@ -1147,21 +1146,13 @@
             }).join('');
         }
 
-        // AUTO-REFRESH ENGINE FOR BOTH USERS
-        setInterval(() => {
-            if (currentUser && currentUser.toLowerCase() !== 'boss0' && !isPayingMutex) {
-                updateBalance();
-                loadHistory();
-            }
-        }, 3000);
-        
+        // BACKGROUND REFRESH ONLY ON FOCUS (NO SETINTERVAL LOOP)
         window.addEventListener('focus', () => {
             if (currentUser && currentUser.toLowerCase() !== 'boss0') {
                 updateBalance(); loadHistory();
             }
         });
 
-        // Action routing for new UI buttons
         document.addEventListener('click', e => {
             const btn = e.target.closest('[data-action]');
             if (!btn) return;
@@ -1388,7 +1379,7 @@
         }
 
         async function startScanner() {
-            $('scannerModal').classList.remove('hidden');
+            \$('scannerModal').classList.remove('hidden');
             $('cam-torch-btn').classList.remove('hidden');$('cam-bottom-deck').classList.remove('hidden');
             $('cam-standby-prompt').classList.remove('hidden');$('cam-viewfinder').classList.add('hidden');
             updateStandbyStatusLabel();
@@ -1398,7 +1389,7 @@
             currentCameraFacing = (currentCameraFacing === "environment") ? "user" : "environment";
             if (currentCameraFacing === "user") {
                 isTorchOn = false; 
-                $('cam-torch-btn').classList.remove('active-torch');
+                \$('cam-torch-btn').classList.remove('active-torch');
             }
             updateStandbyStatusLabel();
             toast(currentCameraFacing === "user" ? "Switched to Front Camera" : "Switched to Back Camera");
@@ -1407,11 +1398,11 @@
         async function toggleCameraTorch() {
             if (currentCameraFacing === "user") return toast("Flashlight is only available on the Back Camera.");
             isTorchOn = !isTorchOn;
-            $('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
+            \$('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
             updateStandbyStatusLabel();
             if (html5QrCode && html5QrCode.isScanning) {
                 try { await html5QrCode.applyVideoConstraints({ advanced: [{ torch: isTorchOn }] }); } catch (e) {
-                    isTorchOn = false; $('cam-torch-btn').classList.remove('active-torch'); toast("Flashlight not supported.");
+                    isTorchOn = false; \$('cam-torch-btn').classList.remove('active-torch'); toast("Flashlight not supported.");
                 }
             }
         }
@@ -1420,7 +1411,7 @@
             if (isScannerBusy) return;
             isScannerBusy = true;
 
-            $('cam-torch-btn').classList.add('hidden');
+            \$('cam-torch-btn').classList.add('hidden');
             $('cam-bottom-deck').classList.add('hidden');$('cam-standby-prompt').classList.add('hidden');
             $('cam-viewfinder').classList.remove('hidden');$('cam-status-lbl').innerText = "Align QR code inside square";
 
@@ -1446,7 +1437,7 @@
         async function scanQrFromFile(event) {
             const file = event.target.files[0];
             if (!file) return;
-            $('cam-status-lbl').innerText = "Reading image file...";
+            \$('cam-status-lbl').innerText = "Reading image file...";
             try {
                 if (html5QrCode && html5QrCode.isScanning) await html5QrCode.stop();
                 const fileScanner = new Html5Qrcode("file-qr-reader");
@@ -1463,7 +1454,7 @@
 
         async function stopScanner() {
             try { if (html5QrCode && html5QrCode.isScanning) await html5QrCode.stop(); } catch (e) {}
-            $('scannerModal').classList.add('hidden');
+            \$('scannerModal').classList.add('hidden');
         }
 
         async function handleDecodedQR(decodedText) {
@@ -1477,13 +1468,12 @@
                 if (!pa || !pa.includes('@')) return alert("Invalid QR Code: Missing recipient Kinex ID.");
                 return openScanPayScreen(pa, am);
             }
-            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(raw)) return openScanPayScreen(raw, null);
+            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\$/.test(raw)) return openScanPayScreen(raw, null);
             alert("Unrecognized QR Code. Please scan a valid Kinex Network (@rpay) QR.");
         }
        
-        // TWO-STEP PROFILE PIN CHANGE
         function startPinChange() {
-            $('profile-main').classList.add('hidden');
+            \$('profile-main').classList.add('hidden');
             $('profile-pin-flow').classList.remove('hidden');$('profile-old-pin-sec').classList.remove('hidden');
             $('profile-new-pin-sec').classList.add('hidden');$('profile-pin-title').innerText = "Enter Current PIN";
             $('old-pin').value = ""; $('new-pin').value = "";
@@ -1493,8 +1483,8 @@
             $('profile-pin-flow').classList.add('hidden');$('profile-main').classList.remove('hidden');
         }
         function proceedToNewPin() {
-            if($('old-pin').value.length !== 4) return alert("Enter your current 4-digit PIN.");
-            $('profile-old-pin-sec').classList.add('hidden');
+            if(\$('old-pin').value.length !== 4) return alert("Enter your current 4-digit PIN.");
+            \$('profile-old-pin-sec').classList.add('hidden');
             $('profile-new-pin-sec').classList.remove('hidden');$('profile-pin-title').innerText = "Enter New PIN";
         }
         async function changePin() {
@@ -1511,10 +1501,8 @@
             }
         }
 
-        // Handle Enter-key mapping for Text Fields
         $('log-upi').addEventListener('keypress', (e) => { if(e.key === 'Enter') proceedToLoginPin(); });$('boss-pin-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') login(); });
 
-        // UPGRADED ADMIN FUNCTIONS
         let isNetworkLocked = false;
 
         function requestMasterSecret(actionLabel) {
@@ -1523,11 +1511,11 @@
         }
 
         async function adminSendBroadcast() { 
-            const message = $('admin-notice-msg').value; 
+            const message = \$('admin-notice-msg').value; 
             if(!message) return; 
             await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message }) }); 
             alert("Broadcast Sent!"); 
-            $('admin-notice-msg').value = ""; 
+            \$('admin-notice-msg').value = ""; 
         }
 
         async function adminClearBroadcast() { 
@@ -1542,16 +1530,16 @@
 
             if (payload.analytics) {
                 $('stat-circulation').innerText = 'K ' + fmt(payload.analytics.total_circulation);$('stat-accounts').innerText = payload.analytics.total_accounts;
-                $('stat-rewards').innerText = 'K ' + fmt(payload.analytics.total_rewards);
+                \$('stat-rewards').innerText = 'K ' + fmt(payload.analytics.total_rewards);
             }
 
             isNetworkLocked = Boolean(payload.maintenance);
-            $('maint-status-text').innerText = isNetworkLocked ? "⚠ Network is LOCKED (All payments paused)" : "Network is ONLINE (Payments Active)";
-            $('maint-status-text').style.color = isNetworkLocked ? "var(--neg)" : "var(--pos)";
-            $('maint-toggle-btn').innerText = isNetworkLocked ? "Unlock Network" : "Lock Network";
-            $('maint-toggle-btn').className = isNetworkLocked ? "btn-primary btn-success" : "btn-primary btn-danger";
+            \$('maint-status-text').innerText = isNetworkLocked ? "⚠ Network is LOCKED (All payments paused)" : "Network is ONLINE (Payments Active)";
+            \$('maint-status-text').style.color = isNetworkLocked ? "var(--neg)" : "var(--pos)";
+            \$('maint-toggle-btn').innerText = isNetworkLocked ? "Unlock Network" : "Lock Network";
+            \$('maint-toggle-btn').className = isNetworkLocked ? "btn-primary btn-success" : "btn-primary btn-danger";
 
-            $('admin-viewer-area').innerHTML = payload.data.map(u => `
+            \$('admin-viewer-area').innerHTML = payload.data.map(u => `
                 <div class="card" style="margin-bottom:8px; padding:12px; display:flex; justify-content:space-between; border-left:4px solid ${u.status==='FROZEN'?'var(--neg)':'var(--pos)'};">
                     <div>
                         <div style="font-weight:700;">${escapeHTML(u.name)}</div>
@@ -1582,8 +1570,8 @@
         }
 
         async function adminAdjust(action) {
-            const target_id = $('admin-target').value.trim(); 
-            const amount = parseFloat($('admin-amount').value || 0);
+            const target_id = \$('admin-target').value.trim(); 
+            const amount = parseFloat(\$('admin-amount').value || 0);
             if(!target_id) return alert("Enter target ID.");
             const master_secret = requestMasterSecret(`${action.toUpperCase()} on ${target_id}`);
             if (!master_secret) return;
@@ -1599,7 +1587,7 @@
         }
 
         async function adminDelete() {
-            const target_id = $('admin-target').value.trim(); 
+            const target_id = \$('admin-target').value.trim(); 
             if(!target_id || !confirm("Permanently terminate " + target_id + "?")) return;
             const master_secret = requestMasterSecret(`TERMINATE ${target_id}`);
             if (!master_secret) return;
@@ -1624,7 +1612,7 @@
             const payload = await res.json();
             if (!payload.success) return;
 
-            const container = $('admin-tx-area');
+            const container = \$('admin-tx-area');
             if (payload.data.length === 0) {
                 container.innerHTML = "<p style='color:var(--muted); font-size:13px; text-align:center;'>No transactions found.</p>";
                 return;
@@ -1660,7 +1648,6 @@
             } else alert(data.error || "Clawback failed.");
         }
 
-        // 1. ACCIDENTAL REFRESH / TAB CLOSE BLOCKER
         window.addEventListener('beforeunload', (e) => {
             if (currentUser !== "" && !isIntentionalNav) {
                 e.preventDefault();
@@ -1668,7 +1655,6 @@
             }
         });
 
-        // 2. AUTO-RESTORE SESSION ON PAGE LOAD
         window.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('rpay_currentUser');
             const savedName = localStorage.getItem('rpay_currentName');
@@ -1677,13 +1663,13 @@
                 currentUser = savedUser;
                 currentName = savedName || savedUser.split('@')[0];
                 
-                $('auth-screen').classList.add('hidden');
+                \$('auth-screen').classList.add('hidden');
                 $('dashboard-screen').classList.remove('hidden');$('nav-name').innerText = currentName;
                 $('nav-avatar').innerText = currentName.charAt(0).toUpperCase();$('nav-id').innerText = currentUser;
                 
-                $('qr-upi-label').innerText = currentUser;
-                $("qrcode").innerHTML = "";
-                new QRCode($("qrcode"), { text: currentUser, width: 200, height: 200 });
+                \$('qr-upi-label').innerText = currentUser;
+                \$("qrcode").innerHTML = "";
+                new QRCode(\$("qrcode"), { text: currentUser, width: 200, height: 200 });
                 
                 updateBalance();
                 loadHistory();
@@ -1691,7 +1677,6 @@
             }
         });
 
-        /* ---- PWA SERVICE WORKER & ONE-TAP INSTALL ---- */
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW setup:', err));
@@ -1702,7 +1687,7 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredInstallPrompt = e;
-            const banner = $('pwa-install-banner');
+            const banner = \$('pwa-install-banner');
             if (banner) banner.classList.remove('hidden');
         });
 
@@ -1711,7 +1696,7 @@
             deferredInstallPrompt.prompt();
             const { outcome } = await deferredInstallPrompt.userChoice;
             if (outcome === 'accepted') {
-                const banner = $('pwa-install-banner');
+                const banner = \$('pwa-install-banner');
                 if (banner) banner.classList.add('hidden');
             }
             deferredInstallPrompt = null;

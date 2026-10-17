@@ -1388,7 +1388,7 @@
         }
 
         async function startScanner() {
-            \$('scannerModal').classList.remove('hidden');
+            $('scannerModal').classList.remove('hidden');
             $('cam-torch-btn').classList.remove('hidden');$('cam-bottom-deck').classList.remove('hidden');
             $('cam-standby-prompt').classList.remove('hidden');$('cam-viewfinder').classList.add('hidden');
             updateStandbyStatusLabel();
@@ -1398,7 +1398,7 @@
             currentCameraFacing = (currentCameraFacing === "environment") ? "user" : "environment";
             if (currentCameraFacing === "user") {
                 isTorchOn = false; 
-                \$('cam-torch-btn').classList.remove('active-torch');
+                $('cam-torch-btn').classList.remove('active-torch');
             }
             updateStandbyStatusLabel();
             toast(currentCameraFacing === "user" ? "Switched to Front Camera" : "Switched to Back Camera");
@@ -1407,11 +1407,11 @@
         async function toggleCameraTorch() {
             if (currentCameraFacing === "user") return toast("Flashlight is only available on the Back Camera.");
             isTorchOn = !isTorchOn;
-            \$('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
+            $('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
             updateStandbyStatusLabel();
             if (html5QrCode && html5QrCode.isScanning) {
                 try { await html5QrCode.applyVideoConstraints({ advanced: [{ torch: isTorchOn }] }); } catch (e) {
-                    isTorchOn = false; \$('cam-torch-btn').classList.remove('active-torch'); toast("Flashlight not supported.");
+                    isTorchOn = false; $('cam-torch-btn').classList.remove('active-torch'); toast("Flashlight not supported.");
                 }
             }
         }
@@ -1420,7 +1420,7 @@
             if (isScannerBusy) return;
             isScannerBusy = true;
 
-            \$('cam-torch-btn').classList.add('hidden');
+            $('cam-torch-btn').classList.add('hidden');
             $('cam-bottom-deck').classList.add('hidden');$('cam-standby-prompt').classList.add('hidden');
             $('cam-viewfinder').classList.remove('hidden');$('cam-status-lbl').innerText = "Align QR code inside square";
 
@@ -1446,7 +1446,7 @@
         async function scanQrFromFile(event) {
             const file = event.target.files[0];
             if (!file) return;
-            \$('cam-status-lbl').innerText = "Reading image file...";
+            $('cam-status-lbl').innerText = "Reading image file...";
             try {
                 if (html5QrCode && html5QrCode.isScanning) await html5QrCode.stop();
                 const fileScanner = new Html5Qrcode("file-qr-reader");
@@ -1463,7 +1463,7 @@
 
         async function stopScanner() {
             try { if (html5QrCode && html5QrCode.isScanning) await html5QrCode.stop(); } catch (e) {}
-            \$('scannerModal').classList.add('hidden');
+            $('scannerModal').classList.add('hidden');
         }
 
         async function handleDecodedQR(decodedText) {
@@ -1477,13 +1477,13 @@
                 if (!pa || !pa.includes('@')) return alert("Invalid QR Code: Missing recipient Kinex ID.");
                 return openScanPayScreen(pa, am);
             }
-            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\$/.test(raw)) return openScanPayScreen(raw, null);
+            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(raw)) return openScanPayScreen(raw, null);
             alert("Unrecognized QR Code. Please scan a valid Kinex Network (@rpay) QR.");
         }
        
         // TWO-STEP PROFILE PIN CHANGE
         function startPinChange() {
-            \$('profile-main').classList.add('hidden');
+            $('profile-main').classList.add('hidden');
             $('profile-pin-flow').classList.remove('hidden');$('profile-old-pin-sec').classList.remove('hidden');
             $('profile-new-pin-sec').classList.add('hidden');$('profile-pin-title').innerText = "Enter Current PIN";
             $('old-pin').value = ""; $('new-pin').value = "";
@@ -1493,8 +1493,8 @@
             $('profile-pin-flow').classList.add('hidden');$('profile-main').classList.remove('hidden');
         }
         function proceedToNewPin() {
-            if(\$('old-pin').value.length !== 4) return alert("Enter your current 4-digit PIN.");
-            \$('profile-old-pin-sec').classList.add('hidden');
+            if($('old-pin').value.length !== 4) return alert("Enter your current 4-digit PIN.");
+            $('profile-old-pin-sec').classList.add('hidden');
             $('profile-new-pin-sec').classList.remove('hidden');$('profile-pin-title').innerText = "Enter New PIN";
         }
         async function changePin() {
@@ -1523,11 +1523,11 @@
         }
 
         async function adminSendBroadcast() { 
-            const message = \$('admin-notice-msg').value; 
+            const message = $('admin-notice-msg').value; 
             if(!message) return; 
             await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message }) }); 
             alert("Broadcast Sent!"); 
-            \$('admin-notice-msg').value = ""; 
+            $('admin-notice-msg').value = ""; 
         }
 
         async function adminClearBroadcast() { 
@@ -1542,16 +1542,16 @@
 
             if (payload.analytics) {
                 $('stat-circulation').innerText = 'K ' + fmt(payload.analytics.total_circulation);$('stat-accounts').innerText = payload.analytics.total_accounts;
-                \$('stat-rewards').innerText = 'K ' + fmt(payload.analytics.total_rewards);
+                $('stat-rewards').innerText = 'K ' + fmt(payload.analytics.total_rewards);
             }
 
             isNetworkLocked = Boolean(payload.maintenance);
-            \$('maint-status-text').innerText = isNetworkLocked ? "⚠ Network is LOCKED (All payments paused)" : "Network is ONLINE (Payments Active)";
-            \$('maint-status-text').style.color = isNetworkLocked ? "var(--neg)" : "var(--pos)";
-            \$('maint-toggle-btn').innerText = isNetworkLocked ? "Unlock Network" : "Lock Network";
-            \$('maint-toggle-btn').className = isNetworkLocked ? "btn-primary btn-success" : "btn-primary btn-danger";
+            $('maint-status-text').innerText = isNetworkLocked ? "⚠ Network is LOCKED (All payments paused)" : "Network is ONLINE (Payments Active)";
+            $('maint-status-text').style.color = isNetworkLocked ? "var(--neg)" : "var(--pos)";
+            $('maint-toggle-btn').innerText = isNetworkLocked ? "Unlock Network" : "Lock Network";
+            $('maint-toggle-btn').className = isNetworkLocked ? "btn-primary btn-success" : "btn-primary btn-danger";
 
-            \$('admin-viewer-area').innerHTML = payload.data.map(u => `
+            $('admin-viewer-area').innerHTML = payload.data.map(u => `
                 <div class="card" style="margin-bottom:8px; padding:12px; display:flex; justify-content:space-between; border-left:4px solid ${u.status==='FROZEN'?'var(--neg)':'var(--pos)'};">
                     <div>
                         <div style="font-weight:700;">${escapeHTML(u.name)}</div>
@@ -1582,8 +1582,8 @@
         }
 
         async function adminAdjust(action) {
-            const target_id = \$('admin-target').value.trim(); 
-            const amount = parseFloat(\$('admin-amount').value || 0);
+            const target_id = $('admin-target').value.trim(); 
+            const amount = parseFloat($('admin-amount').value || 0);
             if(!target_id) return alert("Enter target ID.");
             const master_secret = requestMasterSecret(`${action.toUpperCase()} on ${target_id}`);
             if (!master_secret) return;
@@ -1599,7 +1599,7 @@
         }
 
         async function adminDelete() {
-            const target_id = \$('admin-target').value.trim(); 
+            const target_id = $('admin-target').value.trim(); 
             if(!target_id || !confirm("Permanently terminate " + target_id + "?")) return;
             const master_secret = requestMasterSecret(`TERMINATE ${target_id}`);
             if (!master_secret) return;
@@ -1624,7 +1624,7 @@
             const payload = await res.json();
             if (!payload.success) return;
 
-            const container = \$('admin-tx-area');
+            const container = $('admin-tx-area');
             if (payload.data.length === 0) {
                 container.innerHTML = "<p style='color:var(--muted); font-size:13px; text-align:center;'>No transactions found.</p>";
                 return;
@@ -1677,13 +1677,13 @@
                 currentUser = savedUser;
                 currentName = savedName || savedUser.split('@')[0];
                 
-                \$('auth-screen').classList.add('hidden');
+                $('auth-screen').classList.add('hidden');
                 $('dashboard-screen').classList.remove('hidden');$('nav-name').innerText = currentName;
                 $('nav-avatar').innerText = currentName.charAt(0).toUpperCase();$('nav-id').innerText = currentUser;
                 
-                \$('qr-upi-label').innerText = currentUser;
-                \$("qrcode").innerHTML = "";
-                new QRCode(\$("qrcode"), { text: currentUser, width: 200, height: 200 });
+                $('qr-upi-label').innerText = currentUser;
+                $("qrcode").innerHTML = "";
+                new QRCode($("qrcode"), { text: currentUser, width: 200, height: 200 });
                 
                 updateBalance();
                 loadHistory();
@@ -1702,7 +1702,7 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredInstallPrompt = e;
-            const banner = \$('pwa-install-banner');
+            const banner = $('pwa-install-banner');
             if (banner) banner.classList.remove('hidden');
         });
 
@@ -1711,7 +1711,7 @@
             deferredInstallPrompt.prompt();
             const { outcome } = await deferredInstallPrompt.userChoice;
             if (outcome === 'accepted') {
-                const banner = \$('pwa-install-banner');
+                const banner = $('pwa-install-banner');
                 if (banner) banner.classList.add('hidden');
             }
             deferredInstallPrompt = null;

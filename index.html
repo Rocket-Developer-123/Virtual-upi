@@ -600,7 +600,7 @@
         </div>
     </div>
 
-    <!-- NATIVE CAMERA APP QR SCANNER -->
+    <!-- TWO-STAGE CAMERA APP QR SCANNER -->
     <div id="scannerModal" class="cam-scanner-overlay hidden">
         <!-- Live Camera Stream Container -->
         <div id="reader"></div>
@@ -610,12 +610,21 @@
         <!-- Top Camera Overlay Bar -->
         <div class="cam-top-bar">
             <button type="button" class="cam-circle-btn" onclick="stopScanner()" aria-label="Back">←</button>
-            <div class="cam-status-pill" id="cam-status-lbl">Align QR code in frame</div>
+            <div class="cam-status-pill" id="cam-status-lbl">Back Cam • Torch Off</div>
             <button type="button" class="cam-circle-btn" id="cam-torch-btn" onclick="toggleCameraTorch()" aria-label="Toggle Flashlight">⚡</button>
         </div>
 
-        <!-- Center Viewfinder Reticle -->
-        <div class="cam-viewfinder-wrap">
+        <!-- Stage 1: Standby Prompt (Visible BEFORE pressing Shutter) -->
+        <div id="cam-standby-prompt" style="position: relative; z-index: 4; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; pointer-events: none;">
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(34, 211, 238, 0.12); border: 1px solid rgba(34, 211, 238, 0.4); display: grid; place-items: center; color: var(--cyan); margin-bottom: 14px;">
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M4 12h16"/></svg>
+            </div>
+            <h3 style="color: #fff; margin: 0 0 6px; font-size: 18px;">Camera Ready</h3>
+            <p style="color: rgba(255,255,255,0.65); font-size: 13px; max-width: 250px; margin: 0;">Adjust Torch, Flip Camera, or pick from Files below. Tap the center Shutter button to start scanning.</p>
+        </div>
+
+        <!-- Stage 2: Center Viewfinder Reticle (Hidden until Shutter is pressed) -->
+        <div id="cam-viewfinder" class="cam-viewfinder-wrap hidden">
             <div class="cam-reticle" id="cam-reticle-box">
                 <div class="cam-corner tl"></div>
                 <div class="cam-corner tr"></div>
@@ -625,8 +634,8 @@
             </div>
         </div>
 
-        <!-- Bottom Camera Control Deck -->
-        <div class="cam-bottom-deck">
+        <!-- Bottom Camera Control Deck (Hides when Shutter is pressed) -->
+        <div id="cam-bottom-deck" class="cam-bottom-deck">
             <input type="file" id="qr-file-input" accept="image/*" class="hidden" onchange="scanQrFromFile(event)">
             
             <!-- Left: Gallery / Files Button -->
@@ -638,7 +647,7 @@
             </button>
 
             <!-- Center: Scan / Capture Shutter Button -->
-            <button type="button" class="cam-shutter-btn" onclick="triggerManualScanPulse()" aria-label="Scan QR">
+            <button type="button" class="cam-shutter-btn" onclick="activateLiveScanMode()" aria-label="Start Scanning">
                 <span class="cam-shutter-inner">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M4 12h16"/></svg>
                 </span>
@@ -1376,85 +1385,111 @@ function toggleAuth(view) {
 
         function closeSuccess() { $('success-screen').classList.add('hidden'); updateBalance(); loadHistory(); }
 
-        /* ---- NATIVE CAMERA APP QR SCANNER ---- */
+        /* ---- TWO-STAGE CAMERA APP QR SCANNER ---- */
         let html5QrCode = null;
         let currentCameraFacing = "environment"; // 'environment' (back) or 'user' (front)
         let isTorchOn = false;
         let isScannerBusy = false;
 
-        async function startScanner() {
-            $('scannerModal').classList.remove('hidden');$('cam-status-lbl').innerText = "Starting camera...";
-            isTorchOn = false;
-            $('cam-torch-btn').classList.remove('active-torch');
+        function updateStandbyStatusLabel() {
+            const camName = currentCameraFacing === "environment" ? "Back Cam" : "Front Cam";
+            const torchState = isTorchOn ? "Torch ON ⚡" : "Torch Off";
+            \$('cam-status-lbl').innerText = `${camName} • ${torchState}`;
+        }
 
+        // STAGE 1: Open the Camera Setup Screen (Does NOT start scanning yet)
+        async function startScanner() {
+            \$('scannerModal').classList.remove('hidden');
+            
+            // Show all buttons (Torch, Bottom Deck, Standby Prompt) and hide the Reticle Square
+            $('cam-torch-btn').classList.remove('hidden');$('cam-bottom-deck').classList.remove('hidden');
+            $('cam-standby-prompt').classList.remove('hidden');$('cam-viewfinder').classList.add('hidden');
+            
+            updateStandbyStatusLabel();
+        }
+
+        // Pre-configure Front or Back Camera before pressing Shutter
+        function switchCameraFacing() {
+            currentCameraFacing = (currentCameraFacing === "environment") ? "user" : "environment";
+            if (currentCameraFacing === "user") {
+                isTorchOn = false; // Front camera doesn't use rear torch
+                \$('cam-torch-btn').classList.remove('active-torch');
+            }
+            updateStandbyStatusLabel();
+            toast(currentCameraFacing === "user" ? "Switched to Front Camera" : "Switched to Back Camera");
+        }
+
+        // Pre-configure Torch ON/OFF before pressing Shutter
+        async function toggleCameraTorch() {
+            if (currentCameraFacing === "user") {
+                return toast("Flashlight is only available on the Back Camera.");
+            }
+            isTorchOn = !isTorchOn;
+            \$('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
+            updateStandbyStatusLabel();
+
+            // If camera is already running, apply torch immediately
+            if (html5QrCode && html5QrCode.isScanning) {
+                try {
+                    await html5QrCode.applyVideoConstraints({ advanced: [{ torch: isTorchOn }] });
+                } catch (e) {
+                    isTorchOn = false;
+                    \$('cam-torch-btn').classList.remove('active-torch');
+                    toast("Flashlight not supported on this device.");
+                }
+            }
+        }
+
+        // STAGE 2: Triggered when user presses the Center Shutter Button
+        async function activateLiveScanMode() {
+            if (isScannerBusy) return;
+            isScannerBusy = true;
+
+            if (navigator.vibrate) navigator.vibrate(40);
+
+            // 1. Hide all icons EXCEPT the Back button, and show the alignment square in the middle
+            \$('cam-torch-btn').classList.add('hidden');
+            $('cam-bottom-deck').classList.add('hidden');$('cam-standby-prompt').classList.add('hidden');
+            $('cam-viewfinder').classList.remove('hidden');$('cam-status-lbl').innerText = "Align QR code inside square";
+
+            // 2. Start the live camera and scan
             if (!html5QrCode) {
                 html5QrCode = new Html5Qrcode("reader");
             }
 
-            await launchCameraStream(currentCameraFacing);
-        }
-
-        async function launchCameraStream(facingMode) {
-            if (isScannerBusy) return;
-            isScannerBusy = true;
             try {
-                if (html5QrCode && html5QrCode.isScanning) {
+                if (html5QrCode.isScanning) {
                     await html5QrCode.stop();
                 }
+
                 await html5QrCode.start(
-                    { facingMode: facingMode },
+                    { facingMode: currentCameraFacing },
                     { fps: 12, qrbox: { width: 240, height: 240 }, aspectRatio: window.innerHeight / window.innerWidth },
                     (decodedText) => {
                         handleDecodedQR(decodedText);
                     },
                     (errorMessage) => {}
                 );
-                $('cam-status-lbl').innerText = "Align QR code in frame";
+
+                // If user enabled Torch on the setup screen, turn it on now
+                if (isTorchOn && currentCameraFacing === "environment") {
+                    try {
+                        await html5QrCode.applyVideoConstraints({ advanced: [{ torch: true }] });
+                    } catch (e) {}
+                }
             } catch (err) {
-                $('cam-status-lbl').innerText = "Camera unavailable — Use Files";
-                toast("Could not access camera. You can upload a QR image from Files.");
+                toast("Camera access failed. Returning to setup screen.");
+                await startScanner(); // Return to Stage 1 so user can pick from Files instead
             } finally {
                 isScannerBusy = false;
             }
         }
 
-        async function switchCameraFacing() {
-            currentCameraFacing = (currentCameraFacing === "environment") ? "user" : "environment";
-            $('cam-status-lbl').innerText = currentCameraFacing === "user" ? "Front Camera" : "Back Camera";
-            await launchCameraStream(currentCameraFacing);
-        }
-
-        async function toggleCameraTorch() {
-            if (!html5QrCode || !html5QrCode.isScanning) return toast("Camera is not active.");
-            try {
-                isTorchOn = !isTorchOn;
-                await html5QrCode.applyVideoConstraints({
-                    advanced: [{ torch: isTorchOn }]
-                });
-                $('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
-            } catch (e) {
-                isTorchOn = false;
-                $('cam-torch-btn').classList.remove('active-torch');
-                toast("Flashlight not supported on this camera/device.");
-            }
-        }
-
-        function triggerManualScanPulse() {
-            const box = $('cam-reticle-box');
-            box.style.transform = "scale(0.93)";
-            box.style.borderColor = "var(--cyan)";
-            $('cam-status-lbl').innerText = "Scanning frame...";
-            if (navigator.vibrate) navigator.vibrate(30);
-            setTimeout(() => {
-                box.style.transform = "scale(1)";
-                $('cam-status-lbl').innerText = "Align QR code in frame";
-            }, 350);
-        }
-
+        // Scan QR from Gallery / Files
         async function scanQrFromFile(event) {
             const file = event.target.files[0];
             if (!file) return;
-            $('cam-status-lbl').innerText = "Reading image file...";
+            \$('cam-status-lbl').innerText = "Reading image file...";
 
             try {
                 if (html5QrCode && html5QrCode.isScanning) {
@@ -1463,22 +1498,23 @@ function toggleAuth(view) {
                 const fileScanner = new Html5Qrcode("file-qr-reader");
                 const decodedText = await fileScanner.scanFile(file, true);
                 fileScanner.clear();
-                event.target.value = ""; // reset file input
+                event.target.value = "";
                 handleDecodedQR(decodedText);
             } catch (err) {
                 event.target.value = "";
                 alert("No valid QR code found in the selected photo.");
-                await launchCameraStream(currentCameraFacing);
+                updateStandbyStatusLabel();
             }
         }
 
+        // Back Button Handler: stops camera and closes modal
         async function stopScanner() {
             try {
                 if (html5QrCode && html5QrCode.isScanning) {
                     await html5QrCode.stop();
                 }
             } catch (e) {}
-            $('scannerModal').classList.add('hidden');
+            \$('scannerModal').classList.add('hidden');
         }
 
         async function handleDecodedQR(decodedText) {
@@ -1497,19 +1533,18 @@ function toggleAuth(view) {
                 if (!pa || !pa.includes('@')) {
                     return alert("Invalid QR Code: Missing recipient Kinex ID.");
                 }
-                // If 'am' exists in QR, pass it as lockedAmount so numpad is hidden!
                 return openScanPayScreen(pa, am);
             }
 
             // Case 2: Direct Kinex Handle (e.g., user@rpay)
-            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(raw)) {
+            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\$/.test(raw)) {
                 return openScanPayScreen(raw, null);
             }
 
             // Case 3: Unrecognized or Malicious QR Code
             alert("Unrecognized QR Code. Please scan a valid Kinex Network (@rpay) QR code.");
         }
-
+       
         // TWO-STEP PROFILE PIN CHANGE
         function startPinChange() {
             $('profile-main').classList.add('hidden');

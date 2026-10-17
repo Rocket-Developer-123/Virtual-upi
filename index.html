@@ -1,1810 +1,1090 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <!-- PWA App Icon & Fullscreen Configuration -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#04142A">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Kinex">
-    <title>RPAY | Kinex Network</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root { 
-            /* RPAY Core Variables */
-            --primary: #002970; --accent: #0B7A99; --text-dark: #1f2937; --text-muted: #586A80; 
-            
-            /* Kinex Theme Variables */
-            --bg:#EEF3F8; --surface:#FFFFFF; --text:#0A1A2F; --muted:#586A80; --line:#E3EAF2; --tile:#EAF3FA;
-            --pos:#0E8A47; --pos-bg:#E3F5EA; --neg:#C62F2F; --nav:#FFFFFF;
-            --hero-a:#04142A; --hero-b:#0B3157; --cyan:#22D3EE; --blue:#0EA5E9;
-            --shadow:0 14px 32px -16px rgba(4,20,42,.45);
-            box-sizing:border-box;
-            padding-top:env(safe-area-inset-top,0px);
-            padding-bottom:env(safe-area-inset-bottom,0px);
-        }
-        
-        @media (prefers-color-scheme: dark){
-            :root:not([data-theme="light"]){
-                --bg:#030D1A; --surface:#0B1A2E; --text:#E8F1FA; --muted:#93A7BD; --line:#16304B; --tile:#12293F;
-                --accent:#4DD8F5; --pos:#3DD68C; --pos-bg:#0F2E27; --neg:#FF7B7B; --nav:#0A182B;
-                --hero-a:#020B18; --hero-b:#0A2A4E; --shadow:0 14px 32px -16px rgba(0,0,0,.8);
-                --text-dark: #E8F1FA;
-            }
-        }
-
-        html{
-            scroll-padding-top:env(safe-area-inset-top,0px);
-            background-color:var(--bg);
-            background-image:linear-gradient(var(--hero-a),var(--hero-a));
-            background-size:100% 240px;
-            background-repeat:no-repeat;
-        }
-        *,*::before,*::after{box-sizing:inherit}
-        body{
-            margin:0; background:var(--bg); color:var(--text);
-            font-family:Figtree,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-            -webkit-font-smoothing:antialiased; line-height:1.35; padding-bottom: 90px;
-        }
-        button{font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; -webkit-tap-highlight-color:transparent}
-        button:focus-visible{outline:2px solid var(--cyan); outline-offset:3px; border-radius:12px}
-        svg{display:block}
-        
-        .hidden { display: none !important; }
-        
-        /* ---------- App Container ---------- */
-        .app{max-width:480px; margin:0 auto; min-height:100vh; padding-bottom:128px; position:relative; background:var(--bg)}
-
-        /* ---------- Hero ---------- */
-        .hero{
-            position:relative; overflow:hidden; color:#fff;
-            background:linear-gradient(165deg,var(--hero-a),var(--hero-b));
-            padding:16px 20px 76px; border-radius:0 0 32px 32px;
-        }
-        .top{display:flex; align-items:center; justify-content:space-between; gap:12px; position:relative; z-index:2}
-        .who{display:flex; align-items:center; gap:12px; min-width:0}
-        .avatar{
-            width:46px; height:46px; border-radius:50%; flex:none;
-            display:grid; place-items:center; font-family:Sora,system-ui,sans-serif; font-weight:700; font-size:18px;
-            background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22);
-        }
-        .name{font-size:18px; font-weight:700; letter-spacing:-.01em}
-        .handle{display:inline-flex; align-items:center; gap:6px; margin-top:2px; font-size:14px; color:rgba(255,255,255,.72); font-weight:500}
-        .handle:hover{color:#fff}
-        .icon-btn{
-            width:44px; height:44px; border-radius:50%; display:grid; place-items:center; flex:none;
-            background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18); color:#fff;
-        }
-
-        /* Perfectly Cropped Coin Integration */
-        .coin{
-            position:absolute; right:-34px; top:58px; width:150px; height:150px; z-index:0; pointer-events:none;
-            transform:rotate(-14deg);
-        }
-        .coin-wrapper { 
-            width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 0 30px rgba(34,211,238,.35); 
-        }
-        .kinex-coin-img { 
-            width: 135%; height: 135%; object-fit: cover; object-position: center; 
-        }
-
-        .balance{position:relative; z-index:2; margin-top:34px}
-        .label-row{display:flex; align-items:center; gap:6px; font-size:15px; font-weight:600; color:rgba(255,255,255,.75)}
-        .eye{width:32px; height:32px; border-radius:50%; display:grid; place-items:center; color:rgba(255,255,255,.8); margin-left:-2px}
-        .amount{
-            margin:2px 0 0; display:flex; align-items:baseline; gap:8px;
-            font-family:Sora,system-ui,sans-serif; font-weight:700; letter-spacing:-.02em;
-            font-variant-numeric:tabular-nums; transition:opacity .25s;
-        }
-        .amount .cur{font-size:clamp(20px,6vw,26px); color:var(--cyan)}
-        .amount .num{font-size:clamp(32px,10vw,46px); line-height:1.1}
-        .amount.is-loading{opacity:.35}
-        .asof{margin:6px 0 0; font-size:13px; color:rgba(255,255,255,.6)}
-
-        /* ---------- Quick actions ---------- */
-        .actions{
-            position:relative; z-index:3; margin:-38px 16px 0; padding:18px 6px 14px;
-            background:var(--surface); border-radius:24px; box-shadow:var(--shadow);
-            display:grid; grid-template-columns:repeat(4,1fr); gap:2px;
-        }
-        .act{display:flex; flex-direction:column; align-items:center; gap:8px; padding:2px 0; font-size:13px; font-weight:600; text-align:center}
-        .act .ico{width:56px; height:56px; border-radius:18px; display:grid; place-items:center; background:var(--tile); color:var(--accent); transition:transform .15s}
-        .act:active .ico{transform:scale(.94)}
-        .act.primary .ico{background:linear-gradient(135deg,var(--cyan),var(--blue)); color:#04142A}
-        .act .ico.spin svg{animation:spin .7s linear infinite}
-        @keyframes spin{to{transform:rotate(360deg)}}
-
-        /* ---------- Activity ---------- */
-        .activity{margin:26px 16px 0}
-        .sec-head{display:flex; align-items:baseline; justify-content:space-between; padding:0 4px 10px}
-        .sec-head h2{margin:0; font-size:18px; font-weight:700; letter-spacing:-.01em}
-        .link{font-size:14px; font-weight:600; color:var(--accent); padding:6px 4px}
-        .list{background:var(--surface); border-radius:24px; padding:4px 16px; margin:0; list-style:none; box-shadow:var(--shadow)}
-        .row{display:flex; align-items:center; gap:12px; padding:14px 0}
-        .row + .row{border-top:1px solid var(--line)}
-        .badge{width:44px; height:44px; border-radius:14px; flex:none; display:grid; place-items:center; background:var(--tile); color:var(--accent)}
-        .row.in .badge{background:var(--pos-bg); color:var(--pos)}
-        .meta{flex:1; min-width:0}
-        .meta b{display:block; font-size:16px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-        .meta span{font-size:13px; color:var(--muted)}
-        .amt{font-family:Sora,system-ui,sans-serif; font-weight:600; font-size:16px; font-variant-numeric:tabular-nums; white-space:nowrap}
-        .row.in .amt{color:var(--pos)}
-        .row.out .amt{color:var(--neg)}
-        .empty{padding:28px 8px; text-align:center; color:var(--muted); font-size:15px}
-        .empty b{display:block; color:var(--text); font-size:16px; margin-bottom:4px}
-
-        /* ---------- Bottom nav ---------- */
-        .nav{
-            position:fixed; left:50%; bottom:0; transform:translateX(-50%); z-index:10;
-            width:100%; max-width:480px;
-            display:grid; grid-template-columns:repeat(5,1fr); align-items:end;
-            background:var(--nav); border-top:1px solid var(--line);
-            padding:8px 8px calc(10px + env(safe-area-inset-bottom,0px));
-        }
-        .tab{display:flex; flex-direction:column; align-items:center; gap:4px; font-size:12px; font-weight:600; color:var(--muted); padding:4px 0}
-        .tab[aria-current="page"]{color:var(--accent)}
-        .tab.scan{color:var(--text)}
-        .tab.scan .fab{
-            width:62px; height:62px; border-radius:50%; margin-top:-34px; display:grid; place-items:center; color:#fff;
-            background:linear-gradient(135deg,var(--cyan),#0B6FD1); border:5px solid var(--nav);
-            box-shadow:0 10px 22px -8px rgba(14,165,233,.8);
-        }
-
-        /* ---------- Modals & Global RPAY Styles ---------- */
-        .auth-container { max-width: 400px; margin: 40px auto; padding: 20px; }
-        .card { background: var(--surface); padding: 24px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 16px; border: 1px solid var(--line); }
-        .card h2 { color: var(--text); margin-bottom: 15px; font-size: 22px; text-align: center; }
-        input { width: 100%; padding: 14px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--line); font-size: 15px; background: var(--bg); color: var(--text); }
-        input:focus { outline: none; border-color: var(--cyan); }
-        
-        .btn-primary { width: 100%; padding: 14px; background: linear-gradient(135deg,var(--cyan),var(--blue)); color: #04142A; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .btn-danger { background: var(--neg); color: white; } .btn-success { background: var(--pos); color: white; } .btn-dark { background: var(--surface); border: 1px solid var(--line); color: var(--text); }
-        .link-text { color: var(--blue); font-weight: 600; cursor: pointer; text-decoration: underline; }
-        
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: flex-end; justify-content: center; z-index: 10500 !important; backdrop-filter: blur(4px); padding-bottom: env(safe-area-inset-bottom, 0px); }
-        .modal-content { background: var(--surface); width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 24px; position: relative; max-height: calc(100svh - 20px); overflow-y: auto; color: var(--text); }
-        .modal-close { position: absolute; top: 15px; right: 15px; background: var(--bg); color: var(--text); border: none; width: 32px; height: 32px; border-radius: 50%; font-weight: bold; cursor: pointer; }
-        
-        .contact-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--line); }
-        .contact-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--tile); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; margin-right: 12px; }
-        
-        /* Fixed Viewport Heights for Smooth Scrolling */
-        .scan-payment-screen { position: fixed; inset: 0; background: var(--surface); display: flex; flex-direction: column; z-index: 9999; color: var(--text); overflow-y: auto; }
-        .scan-header { padding: 20px; text-align: center; position: relative; border-bottom: 1px solid var(--line); flex-shrink: 0; }
-        .amount-display-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; min-height: 150px; }
-        .amount-text { font-size: 60px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px; }
-
-        .numpad-container { background: var(--bg); border-radius: 24px 24px 0 0; padding: 25px 20px 45px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); margin-top: auto; flex-shrink: 0; }
-
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
-        .num-key { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; font-size: 26px; font-weight: 600; color: var(--text); padding: 18px 0; cursor: pointer; }
-        .num-key:active { background: var(--line); transform: scale(0.95); }
-
-        /* Compact Custom PIN Numpad */
-        .pin-numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; margin-bottom: 15px; }
-        .pin-numpad .num-key { padding: 12px 0; font-size: 22px; background: var(--tile); border: 1px solid var(--line); border-radius: 12px; font-weight: 600; color: var(--accent); cursor: pointer; transition: 0.1s; }
-        .pin-numpad .num-key:active { background: var(--line); transform: scale(0.95); }
-        
-        /* System Broadcast Notice Banner */
-        .notice-banner { position: sticky; top: 0; z-index: 500; background: #fef3c7; color: #92400e; padding: 12px 15px; font-size: 13px; font-weight: 600; text-align: center; border-bottom: 1px solid #fde68a; display: flex; justify-content: space-between; align-items: center; }
-
-        .toast{
-            position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom,0px)); z-index:400;
-            transform:translate(-50%,12px); opacity:0; pointer-events:none;
-            background:#04142A; color:#fff; padding:11px 16px; border-radius:14px; font-size:14px; font-weight:500;
-            max-width:calc(100% - 32px); text-align:center; transition:opacity .2s, transform .2s;
-            box-shadow:0 10px 24px -10px rgba(0,0,0,.6);
-        }
-        .toast.show{opacity:1; transform:translate(-50%,0)}
-        
-        .fullscreen-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 300; }
-        .spinner { width: 50px; height: 50px; border: 5px solid var(--line); border-top-color: var(--cyan); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        .success-card { background: var(--surface); width: 90%; max-width: 350px; border-radius: 24px; padding: 30px 20px; text-align: center; box-shadow: var(--shadow); color: var(--text); }
-        .check-circle { width: 70px; height: 70px; background: var(--pos); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px; }
-
-        @media (min-width:520px){ body{background:var(--bg)} .app{box-shadow:0 0 0 1px var(--line)} }
-    /* ---------- Native Camera App QR Scanner UI ---------- */
-        .cam-scanner-overlay {
-            position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; background: #000; z-index: 10550 !important;
-            display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;
-        }
-        #reader {
-            position: absolute; inset: 0; width: 100% !important; height: 100% !important;
-            border: none !important; background: #000; z-index: 1;
-        }
-        #reader video {
-            width: 100% !important; height: 100% !important; object-fit: cover !important;
-        }
-        .cam-top-bar {
-            position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between;
-            padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 16px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.75) 0%, transparent 100%);
-        }
-        .cam-circle-btn {
-            width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.16);
-            backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); color: #fff;
-            display: grid; place-items: center; font-size: 20px; transition: transform 0.15s, background 0.2s;
-        }
-        .cam-circle-btn:active { transform: scale(0.92); }
-        .cam-circle-btn.active-torch { background: var(--cyan); color: #04142A; border-color: var(--cyan); box-shadow: 0 0 16px var(--cyan); }
-        .cam-status-pill {
-            background: rgba(4, 20, 42, 0.75); backdrop-filter: blur(8px); border: 1px solid rgba(34, 211, 238, 0.4);
-            color: #fff; padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; letter-spacing: 0.3px;
-        }
-        .cam-viewfinder-wrap {
-            position: relative; z-index: 4; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none;
-        }
-        .cam-reticle {
-            width: 245px; height: 245px; border-radius: 24px; position: relative;
-            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.55); border: 1px solid rgba(255, 255, 255, 0.2); overflow: hidden;
-        }
-        .cam-corner { position: absolute; width: 34px; height: 34px; border-color: var(--cyan); border-style: solid; border-width: 0; }
-        .cam-corner.tl { top: 0; left: 0; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 20px; }
-        .cam-corner.tr { top: 0; right: 0; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 20px; }
-        .cam-corner.bl { bottom: 0; left: 0; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 20px; }
-        .cam-corner.br { bottom: 0; right: 0; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 20px; }
-        .cam-laser {
-            position: absolute; left: 8%; right: 8%; height: 2px; background: var(--cyan);
-            box-shadow: 0 0 12px 2px var(--cyan); animation: camLaserScan 2.2s ease-in-out infinite;
-        }
-        @keyframes camLaserScan { 0%, 100% { top: 10%; opacity: 0.6; } 50% { top: 90%; opacity: 1; } }
-        .cam-bottom-deck {
-            position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-around;
-            padding: 24px 28px calc(32px + env(safe-area-inset-bottom, 0px));
-            background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, transparent 100%);
-        }
-        .cam-side-btn {
-            display: flex; flex-direction: column; align-items: center; gap: 6px; color: #fff; font-size: 12px; font-weight: 600;
-        }
-        .cam-side-btn .ico-ring {
-            width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.14);
-            backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); display: grid; place-items: center;
-        }
-        .cam-side-btn:active .ico-ring { transform: scale(0.92); }
-        .cam-shutter-btn {
-            width: 76px; height: 76px; border-radius: 50%; border: 4px solid #fff; padding: 5px;
-            display: grid; place-items: center; background: rgba(255,255,255,0.15); transition: transform 0.15s;
-        }
-        .cam-shutter-inner {
-            width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), var(--blue));
-            box-shadow: 0 0 20px rgba(34,211,238,0.7); display: grid; place-items: center; color: #04142A;
-        }
-        .cam-shutter-btn:active { transform: scale(0.9); }
-        .locked-amt-banner {
-            background: var(--tile); border: 1px dashed var(--accent); color: var(--accent);
-            padding: 12px 16px; border-radius: 12px; font-size: 13px; font-weight: 700;
-            text-align: center; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RPAY — Kinex Network</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#04142A">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kinex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<style>
+:root{--bg:#EEF3F8;--s:#fff;--t:#0A1A2F;--m:#586A80;--l:#E3EAF2;--tile:#EAF3FA;--ac:#0B6B8A;--pos:#0E8A47;--neg:#C62F2F;--cy:#22D3EE;--bl:#0EA5E9;--ha:#04142A;--hb:#0B3157;--sh:0 14px 32px -18px rgba(4,20,42,.5);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#030D1A;--s:#0B1A2E;--t:#E8F1FA;--m:#93A7BD;--l:#16304B;--tile:#12293F;--ac:#4DD8F5;--pos:#3DD68C;--neg:#FF7B7B;--ha:#020B18;--hb:#0A2A4E;--sh:0 14px 32px -18px rgba(0,0,0,.85)}}
+:root[data-theme="dark"]{--bg:#030D1A;--s:#0B1A2E;--t:#E8F1FA;--m:#93A7BD;--l:#16304B;--tile:#12293F;--ac:#4DD8F5;--pos:#3DD68C;--neg:#FF7B7B;--ha:#020B18;--hb:#0A2A4E;--sh:0 14px 32px -18px rgba(0,0,0,.85)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--t);font:500 15px/1.35 Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible{outline:2px solid var(--cy);outline-offset:3px;border-radius:12px}
+svg{display:block}h1,h2,h3,p{margin:0}
+.h,h1,h2,h3{font-family:Sora,system-ui,sans-serif}
+.hidden{display:none!important}
+.app{max-width:480px;margin:0 auto;padding-bottom:120px}
+.hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(165deg,var(--ha),var(--hb));padding:18px 20px 70px;border-radius:0 0 32px 32px}
+.top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2}
+.who{display:flex;gap:12px;align-items:center}.who b{font-size:17px;display:block}
+.av{border-radius:50%;display:inline-grid;place-items:center;font-family:Sora,sans-serif;font-weight:700;color:var(--t);flex:none}
+.hero .av{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.hd{display:flex;gap:6px;align-items:center;font-size:14px;color:rgba(255,255,255,.78)}
+.ib{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;position:relative}
+.dot{position:absolute;top:11px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--cy)}
+.bal{position:relative;z-index:2;margin-top:28px}
+.lr{display:flex;align-items:center;gap:4px;font-weight:600;color:rgba(255,255,255,.78)}
+.eye{width:36px;height:36px;display:grid;place-items:center;border-radius:50%}
+.amt{display:flex;align-items:baseline;gap:8px;font-family:Sora,sans-serif;font-weight:700;letter-spacing:-.02em}
+.amt span{font-size:24px;color:var(--cy)}.amt b{font-size:clamp(34px,10vw,46px);line-height:1.1}
+.coin{position:absolute;right:-32px;top:62px;width:140px;height:140px;border-radius:50%;display:grid;place-items:center;font:800 62px Sora,sans-serif;color:#04142A;background:radial-gradient(circle at 30% 25%,#A5F3FC,#22D3EE 45%,#0B6FD1);box-shadow:0 0 44px rgba(34,211,238,.45),inset 0 0 0 8px rgba(255,255,255,.28);transform:rotate(-14deg)}
+.coin.s{position:static;width:64px;height:64px;font-size:30px;transform:none;box-shadow:0 0 28px rgba(34,211,238,.5),inset 0 0 0 4px rgba(255,255,255,.28)}
+.acts{position:relative;z-index:3;margin:-38px 16px 0;padding:16px 4px;background:var(--s);border-radius:24px;box-shadow:var(--sh);display:grid;grid-template-columns:repeat(4,1fr)}
+.act{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.act i{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:var(--tile);color:var(--ac);transition:transform .15s}
+.act:active i{transform:scale(.92)}.act.p i{background:linear-gradient(135deg,var(--cy),var(--bl));color:#04142A}
+.sec{margin:24px 16px 0}.shd{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 10px}
+.shd h2{font-size:18px}.lnk{font-size:14px;font-weight:600;color:var(--ac);padding:6px 4px}
+.list{background:var(--s);border-radius:24px;padding:4px 16px;box-shadow:var(--sh)}
+.row{display:flex;align-items:center;gap:12px;padding:13px 0;width:100%;text-align:left}.row+.row{border-top:1px solid var(--l)}
+.bd{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--tile);color:var(--ac);flex:none}
+.in .bd{background:rgba(14,138,71,.14);color:var(--pos)}.out .bd{background:rgba(198,47,47,.12);color:var(--neg)}
+.mt{flex:1;min-width:0}.mt b{display:block;font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mt>span,.mt em{font-size:13px;color:var(--m);font-style:normal}
+.am{font:600 16px Sora,sans-serif;white-space:nowrap}.in .am{color:var(--pos)}.out .am{color:var(--neg)}
+.ph{padding:22px 20px 4px}.ph h1{font-size:28px;letter-spacing:-.02em}
+.srch{display:flex;align-items:center;gap:10px;margin:12px 16px 0;padding:0 14px;height:48px;border-radius:16px;background:var(--s);box-shadow:var(--sh);color:var(--m)}
+.srch input{flex:1;border:0;background:none;font:inherit;color:var(--t);height:100%;min-width:0}.srch input:focus-visible{outline:0}
+.mini{padding:7px 14px;border-radius:12px;background:var(--tile);color:var(--ac);font-weight:700;font-size:13px;white-space:nowrap}
+.mini.dan{background:rgba(198,47,47,.14);color:var(--neg)}
+.mini.okb{background:rgba(14,138,71,.14);color:var(--pos)}
+.chips{display:flex;gap:8px;margin:14px 16px 0;overflow-x:auto}.chip{padding:9px 16px;border-radius:999px;background:var(--s);font-weight:600;font-size:14px;box-shadow:var(--sh);white-space:nowrap}.chip[aria-pressed="true"]{background:var(--ha);color:#fff}
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 16px 0}.sum div{background:var(--s);border-radius:20px;padding:14px 16px;box-shadow:var(--sh)}.sum span{font-size:13px;color:var(--m)}.sum b{display:block;font:700 20px Sora,sans-serif;margin-top:4px}
+.gl{margin:20px 20px 8px;font-size:14px;font-weight:600;color:var(--m)}.gl+.list{margin:0 16px}
+.pc{display:flex;gap:14px;align-items:center;padding:18px;border-radius:24px;background:linear-gradient(160deg,var(--ha),var(--hb));color:#fff}.pc .av{background:rgba(255,255,255,.14);color:#fff}
+.pc b{font-size:19px;display:block}.pc span{font-size:14px;opacity:.78}.pc em{display:block;margin-top:6px;font-style:normal;font-size:12px;font-weight:700;color:var(--cy)}
+.sw{width:50px;height:30px;border-radius:30px;background:var(--l);position:relative;transition:background .2s;flex:none}.sw i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}.sw.on{background:var(--bl)}.sw.on i{transform:translateX(20px)}
+.lo{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;height:52px;border-radius:16px;color:var(--neg);font-weight:700;background:var(--s);box-shadow:var(--sh)}
+.nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:20;width:100%;max-width:480px;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;background:var(--s);border-top:1px solid var(--l);padding:8px 8px calc(10px + env(safe-area-inset-bottom,0px))}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--m);padding:4px 0}.tab[aria-current="page"]{color:var(--ac)}
+.fab{width:62px;height:62px;border-radius:50%;margin-top:-36px;display:grid;place-items:center;color:#04142A;background:linear-gradient(135deg,var(--cy),var(--bl));border:5px solid var(--s);box-shadow:0 10px 22px -8px rgba(14,165,233,.85)}.sc{color:var(--t)}
+.auth{max-width:420px;margin:0 auto;padding:36px 20px 40px;position:relative}
+.auth::before{content:"";position:absolute;inset:-60px -40px auto;height:340px;background:radial-gradient(60% 60% at 70% 20%,rgba(34,211,238,.28),transparent 70%);pointer-events:none}
+.brand{position:relative;display:flex;align-items:center;gap:14px;margin-bottom:24px}.brand h1{font-size:30px;letter-spacing:-.02em}.brand p{color:var(--m);font-size:14px}
+.card{position:relative;background:var(--s);border-radius:28px;padding:24px 20px;box-shadow:var(--sh);border:1px solid var(--l)}
+.card h2{font-size:22px;margin-bottom:16px}.lab{font-size:13px;font-weight:600;color:var(--m);margin:14px 0 6px}
+.fld{display:flex;align-items:center;gap:8px;height:52px;padding:0 14px;border-radius:14px;background:var(--bg);border:1px solid var(--l)}.fld:focus-within{border-color:var(--cy)}
+.fld input{flex:1;min-width:0;height:100%;border:0;background:none;font:inherit;font-size:16px;color:var(--t)}.fld input:focus-visible{outline:0}.fld span{color:var(--m);font-weight:700}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:14px;background:var(--bg)}.seg button{height:44px;border-radius:11px;font-weight:600}.seg button[aria-pressed="true"]{background:var(--s);box-shadow:var(--sh);color:var(--ac)}
+.dots{display:flex;justify-content:center;gap:16px;margin:10px 0 16px}.dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--m);transition:.15s}.dots i.on{background:var(--cy);border-color:var(--cy);box-shadow:0 0 14px var(--cy)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.pad button{height:54px;border-radius:16px;background:var(--tile);font:600 22px Sora,sans-serif;display:grid;place-items:center}.pad button:active{transform:scale(.95)}
+.pri{width:100%;height:52px;border-radius:16px;font-weight:700;font-size:16px;color:#04142A;background:linear-gradient(135deg,var(--cy),var(--bl))}.pri:disabled{opacity:.45;cursor:not-allowed}
+.sub{text-align:center;margin-top:14px;font-size:14px;color:var(--m)}.lk{color:var(--ac);font-weight:700;text-decoration:underline}
+.ov{position:fixed;inset:0;z-index:50;background:rgba(2,10,20,.65);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center}
+.sheet{position:relative;width:100%;max-width:480px;max-height:94vh;overflow:auto;background:var(--s);border-radius:28px 28px 0 0;padding:24px 20px calc(22px + env(safe-area-inset-bottom,0px))}
+.anim{animation:up .3s cubic-bezier(.2,.8,.2,1)}@keyframes up{from{transform:translateY(48px);opacity:0}}
+.x{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--bg)}
+.sheet h3{font-size:19px;margin-bottom:14px;padding-right:40px}
+.who2{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:6px}
+.big{text-align:center;font:700 52px/1.1 Sora,sans-serif;letter-spacing:-.02em;margin:10px 0 4px}.big span{font-size:26px;color:var(--ac);margin-right:6px}
+.err{text-align:center;color:var(--neg);font-size:13px;font-weight:600;min-height:18px}
+.qc{display:flex;gap:8px;justify-content:center;margin:8px 0 14px}
+.ctr{text-align:center}.ctr p{color:var(--m)}
+.spin{width:54px;height:54px;border-radius:50%;border:5px solid var(--l);border-top-color:var(--cy);animation:sp .8s linear infinite;margin:30px auto 18px}@keyframes sp{to{transform:rotate(360deg)}}
+.ok{width:78px;height:78px;border-radius:50%;margin:10px auto 14px;display:grid;place-items:center;background:var(--pos);color:#fff;animation:pop .45s cubic-bezier(.2,1.4,.4,1)}@keyframes pop{from{transform:scale(.3);opacity:0}}
+.kv{display:flex;justify-content:space-between;padding:11px 0;border-top:1px solid var(--l);font-size:14px}.kv span{color:var(--m)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.two button{height:50px;border-radius:15px;font-weight:700;background:var(--tile);color:var(--ac)}
+.qr{width:220px;min-height:220px;margin:6px auto 12px;padding:14px;border-radius:22px;background:#fff;display:grid;place-items:center}
+.qr canvas,.qr img{max-width:100%;height:auto;display:block}
+.cam{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;z-index:60;display:flex;flex-direction:column;justify-content:space-between;color:#fff;background:radial-gradient(70% 50% at 30% 30%,#27414f,transparent),radial-gradient(60% 50% at 80% 75%,#1a2b3d,transparent),#05090e;overflow:hidden}
+#cam-reader{position:absolute;inset:0;width:100%!important;height:100%!important;z-index:1;border:none!important}
+#cam-reader video{width:100%!important;height:100%!important;object-fit:cover!important}
+.cbar,.cdeck{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 16px;position:relative;z-index:5}.cdeck{padding:20px 24px calc(30px + env(safe-area-inset-bottom,0px));background:linear-gradient(0deg,rgba(0,0,0,.85) 0%,transparent 100%)}
+.cb{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.16);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.28);color:#fff}.cb.on{background:var(--cy);color:#04142A;border-color:var(--cy);box-shadow:0 0 16px var(--cy)}
+.pill{padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;background:rgba(4,20,42,.75);backdrop-filter:blur(8px);border:1px solid rgba(34,211,238,.4)}
+.vf{position:relative;z-index:4;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px;text-align:center}
+.ret{position:relative;width:240px;height:240px;border-radius:26px;box-shadow:0 0 0 4000px rgba(0,0,0,.6);overflow:hidden}
+.ret i{position:absolute;width:34px;height:34px;border:0 solid var(--cy)}.tl1{top:0;left:0;border-top-width:4px!important;border-left-width:4px!important;border-top-left-radius:22px}.tr1{top:0;right:0;border-top-width:4px!important;border-right-width:4px!important;border-top-right-radius:22px}.bl1{bottom:0;left:0;border-bottom-width:4px!important;border-left-width:4px!important;border-bottom-left-radius:22px}.br1{bottom:0;right:0;border-bottom-width:4px!important;border-right-width:4px!important;border-bottom-right-radius:22px}
+.laser{position:absolute;left:8%;right:8%;height:2px;background:var(--cy);box-shadow:0 0 14px 2px var(--cy);animation:ls 2.2s ease-in-out infinite}@keyframes ls{0%,100%{top:10%}50%{top:90%}}
+.shut{width:76px;height:76px;border-radius:50%;border:4px solid #fff;padding:5px;transition:transform .15s}.shut:active{transform:scale(.9)}.shut i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,var(--cy),var(--bl));color:#04142A;box-shadow:0 0 20px rgba(34,211,238,.6)}
+.cl{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600}
+.locked-banner{background:var(--tile);border:1px dashed var(--ac);color:var(--ac);padding:11px 14px;border-radius:14px;font-size:13px;font-weight:700;text-align:center;margin:10px 0 16px}
+.sug-box{margin-top:8px;padding:10px 12px;border-radius:12px;background:rgba(198,47,47,.08);border:1px solid var(--neg)}
+.sug-box p{font-size:12px;color:var(--neg);font-weight:700;margin-bottom:8px}
+.sug-btns{display:flex;gap:6px;flex-wrap:wrap}
+.q-card{background:var(--bg);border:1px solid var(--l);border-radius:18px;padding:14px;margin-bottom:10px}
+.q-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.q-bar{height:7px;border-radius:8px;background:var(--l);overflow:hidden;margin:8px 0}.q-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cy),var(--bl));border-radius:8px}
+.boss-wrap{max-width:540px;margin:0 auto;padding:20px 16px 100px}
+.boss-hdr{background:linear-gradient(160deg,#1a0b2e,#04142A);color:#fff;padding:20px;border-radius:24px;border:1px solid var(--cy);margin-bottom:16px}
+.boss-card{background:var(--s);border:1px solid var(--l);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+.pwa-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(34,211,238,.1);border:1px solid var(--cy);border-radius:18px;padding:12px 14px;margin-bottom:16px}
+#toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));z-index:90;transform:translate(-50%,12px);opacity:0;pointer-events:none;background:#04142A;color:#fff;padding:11px 16px;border-radius:14px;font-size:14px;max-width:calc(100% - 32px);text-align:center;transition:.2s;border:1px solid rgba(34,211,238,.3)}#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
+<div id="app"></div>
+<div id="file-qr-reader" class="hidden"></div>
+<input type="file" id="qr-file-input" accept="image/*" class="hidden">
+<div id="toast" role="status" aria-live="polite"></div>
 
-    <!-- SYSTEM BROADCAST BANNER -->
-    <div id="system-notice" class="notice-banner hidden">
-        <span id="notice-text"></span>
-        <span onclick="dismissNotice()" style="cursor:pointer; font-weight:bold; font-size:16px;">✕</span>
-    </div>
+<script>
+const P={
+  pay:'<path d="M7 17 17 7M8 7h9v9"/>',
+  qr:'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 20v-2"/>',
+  book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11"/>',
+  earn:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 10h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4"/>',
+  scan:'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16"/>',
+  home:'<path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3 6"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  bell:'<path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15zM10 21h4"/>',
+  down:'<path d="M17 7 7 17M16 17H7V8"/>',
+  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff:'<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  back:'<path d="M15 6l-6 6 6 6"/>',
+  del:'<path d="M20 6H9l-5 6 5 6h11zM12.5 9.5l4 5M16.5 9.5l-4 5"/>',
+  flash:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',
+  moon:'<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/>',
+  out:'<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  shield:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',
+  chev:'<path d="m9 6 6 6-6 6"/>',
+  check:'<path d="m5 12 5 5 9-10"/>',
+  img:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 18 5-5 4 4 3-3 4 4"/>',
+  flip:'<path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>'
+};
+const ic=(n,s=22)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
+const $=s=>document.querySelector(s);
+const E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fm=n=>Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const tm=()=>new Date().toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'});
+const CO=['#22D3EE','#3DD68C','#F5A524','#A78BFA','#FB7185'];
+const T=m=>{const t=$('#toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(T.h);T.h=setTimeout(()=>t.classList.remove('show'),2400)};
+const av=(n,i=0,z=44)=>`<span class="av" style="width:${z}px;height:${z}px;font-size:${z*.4}px;background:${CO[i%5]}30">${E((n||'U')[0].toUpperCase())}</span>`;
 
-    <!-- AUTHENTICATION -->
-    <div id="auth-screen" class="auth-container">
-        <!-- One-Tap App Install Banner (Appears automatically when installable) -->
-        <div id="pwa-install-banner" class="card hidden" style="margin-bottom: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--cyan); background: rgba(34, 211, 238, 0.08);">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 20px;">📲</span>
-                <div>
-                    <div style="font-weight: 700; font-size: 13px; color: var(--text);">Install Kinex App</div>
-                    <div style="font-size: 11px; color: var(--muted);">Add to Home Screen for fast access</div>
-                </div>
-            </div>
-            <button type="button" class="btn-primary" style="width: auto; padding: 8px 14px; margin: 0; font-size: 12px;" onclick="installKinexApp()">Install</button>
-        </div>
-        <!-- LOGIN SECTION -->
-        <div id="login-section" class="card">
-            <h2>Kinex Network</h2>
-            
-            <!-- Login Step 1: ID Input -->
-            <div id="login-step-1">
-                <input type="text" id="log-upi" placeholder="Enter ID (e.g. name@rpay)">
-                <button class="btn-primary" onclick="proceedToLoginPin()">Proceed</button>
-                <p style="font-size: 13px; text-align: center; margin-top: 15px;">
-                    Don't have an account? <span class="link-text" onclick="toggleAuth('register')">Create Account</span>
-                </p>
-            </div>
-        
-            <!-- Login Step 2: PIN / Password Input -->
-            <div id="login-step-2" class="hidden">
-                <div style="display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 15px;">
-                    <button onclick="backToLoginStep1()" style="position: absolute; left: 0; font-size: 20px; color: var(--text);">←</button>
-                    <h3 id="login-step-2-title" style="margin: 0;">Enter PIN</h3>
-                </div>
-                <p id="login-id-display" style="text-align: center; color: var(--accent); font-weight: bold; margin-bottom: 10px;"></p>
-                <input type="password" id="log-pin" readonly placeholder="* * * *" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 10px; cursor: default;">
-                
-                <div id="login-pin-numpad" class="pin-numpad">
-                    <button class="num-key" onclick="numpadPin(1, 'log-pin')">1</button><button class="num-key" onclick="numpadPin(2, 'log-pin')">2</button><button class="num-key" onclick="numpadPin(3, 'log-pin')">3</button>
-                    <button class="num-key" onclick="numpadPin(4, 'log-pin')">4</button><button class="num-key" onclick="numpadPin(5, 'log-pin')">5</button><button class="num-key" onclick="numpadPin(6, 'log-pin')">6</button>
-                    <button class="num-key" onclick="numpadPin(7, 'log-pin')">7</button><button class="num-key" onclick="numpadPin(8, 'log-pin')">8</button><button class="num-key" onclick="numpadPin(9, 'log-pin')">9</button>
-                    <button class="num-key" style="background: transparent; border: none;"></button><button class="num-key" onclick="numpadPin(0, 'log-pin')">0</button><button class="num-key" onclick="numpadPin('back', 'log-pin')">⌫</button>
-                </div>
-                <button class="btn-primary" onclick="login()">Secure Login</button>
-            </div>
-        </div>
-
-        <!-- REGISTER SECTION (KYC ONBOARDING) -->
-        <div id="register-section" class="card hidden">
-            <h2>Join Kinex</h2>
-            
-            <!-- Register Step 1: KYC Details -->
-            <div id="reg-step-1">
-                <label style="font-size: 12px; font-weight: 600; color: var(--muted);">FULL LEGAL NAME</label>
-                <input type="text" id="reg-name" placeholder="Enter Full Legal Name" oninput="autoSuggestHandle()">
-
-                <label style="font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 6px; display: block;">CUSTOM KINEX ID</label>
-                <div style="position: relative; display: flex; align-items: center;">
-                    <input type="text" id="reg-custom-id" placeholder="yourname" style="padding-right: 65px; margin: 4px 0;">
-                    <span style="position: absolute; right: 12px; font-weight: 700; color: var(--muted); font-size: 14px; pointer-events: none;">@rpay</span>
-                </div>
-
-                <div id="suggestion-box" class="hidden" style="margin-top: 4px; text-align: left;">
-                    <p style="font-size: 12px; color: var(--neg); margin-bottom: 6px; font-weight: 600;">That ID is taken. Pick one:</p>
-                    <div id="suggestion-buttons" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px;"></div>
-                </div>
-
-                <label style="font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 6px; display: block;">MOBILE NUMBER (WHATSAPP)</label>
-                <input type="tel" id="reg-phone" placeholder="10-digit mobile number" maxlength="10">
-
-                <label style="font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 6px; display: block;">DATE OF BIRTH</label>
-                <input type="date" id="reg-dob" style="cursor: pointer;">
-
-                <label style="font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 6px; display: block;">ACCOUNT TYPE</label>
-                <select id="reg-account-type" style="width: 100%; padding: 14px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--line); font-size: 15px; background: var(--bg); color: var(--text);">
-                    <option value="PERSONAL">Personal Wallet</option>
-                    <option value="MERCHANT">Merchant / Business</option>
-                </select>
-
-                <button class="btn-primary" onclick="proceedToRegPin()">Proceed to Create PIN</button>
-                <p style="font-size: 13px; text-align: center; margin-top: 15px;">
-                    Already registered? <span class="link-text" onclick="toggleAuth('login')">Login</span>
-                </p>
-            </div>
-            
-            <!-- Register Step 2: PIN Input -->
-            <div id="reg-step-2" class="hidden">
-                <div style="display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 15px;">
-                    <button onclick="backToRegStep1()" style="position: absolute; left: 0; font-size: 20px; color: var(--text);">←</button>
-                    <h3 style="margin: 0;">Create 4-Digit PIN</h3>
-                </div>
-                <p id="reg-name-display" style="text-align: center; color: var(--accent); font-weight: bold; margin-bottom: 2px;"></p>
-                <p id="reg-handle-display" style="text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 12px;"></p>
-                <input type="password" id="reg-pin" readonly placeholder="* * * *" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 10px; cursor: default;">
-                
-                <div class="pin-numpad">
-                    <button class="num-key" onclick="numpadPin(1, 'reg-pin')">1</button><button class="num-key" onclick="numpadPin(2, 'reg-pin')">2</button><button class="num-key" onclick="numpadPin(3, 'reg-pin')">3</button>
-                    <button class="num-key" onclick="numpadPin(4, 'reg-pin')">4</button><button class="num-key" onclick="numpadPin(5, 'reg-pin')">5</button><button class="num-key" onclick="numpadPin(6, 'reg-pin')">6</button>
-                    <button class="num-key" onclick="numpadPin(7, 'reg-pin')">7</button><button class="num-key" onclick="numpadPin(8, 'reg-pin')">8</button><button class="num-key" onclick="numpadPin(9, 'reg-pin')">9</button>
-                    <button class="num-key" style="background: transparent; border: none;"></button><button class="num-key" onclick="numpadPin(0, 'reg-pin')">0</button><button class="num-key" onclick="numpadPin('back', 'reg-pin')">⌫</button>
-                </div>
-                <button class="btn-primary" onclick="register()">Sign Up (K 500 Bonus)</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MAIN DASHBOARD APP -->
-    <main class="app hidden" id="dashboard-screen">
-        <header class="hero">
-            <div class="coin">
-                <div class="coin-wrapper">
-                    <img src="1789966012698.png" alt="Kinex" class="kinex-coin-img">
-                </div>
-            </div>
-
-            <div class="top">
-                <div class="who">
-                    <div class="avatar" id="nav-avatar" aria-hidden="true">U</div>
-                    <div>
-                        <div class="name" id="nav-name">User</div>
-                        <button class="handle" type="button" id="copy-id">
-                            <span id="nav-id">user@rpay</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg>
-                        </button>
-                    </div>
-                </div>
-                <button class="icon-btn" type="button" data-action="logout" aria-label="Log out">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h10"/></svg>
-                </button>
-            </div>
-
-            <section class="balance" aria-label="Kinex balance">
-                <div class="label-row">
-                    <span>Kinex balance</span>
-                    <button class="eye" type="button" id="eye" aria-pressed="false" aria-label="Hide balance"></button>
-                </div>
-                <p class="amount" id="amountWrap"><span class="cur">K</span><span class="num" id="amount">0.00</span></p>
-                <p class="asof" id="asof">Updated just now</p>
-            </section>
-        </header>
-
-        <nav class="actions" aria-label="Quick actions">
-            <button class="act primary" type="button" data-action="pay">
-                <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg></span>
-                Pay
-            </button>
-            <button class="act" type="button" data-action="qr">
-                <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.5"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.5"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.5"/><path d="M14 14h2.5v2.5H14zM19 14v.01M14 20.5v-.01M17.5 18.5H20.5V20.5"/></svg></span>
-                My QR
-            </button>
-            <button class="act" type="button" data-action="passbook">
-                <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h11a2 2 0 0 1 2 2v15H8a2 2 0 0 1-2-2z"/><path d="M6 18.5a2 2 0 0 1 2-2h11"/><path d="M10 8h5M10 11.5h5"/></svg></span>
-                Passbook
-            </button>
-            <button class="act" type="button" data-action="balance" id="balBtn">
-                <span class="ico" id="balIco"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-14 5.3"/><path d="M4 12a8 8 0 0 1 14-5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></svg></span>
-                Check Bal
-            </button>
-            <button class="act" type="button" onclick="window.location.href='/notice'">
-    <span class="ico">
-       <a href="notice.html"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-            <path d="M4 22h16"/>
-            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-        </svg></a>
-    </span>
-    Earn Kinex
-</button>
-
-
-        </nav>
-
-        <section class="activity" aria-labelledby="actH">
-            <div class="sec-head">
-                <h2 id="actH">Recent activity</h2>
-                <button class="link" type="button" data-action="passbook">See all</button>
-            </div>
-            <ul class="list" id="list"></ul>
-        </section>
-
-        <nav class="nav" aria-label="Main">
-            <button class="tab" type="button" aria-current="page" data-action="home">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H5.500A1.500 1.500 0 0 1 4 19.500z"/><path d="M9.500 21v-6h5v6"/></svg>
-                Home
-            </button>
-            <button class="tab" type="button" data-action="contacts">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.500 20a6.500 6.500 0 0 1 13 0"/><path d="M16 4.500a3.500 3.500 0 0 1 0 7M18 14.500a6.500 6.500 0 0 1 3.500 5.500"/></svg>
-                Contacts
-            </button>
-            <button class="tab scan" type="button" data-action="scan" aria-label="Scan any QR">
-                <span class="fab"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M4 12h16"/></svg></span>
-                Scan QR
-            </button>
-            <button class="tab" type="button" data-action="passbook">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.500h11a2 2 0 0 1 2 2v15H8a2 2 0 0 1-2-2z"/><path d="M6 18.500a2 2 0 0 1 2-2h11"/></svg>
-                Passbook
-            </button>
-            <button class="tab" type="button" data-action="me">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-                Profile
-            </button>
-        </nav>
-    </main>
-
-    <!-- BOSS0 SCREEN -->
-    <div id="owner-screen" class="hidden" style="max-width: 480px; margin: auto; padding-bottom: 90px;">
-        <div class="card" style="border-radius: 0 0 24px 24px; background: linear-gradient(165deg, var(--hero-a), var(--hero-b)); color: white;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h3 style="margin:0; color:var(--cyan);">SYSTEM OPERATOR</h3>
-                    <p style="margin:4px 0 0; font-size:13px; opacity:0.8;">Boss0 • Level 2 Clearance</p>
-                </div>
-                <button class="btn-danger" style="padding:8px 14px; border-radius:8px; font-weight:700;" onclick="logout()">Exit Admin</button>
-            </div>
-
-            <!-- Economy Analytics Header -->
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:18px; text-align:center;">
-                <div style="background:rgba(255,255,255,0.08); padding:10px 6px; border-radius:12px;">
-                    <div style="font-size:11px; opacity:0.75;">Circulation</div>
-                    <div id="stat-circulation" style="font-weight:800; font-size:14px; color:var(--cyan); margin-top:4px;">K 0</div>
-                </div>
-                <div style="background:rgba(255,255,255,0.08); padding:10px 6px; border-radius:12px;">
-                    <div style="font-size:11px; opacity:0.75;">Active Users</div>
-                    <div id="stat-accounts" style="font-weight:800; font-size:14px; margin-top:4px;">0</div>
-                </div>
-                <div style="background:rgba(255,255,255,0.08); padding:10px 6px; border-radius:12px;">
-                    <div style="font-size:11px; opacity:0.75;">Unredeemed</div>
-                    <div id="stat-rewards" style="font-weight:800; font-size:14px; color:var(--pos); margin-top:4px;">K 0</div>
-                </div>
-            </div>
-        </div>
-
-        <div style="padding: 15px;">
-            <!-- Global Maintenance Lock -->
-            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <h3 style="margin:0; font-size:16px;">Global Maintenance Lock</h3>
-                    <p id="maint-status-text" style="margin:4px 0 0; font-size:12px; color:var(--muted);">Network is ONLINE (Payments Active)</p>
-                </div>
-                <button id="maint-toggle-btn" class="btn-primary btn-danger" style="width:auto; margin:0; padding:10px 16px;" onclick="adminToggleMaintenance()">Lock Network</button>
-            </div>
-
-            <!-- System Broadcast -->
-            <div class="card">
-                <h3 style="margin-top:0;">System Broadcast</h3>
-                <input type="text" id="admin-notice-msg" placeholder="Enter global message">
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-primary btn-success" onclick="adminSendBroadcast()">Push</button>
-                    <button class="btn-primary btn-danger" onclick="adminClearBroadcast()">Clear</button>
-                </div>
-            </div>
-            
-            <!-- Account Management -->
-            <div class="card">
-                <h3 style="margin-top:0;">Account Management</h3>
-                <input type="text" id="admin-target" placeholder="Target ID (e.g. user@rpay)">
-                <input type="number" id="admin-amount" placeholder="Amount (K)">
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn-primary btn-success" style="width:48%;" onclick="adminAdjust('add')">+ Add</button>
-                    <button class="btn-primary btn-danger" style="width:48%;" onclick="adminAdjust('deduct')">- Deduct</button>
-                    <button class="btn-primary" style="width:48%; background:#eab308; color:#000;" onclick="adminAdjust('freeze')">❄ Freeze</button>
-                    <button class="btn-primary" style="width:48%; background:#3b82f6; color:#fff;" onclick="adminAdjust('unfreeze')">☀ Unfreeze</button>
-                </div>
-                <button class="btn-primary btn-dark" onclick="adminDelete()" style="margin-top: 15px;">⚠ Terminate Account</button>
-            </div>
-
-            <!-- Live Global Transaction Feed & Clawback -->
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <h3 style="margin:0;">Live Transaction Feed</h3>
-                    <button class="link" onclick="adminLoadTransactions()">Refresh</button>
-                </div>
-                <input type="text" id="admin-tx-filter" placeholder="Filter by user@rpay (optional)" oninput="adminLoadTransactions()">
-                <div id="admin-tx-area" style="margin-top: 12px; max-height: 360px; overflow-y: auto;"></div>
-            </div>
-            
-            <!-- Network Overview -->
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3 style="margin:0;">Network Directory</h3>
-                    <button class="link" onclick="adminViewUsers()">Refresh</button>
-                </div>
-                <div id="admin-viewer-area" style="margin-top: 15px; max-height: 400px; overflow-y: auto;"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODALS -->
-    <div id="unifiedPayModal" class="modal hidden">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('unifiedPayModal')">✕</button>
-            <h3 style="margin-bottom: 15px;">Send Kinex & Contacts</h3>
-            <input type="text" id="contact-search" placeholder="Search by name or enter ID..." oninput="filterContacts()" style="margin-bottom: 5px;">
-            <button id="pay-new-btn" class="btn-primary" style="display: none; margin-bottom: 15px;" onclick="paySearchedId()">Pay New ID</button>
-            <div id="contacts-list" style="margin-top: 10px; max-height: 350px; overflow-y: auto;"></div>
-        </div>
-    </div>
-
-    <!-- UPGRADED RECEIVE QR MODAL (Supports Dynamic Locked Amount QRs) -->
-    <div id="qrModal" class="modal hidden">
-        <div class="modal-content" style="text-align: center;">
-            <button class="modal-close" onclick="closeModal('qrModal')">✕</button>
-            <h3 style="margin-bottom: 10px;">Receive Kinex</h3>
-            <div id="qrcode" style="background: white; padding: 15px; border-radius: 12px; display: inline-block; margin: 10px auto;"></div>
-            <p id="qr-upi-label" style="font-size: 14px; font-weight: 700; color: var(--accent); margin: 6px 0 14px;"></p>
-            
-            <div style="border-top: 1px solid var(--line); padding-top: 12px; text-align: left;">
-                <label style="font-size: 12px; font-weight: 600; color: var(--muted);">SET EXACT AMOUNT (OPTIONAL - LOCKS PAYER KEYPAD)</label>
-                <div style="display: flex; gap: 8px; margin-top: 4px;">
-                    <input type="number" id="qr-req-amt" placeholder="Enter amount (K)" min="1" style="margin: 0;" oninput="updateReceiveQR()">
-                    <button class="btn-dark" style="padding: 0 14px; border-radius: 8px; font-size: 13px; font-weight: 600;" onclick="$('qr-req-amt').value=''; updateReceiveQR();">Clear</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="historyModal" class="modal hidden">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('historyModal')">✕</button>
-            <h3 style="margin-bottom: 15px;">Passbook & History</h3>
-            <div id="full-history-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
-        </div>
-    </div>
-
-    <!-- TWO-STAGE CAMERA APP QR SCANNER -->
-    <div id="scannerModal" class="cam-scanner-overlay hidden">
-        <!-- Live Camera Stream Container -->
-        <div id="reader"></div>
-        <!-- Hidden div for scanning uploaded files -->
-        <div id="file-qr-reader" class="hidden"></div>
-
-        <!-- Top Camera Overlay Bar -->
-        <div class="cam-top-bar">
-            <button type="button" class="cam-circle-btn" onclick="stopScanner()" aria-label="Back">←</button>
-            <div class="cam-status-pill" id="cam-status-lbl">Back Cam • Torch Off</div>
-            <button type="button" class="cam-circle-btn" id="cam-torch-btn" onclick="toggleCameraTorch()" aria-label="Toggle Flashlight">⚡</button>
-        </div>
-
-        <!-- Stage 1: Standby Prompt (Visible BEFORE pressing Shutter) -->
-        <div id="cam-standby-prompt" style="position: relative; z-index: 4; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; pointer-events: none;">
-            <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(34, 211, 238, 0.12); border: 1px solid rgba(34, 211, 238, 0.4); display: grid; place-items: center; color: var(--cyan); margin-bottom: 14px;">
-                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M4 12h16"/></svg>
-            </div>
-            <h3 style="color: #fff; margin: 0 0 6px; font-size: 18px;">Camera Ready</h3>
-            <p style="color: rgba(255,255,255,0.65); font-size: 13px; max-width: 250px; margin: 0;">Adjust Torch, Flip Camera, or pick from Files below. Tap the center Shutter button to start scanning.</p>
-        </div>
-
-        <!-- Stage 2: Center Viewfinder Reticle (Hidden until Shutter is pressed) -->
-        <div id="cam-viewfinder" class="cam-viewfinder-wrap hidden">
-            <div class="cam-reticle" id="cam-reticle-box">
-                <div class="cam-corner tl"></div>
-                <div class="cam-corner tr"></div>
-                <div class="cam-corner bl"></div>
-                <div class="cam-corner br"></div>
-                <div class="cam-laser"></div>
-            </div>
-        </div>
-
-        <!-- Bottom Camera Control Deck (Hides when Shutter is pressed) -->
-        <div id="cam-bottom-deck" class="cam-bottom-deck">
-            <input type="file" id="qr-file-input" accept="image/*" class="hidden" onchange="scanQrFromFile(event)">
-            
-            <!-- Left: Gallery / Files Button -->
-            <button type="button" class="cam-side-btn" onclick="$('qr-file-input').click()">
-                <span class="ico-ring">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                </span>
-                Files
-            </button>
-
-            <!-- Center: Scan / Capture Shutter Button -->
-            <button type="button" class="cam-shutter-btn" onclick="activateLiveScanMode()" aria-label="Start Scanning">
-                <span class="cam-shutter-inner">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M4 12h16"/></svg>
-                </span>
-            </button>
-
-            <!-- Right: Flip Front/Back Camera Button -->
-            <button type="button" class="cam-side-btn" onclick="switchCameraFacing()">
-                <span class="ico-ring">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg>
-                </span>
-                Flip Cam
-            </button>
-        </div>
-    </div>
-
-    <!-- SCAN PAYMENT SCREEN (With Fixed-Amount Numpad Lock) -->
-    <div id="scan-pay-screen" class="scan-payment-screen hidden">
-        <div class="scan-header">
-            <button class="back-btn" onclick="closeScanPay()" style="position: absolute; left: 20px; top: 20px; font-size: 22px;">←</button>
-            <p style="font-size: 13px; color: var(--muted); margin: 0;">Paying to</p>
-            <h3 id="scan-target-upi" style="color: var(--accent); font-size: 16px; margin-top: 2px;"></h3>
-        </div>
-        <div class="amount-display-container" style="flex-direction: column;">
-            <h1 class="amount-text" style="margin: 0;">K <span id="scan-amount-display">0</span></h1>
-            <!-- Shown only when QR code locks the amount -->
-            <div id="locked-amt-notice" class="locked-amt-banner hidden">
-                🔒 Fixed QR Amount (Cannot be edited)
-            </div>
-        </div>
-        <div class="numpad-container">
-            <button class="btn-primary" onclick="proceedToPin()" style="font-size: 18px; padding: 16px; border-radius: 12px;">Proceed to Pay</button>
-            <!-- Numpad automatically hides when scanning a QR with an embedded amount -->
-            <div id="scan-numpad-grid" class="numpad">
-                <button class="num-key" onclick="numpad(1)">1</button><button class="num-key" onclick="numpad(2)">2</button><button class="num-key" onclick="numpad(3)">3</button>
-                <button class="num-key" onclick="numpad(4)">4</button><button class="num-key" onclick="numpad(5)">5</button><button class="num-key" onclick="numpad(6)">6</button>
-                <button class="num-key" onclick="numpad(7)">7</button><button class="num-key" onclick="numpad(8)">8</button><button class="num-key" onclick="numpad(9)">9</button>
-                <button class="num-key" style="background: transparent; pointer-events: none;"></button>
-                <button class="num-key" onclick="numpad(0)">0</button><button class="num-key" onclick="numpad('back')">⌫</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PAYMENT PIN CONFIRMATION -->
-    <div id="pinConfirmModal" class="modal hidden" style="z-index: 300;">
-        <div class="modal-content" style="text-align: center;">
-            <button class="modal-close" onclick="closeModal('pinConfirmModal')">✕</button>
-            <h3 style="margin-bottom: 5px;">Enter PIN</h3>
-            <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px;">Paying K <span id="pin-confirm-amt" style="font-weight:bold; color:var(--text);"></span> to <span id="pin-confirm-upi" style="font-weight:bold; color:var(--text);"></span></p>
-            
-            <input type="password" id="scan-pay-pin" readonly placeholder="* * * *" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 10px; cursor: default;">
-            
-            <div class="pin-numpad">
-                <button class="num-key" onclick="numpadPin(1, 'scan-pay-pin')">1</button><button class="num-key" onclick="numpadPin(2, 'scan-pay-pin')">2</button><button class="num-key" onclick="numpadPin(3, 'scan-pay-pin')">3</button>
-                <button class="num-key" onclick="numpadPin(4, 'scan-pay-pin')">4</button><button class="num-key" onclick="numpadPin(5, 'scan-pay-pin')">5</button><button class="num-key" onclick="numpadPin(6, 'scan-pay-pin')">6</button>
-                <button class="num-key" onclick="numpadPin(7, 'scan-pay-pin')">7</button><button class="num-key" onclick="numpadPin(8, 'scan-pay-pin')">8</button><button class="num-key" onclick="numpadPin(9, 'scan-pay-pin')">9</button>
-                <button class="num-key" style="background: transparent; border: none;"></button><button class="num-key" onclick="numpadPin(0, 'scan-pay-pin')">0</button><button class="num-key" onclick="numpadPin('back', 'scan-pay-pin')">⌫</button>
-            </div>
-
-            <button class="btn-primary" onclick="executeScanPay()">Pay Now</button>
-        </div>
-    </div>
-
-
-    <div id="loading-screen" class="fullscreen-overlay hidden" style="z-index: 10600;">
-    <div class="spinner"></div>
-    <h3 id="load-title" style="color: var(--accent);">Processing Payment...</h3>
-    <p id="load-desc" style="color: var(--muted); font-size: 13px;">Securely connecting to Kinex Network</p>
-</div>
-
-    <div id="success-screen" class="fullscreen-overlay hidden">
-        <div class="success-card">
-            <div class="check-circle">✓</div>
-            <h2 style="color: var(--pos); margin-bottom: 5px;">Payment Successful</h2>
-            <h1 id="receipt-amount" style="font-size: 36px; color: var(--text); margin: 15px 0;">K 0.00</h1>
-            <div style="text-align: left; margin-top: 25px; font-size: 14px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--muted)">Paid to</span> <strong id="receipt-receiver" style="color: var(--text);">Name</strong></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--muted)">From</span> <strong id="receipt-sender" style="color: var(--text);">My Account</strong></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--muted)">Date</span> <strong id="receipt-time" style="color: var(--text);">Time</strong></div>
-            </div>
-            <button class="btn-primary" onclick="closeSuccess()" style="margin-top: 30px;">Done</button>
-        </div>
-    </div>
-
-    <!-- PROFILE MODAL (Two-Step Change PIN) -->
-    <div id="profileModal" class="modal hidden">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
-            <h3 style="margin-bottom: 15px;">My Profile & Settings</h3>
-            
-            <!-- Default Profile View -->
-            <div id="profile-main">
-                <div style="text-align: center; margin: 15px 0;">
-                    <div class="avatar" id="profile-modal-avatar" style="width: 60px; height: 60px; font-size: 24px; margin: 0 auto 10px;">U</div>
-                    <h4 id="profile-modal-name" style="font-size: 18px; color: var(--text);">User</h4>
-                    <p id="profile-modal-upi" style="color: var(--muted); font-size: 13px;"></p>
-                </div>
-                <hr style="border:0; border-top:1px solid var(--line); margin: 15px 0;">
-                <button class="btn-primary btn-dark" onclick="startPinChange()">Change Password / PIN</button>
-            </div>
-
-            <!-- PIN Change Workflow -->
-            <div id="profile-pin-flow" class="hidden">
-                <div style="display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 15px;">
-                    <button onclick="cancelPinChange()" style="position: absolute; left: 0; font-size: 20px; color: var(--text);">←</button>
-                    <h3 id="profile-pin-title" style="margin: 0;">Enter Current PIN</h3>
-                </div>
-                
-                <!-- Old PIN Sec -->
-                <div id="profile-old-pin-sec">
-                    <input type="password" id="old-pin" readonly placeholder="* * * *" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 10px; cursor: default;">
-                    <div class="pin-numpad">
-                        <button class="num-key" onclick="numpadPin(1, 'old-pin')">1</button><button class="num-key" onclick="numpadPin(2, 'old-pin')">2</button><button class="num-key" onclick="numpadPin(3, 'old-pin')">3</button>
-                        <button class="num-key" onclick="numpadPin(4, 'old-pin')">4</button><button class="num-key" onclick="numpadPin(5, 'old-pin')">5</button><button class="num-key" onclick="numpadPin(6, 'old-pin')">6</button>
-                        <button class="num-key" onclick="numpadPin(7, 'old-pin')">7</button><button class="num-key" onclick="numpadPin(8, 'old-pin')">8</button><button class="num-key" onclick="numpadPin(9, 'old-pin')">9</button>
-                        <button class="num-key" style="background: transparent; border: none;"></button><button class="num-key" onclick="numpadPin(0, 'old-pin')">0</button><button class="num-key" onclick="numpadPin('back', 'old-pin')">⌫</button>
-                    </div>
-                    <button class="btn-primary" onclick="proceedToNewPin()">Next</button>
-                </div>
-
-                <!-- New PIN Sec -->
-                <div id="profile-new-pin-sec" class="hidden">
-                    <input type="password" id="new-pin" readonly placeholder="* * * *" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 12px; margin-bottom: 10px; cursor: default;">
-                    <div class="pin-numpad">
-                        <button class="num-key" onclick="numpadPin(1, 'new-pin')">1</button><button class="num-key" onclick="numpadPin(2, 'new-pin')">2</button><button class="num-key" onclick="numpadPin(3, 'new-pin')">3</button>
-                        <button class="num-key" onclick="numpadPin(4, 'new-pin')">4</button><button class="num-key" onclick="numpadPin(5, 'new-pin')">5</button><button class="num-key" onclick="numpadPin(6, 'new-pin')">6</button>
-                        <button class="num-key" onclick="numpadPin(7, 'new-pin')">7</button><button class="num-key" onclick="numpadPin(8, 'new-pin')">8</button><button class="num-key" onclick="numpadPin(9, 'new-pin')">9</button>
-                        <button class="num-key" style="background: transparent; border: none;"></button><button class="num-key" onclick="numpadPin(0, 'new-pin')">0</button><button class="num-key" onclick="numpadPin('back', 'new-pin')">⌫</button>
-                    </div>
-                    <button class="btn-primary" onclick="changePin()">Update PIN</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <audio id="success-audio" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
-    <script>
-        // GLOBALS & HELPERS
-        let currentUser = ""; let currentPin = ""; let currentName = ""; let html5QrcodeScanner; let globalContacts = [];
-        const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const $ = id => document.getElementById(id);
-
-        function proceedToLoginPin() {
-            const upiId = $('log-upi').value.trim();
-            if (upiId === "") return alert("Please enter your Kinex ID first.");
-            
-            const pinInput = $('log-pin');
-            pinInput.value = "";
-            
-            if (upiId === 'Boss0') {
-                $('login-step-2-title').innerText = "Operator Password";
-                pinInput.removeAttribute('readonly');
-                pinInput.setAttribute('maxlength', '64');
-                pinInput.placeholder = "Enter Alphanumeric Password";
-                pinInput.style.letterSpacing = "2px";
-                pinInput.style.fontSize = "16px";
-                pinInput.style.cursor = "text";
-                $('login-pin-numpad').classList.add('hidden');
-            } else {
-                $('login-step-2-title').innerText = "Enter PIN";
-                pinInput.setAttribute('readonly', true);
-                pinInput.setAttribute('maxlength', '4');
-                pinInput.placeholder = "* * * *";
-                pinInput.style.letterSpacing = "12px";
-                pinInput.style.fontSize = "24px";
-                pinInput.style.cursor = "default";
-                $('login-pin-numpad').classList.remove('hidden');
-            }
-            
-            $('login-step-1').classList.add('hidden');
-            $('login-step-2').classList.remove('hidden');
-            $('login-id-display').innerText = upiId;
-            if (upiId === 'Boss0') pinInput.focus();
-        }
-        
-        const escapeHTML = (str) => {
-            if (!str) return "";
-            return String(str).replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
-        };
-
-        const ICON_EYE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
-        const ICON_EYE_OFF = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.600 5.100A9.800 9.800 0 0 1 12 5c6.400 0 10 7 10 7a17 17 0 0 1-3.200 4M6.500 6.600C3.700 8.400 2 12 2 12s3.600 7 10 7c1.600 0 3-.4 4.300-1"/><path d="M9.900 9.900a3 3 0 0 0 4.200 4.200"/></svg>';
-        const ICON_IN  = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7L7 17"/><path d="M16 17H7V8"/></svg>';
-        const ICON_OUT = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>';
-
-        function openModal(id) { $(id).classList.remove('hidden'); }
-        function closeModal(id) { $(id).classList.add('hidden'); }
-        
-  let isIntentionalNav = false;
-
-function logout() {
-    currentUser = ""; currentPin = ""; currentName = ""; globalContacts = [];
-    
-    // Clear saved session
-    localStorage.removeItem('rpay_currentUser');
-    localStorage.removeItem('rpay_currentName');
-    localStorage.removeItem('rpay_currentPin');
-    
-    $('log-upi').value = ""; $('log-pin').value = ""; $('reg-pin').value = ""; $('reg-name').value = "";
-    $('dashboard-screen').classList.add('hidden'); 
-    $('owner-screen').classList.add('hidden');
-    $('auth-screen').classList.remove('hidden');
-    toggleAuth('login');
+/* ---- HANDLE HELPERS ---- */
+function isBossInput(raw){
+  return String(raw||'').trim().toLowerCase().replace(/@rpay$/i,'') === 'boss0';
+}
+function cleanHandle(raw){
+  if (isBossInput(raw)) return 'Boss0';
+  let h=String(raw||'').trim().toLowerCase().replace(/@rpay$/i,'').replace(/[^a-z0-9._]/g,'');
+  return h ? h+'@rpay' : '';
+}
+function shortId(raw){
+  if (isBossInput(raw)) return 'Boss0';
+  return String(raw||'').trim().toLowerCase().replace(/@rpay$/i,'');
 }
 
-        // CUSTOM PIN NUMPAD LOGIC
-        function numpadPin(val, targetId) {
-            const input = $(targetId);
-            let current = input.value;
-            if (val === 'back') {
-                input.value = current.slice(0, -1);
-            } else {
-                if (current.length < 4) input.value += val;
-            }
+/* ---- SHARED MULTI-USER LEDGER (SYNCED ACROSS TABS & USERS) ---- */
+const LEDGER_KEY = 'kinex_multiuser_ledger_v3';
+const syncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('kinex_realtime_sync') : null;
+
+function getDefaultLedger(){
+  return {
+    maintenance: false,
+    adminSecret: 'KINEX_MASTER_2026',
+    accounts: {
+      'Boss0': {
+        id: 'Boss0', n: 'System Operator', pin: 'Kinex_Admin_2026!', ph: '0000000000', dob: '2000-01-01', type: 'Merchant', status: 'ACTIVE', bal: 1000000, claimed: [], tx: []
+      },
+      'ridhaan@rpay': {
+        id: 'ridhaan@rpay', n: 'Ridhaan', pin: '1234', ph: '9876543210', dob: '2005-01-01', type: 'Personal', status: 'ACTIVE', bal: 2450, claimed: [],
+        tx: [
+          { n: 'Aarav S.', id: 'aarav@rpay', d: 'Today', t: '6:12 pm', a: 250, ref: 'KX84920144' },
+          { n: 'Corner Store', id: 'cornerstore@rpay', d: 'Today', t: '1:05 pm', a: -40, ref: 'KX84920110' },
+          { n: 'Meera K.', id: 'meera@rpay', d: 'Yesterday', t: '9:40 pm', a: -120, ref: 'KX84919822' },
+          { n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '10:00 am', a: 500, ref: 'KX84900001' }
+        ]
+      },
+      'aarav@rpay': {
+        id: 'aarav@rpay', n: 'Aarav S.', pin: '1234', ph: '9876543211', dob: '2004-05-12', type: 'Personal', status: 'ACTIVE', bal: 1850, claimed: [],
+        tx: [
+          { n: 'Ridhaan', id: 'ridhaan@rpay', d: 'Today', t: '6:12 pm', a: -250, ref: 'KX84920144' },
+          { n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '9:30 am', a: 500, ref: 'KX84900002' }
+        ]
+      },
+      'meera@rpay': {
+        id: 'meera@rpay', n: 'Meera K.', pin: '1234', ph: '9876543212', dob: '2003-08-19', type: 'Personal', status: 'ACTIVE', bal: 1620, claimed: [],
+        tx: [
+          { n: 'Ridhaan', id: 'ridhaan@rpay', d: 'Yesterday', t: '9:40 pm', a: 120, ref: 'KX84919822' },
+          { n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '9:00 am', a: 500, ref: 'KX84900003' }
+        ]
+      },
+      'kabir@rpay': {
+        id: 'kabir@rpay', n: 'Kabir R.', pin: '1234', ph: '9876543213', dob: '2002-11-04', type: 'Personal', status: 'ACTIVE', bal: 900, claimed: [],
+        tx: [{ n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '11:00 am', a: 500, ref: 'KX84900004' }]
+      },
+      'diya@rpay': {
+        id: 'diya@rpay', n: 'Diya T.', pin: '1234', ph: '9876543214', dob: '2004-02-25', type: 'Personal', status: 'ACTIVE', bal: 1150, claimed: [],
+        tx: [{ n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '11:15 am', a: 500, ref: 'KX84900005' }]
+      },
+      'cornerstore@rpay': {
+        id: 'cornerstore@rpay', n: 'Corner Store', pin: '1234', ph: '9876543215', dob: '1995-06-10', type: 'Merchant', status: 'ACTIVE', bal: 5400, claimed: [],
+        tx: [
+          { n: 'Ridhaan', id: 'ridhaan@rpay', d: 'Today', t: '1:05 pm', a: 40, ref: 'KX84920110' },
+          { n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '8:00 am', a: 500, ref: 'KX84900006' }
+        ]
+      }
+    }
+  };
+}
+
+function loadLedger(){
+  try {
+    const raw = localStorage.getItem(LEDGER_KEY);
+    if (!raw) {
+      const def = getDefaultLedger();
+      localStorage.setItem(LEDGER_KEY, JSON.stringify(def));
+      return def;
+    }
+    return JSON.parse(raw);
+  } catch (e) {
+    return getDefaultLedger();
+  }
+}
+
+function saveLedger(ledger){
+  try {
+    localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
+    if (syncChannel) syncChannel.postMessage({ type: 'LEDGER_UPDATED', ts: Date.now() });
+  } catch (e) {}
+}
+
+/* ---- QUEST DEFINITIONS ---- */
+const QUEST_LIST = [
+  { id: 'q_first', title: 'First Step', desc: 'Complete at least 1 outgoing transfer', reward: 25, check: (tx, bal) => tx.filter(t => t.a < 0).length >= 1, prog: (tx) => Math.min(100, tx.filter(t => t.a < 0).length * 100) },
+  { id: 'q_five', title: 'Active Networker', desc: 'Complete 5 transfers on Kinex Network', reward: 75, check: (tx, bal) => tx.filter(t => t.a < 0).length >= 5, prog: (tx) => Math.min(100, (tx.filter(t => t.a < 0).length / 5) * 100) },
+  { id: 'q_whale', title: 'Kinex Whale', desc: 'Hold a wallet balance of K 2,000 or more', reward: 100, check: (tx, bal) => bal >= 2000, prog: (tx, bal) => Math.min(100, (bal / 2000) * 100) }
+];
+
+/* ---- APPLICATION STATE ---- */
+const S={
+  scr:'login', ctx:'login', pin:'', bossPass:'', rs:1, lid:'ridhaan',
+  r:{name:'',id:'',ph:'',dob:'',type:'Personal',suggestions:[]},
+  u:{n:'Ridhaan',id:'ridhaan',fullId:'ridhaan@rpay',type:'Personal',status:'ACTIVE',claimed:[]},
+  bal:2450, hide:false, f:'all', sheet:null, pay:null,
+  scan:false, scanStage:'standby', torch:false, facing:'environment',
+  qrReqAmt:'', fresh:false, isPaying:false, unreadAlert:'',
+  adminSecret:'KINEX_MASTER_2026', bossTargetId:'', bossMintAmt:'',
+  dark:matchMedia('(prefers-color-scheme: dark)').matches, notif:true, bio:false,
+  tx:[], ppl:[], lastSyncSig:'', pwaPrompt:null
+};
+
+/* ---- PWA INSTALL HANDLER ---- */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{}));
+}
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  S.pwaPrompt = e;
+  render();
+});
+async function installPwa(){
+  if (!S.pwaPrompt) return;
+  S.pwaPrompt.prompt();
+  const { outcome } = await S.pwaPrompt.userChoice;
+  if (outcome === 'accepted') S.pwaPrompt = null;
+  render();
+}
+
+/* ---- REAL-TIME DUAL-USER PASSBOOK SYNC ---- */
+async function syncUserPassbook(silent = true){
+  if (!S.u || !S.u.fullId || S.scr === 'login' || S.scr === 'reg' || S.scr === 'boss') return;
+  const myId = S.u.fullId.toLowerCase();
+
+  let serverSynced = false;
+  try {
+    const res = await fetch(`/api/user-state/${encodeURIComponent(myId)}?t=${Date.now()}`, {
+      method: 'GET',
+      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
+      cache: 'no-store'
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.success) {
+        serverSynced = true;
+        const prevBal = S.bal;
+        const prevTopRef = S.tx[0] ? S.tx[0].ref : '';
+
+        S.bal = Number(data.balance);
+        S.u.n = data.name || S.u.n;
+        S.u.status = data.status || 'ACTIVE';
+        S.u.type = data.account_type === 'MERCHANT' ? 'Merchant' : 'Personal';
+        S.tx = Array.isArray(data.transactions) ? data.transactions : [];
+        S.ppl = Array.isArray(data.contacts) ? data.contacts.filter(p => p.id.toLowerCase() !== myId) : S.ppl;
+
+        const newSig = `${S.bal}_${S.tx.length}_${S.tx[0]?S.tx[0].ref:''}_${S.u.status}`;
+        if (S.lastSyncSig && S.lastSyncSig !== newSig) {
+          if (S.bal > prevBal && S.tx[0] && S.tx[0].a > 0 && S.tx[0].ref !== prevTopRef) {
+            S.unreadAlert = `Received K ${fm(S.tx[0].a)} from ${S.tx[0].n}`;
+            if (S.notif) T(S.unreadAlert);
+          }
+          render();
         }
+        S.lastSyncSig = newSig;
+      }
+    }
+  } catch (e) {}
 
-        // SYSTEM BROADCAST HANDLERS
-        async function checkSystemNotices() { 
-            try { 
-                const res = await fetch('/notices/active'); 
-                const data = await res.json(); 
-                if(data.message) { 
-                    $('notice-text').innerText = escapeHTML(data.message); 
-                    $('system-notice').classList.remove('hidden'); 
-                } 
-            } catch(e) {} 
+  if (!serverSynced) {
+    const ledger = loadLedger();
+    const acc = ledger.accounts[myId] || ledger.accounts[S.u.fullId];
+    if (acc) {
+      const prevBal = S.bal;
+      const prevTopRef = S.tx[0] ? S.tx[0].ref : '';
+
+      S.bal = Number(acc.bal);
+      S.u.n = acc.n;
+      S.u.status = acc.status || 'ACTIVE';
+      S.u.type = acc.type || 'Personal';
+      S.u.claimed = Array.isArray(acc.claimed) ? acc.claimed : [];
+      S.tx = acc.tx.slice();
+      S.ppl = Object.values(ledger.accounts)
+        .filter(x => x.id.toLowerCase() !== myId && x.id !== 'Boss0')
+        .map(x => ({ n: x.n, id: x.id }));
+
+      const newSig = `${S.bal}_${S.tx.length}_${S.tx[0]?S.tx[0].ref:''}_${S.u.status}`;
+      if (S.lastSyncSig && S.lastSyncSig !== newSig) {
+        if (S.bal > prevBal && S.tx[0] && S.tx[0].a > 0 && S.tx[0].ref !== prevTopRef) {
+          S.unreadAlert = `Received K ${fm(S.tx[0].a)} from ${S.tx[0].n}`;
+          if (S.notif) T(S.unreadAlert);
         }
-        function dismissNotice() { $('system-notice').classList.add('hidden'); }
+        if (!silent || S.sheet !== 'pay') render();
+      }
+      S.lastSyncSig = newSig;
+    }
+  }
+}
 
-        // AUTHENTICATION FLOW
-function toggleAuth(view) {
-            $('login-section').classList.toggle('hidden', view === 'register');$('register-section').classList.toggle('hidden', view === 'login');
-            
-            // Reset to Step 1 for both
-            $('login-step-1').classList.remove('hidden');$('login-step-2').classList.add('hidden');
-            $('reg-step-1').classList.remove('hidden');$('reg-step-2').classList.add('hidden');
-            
-            resetSuggestions();
-        }
+if (syncChannel) {
+  syncChannel.onmessage = () => {
+    if (S.scr === 'boss') render();
+    else syncUserPassbook(false);
+  };
+}
+window.addEventListener('storage', (e) => {
+  if (e.key === LEDGER_KEY) {
+    if (S.scr === 'boss') render();
+    else syncUserPassbook(false);
+  }
+});
+window.addEventListener('focus', () => syncUserPassbook(false));
+document.addEventListener('visibilitychange', () => { if (!document.hidden) syncUserPassbook(false); });
+setInterval(() => syncUserPassbook(true), 2500);
 
-        let selectedUpi = "";
-        function resetSuggestions() { 
-            selectedUpi = ""; 
-            if ($('suggestion-box'))$('suggestion-box').classList.add('hidden'); 
-        }
+/* ---- UI COMPONENTS ---- */
+const dots=()=>`<div class="dots" aria-label="${S.pin.length} of 4 digits entered">${[0,1,2,3].map(i=>`<i class="${i<S.pin.length?'on':''}"></i>`).join('')}</div>`;
+const pad=(a,dot)=>`<div class="pad">${[1,2,3,4,5,6,7,8,9,dot?'.':'',0,'b'].map(k=>k===''?'<span></span>':`<button type="button" data-a="${a}" data-v="${k}" aria-label="${k=='b'?'Delete':k}">${k=='b'?ic('del'):k}</button>`).join('')}</div>`;
+const txRow=(t,i)=>`<button type="button" class="row ${t.a>0?'in':'out'}" data-a="tx" data-v="${i}"><span class="bd">${ic(t.a>0?'down':'pay',20)}</span><span class="mt"><b>${E(t.n)}</b><span>${E(t.d)}, ${E(t.t)}</span></span><span class="am">${t.a>0?'+':'−'} K ${fm(Math.abs(t.a))}</span></button>`;
+const sums=()=>[S.tx.filter(t=>t.a>0).reduce((s,t)=>s+Number(t.a),0),Math.abs(S.tx.filter(t=>t.a<0).reduce((s,t)=>s+Number(t.a),0))];
 
-        function autoSuggestHandle() {
-            const name = $('reg-name').value.trim();
-            const customInput = $('reg-custom-id');
-            // Auto-fill only if user hasn't explicitly customized it
-            if (!customInput.dataset.manualEdited) {
-                customInput.value = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-            }
-        }
+/* ---- LOGIN SCREEN (AUTO-DETECTS BOSS0 FOR ALPHANUMERIC PASSWORD) ---- */
+const login=()=>{
+  const bossMode = isBossInput(S.lid);
+  return `<div class="auth"><div class="brand"><div class="coin s">K</div><div><h1>RPAY</h1><p>Kinex Network</p></div></div>
+  ${S.pwaPrompt ? `<div class="pwa-bar"><div><b style="font-size:13px;display:block">Install Kinex App</b><span style="font-size:11px;color:var(--m)">Add icon to Home Screen</span></div><button type="button" class="mini" onclick="installPwa()">Install</button></div>` : ''}
+  <div class="card"><h2>${bossMode ? 'Operator Clearance' : 'Welcome back'}</h2><label class="lab" for="lid" style="margin-top:0;display:block">Kinex ID</label><div class="fld"><input id="lid" value="${E(S.lid)}" oninput="onLoginIdInput(this.value)" autocomplete="off"><span>${bossMode ? 'ADMIN' : '@rpay'}</span></div>
+  ${bossMode
+    ? `<label class="lab" for="bpass" style="display:block">Operator Alphanumeric Password</label><div class="fld" style="margin-bottom:16px"><input id="bpass" type="password" value="${E(S.bossPass)}" oninput="S.bossPass=this.value" placeholder="Enter operator password"></div><button type="button" class="pri" data-a="bossauth">Unlock Operator Console</button>`
+    : `<p class="lab">Enter your 4-digit PIN</p>${dots()}${pad('k')}<button type="button" class="pri" data-a="auth">Log in securely</button>`
+  }
+  <p class="sub">New to Kinex? <button type="button" class="lk" data-a="go" data-v="reg">Create account</button></p></div></div>`;
+};
 
-        // Track if user manually edits custom ID
-        document.addEventListener('DOMContentLoaded', () => {
-            const customIdEl = $('reg-custom-id');
-            if (customIdEl) {
-                customIdEl.addEventListener('input', () => {
-                    customIdEl.dataset.manualEdited = "true";
-                    resetSuggestions();
-                });
-            }
-        });
-        // Login Step Logic
+function onLoginIdInput(val){
+  const prevBoss = isBossInput(S.lid);
+  S.lid = val.replace(/@rpay$/i,'');
+  if (isBossInput(S.lid) !== prevBoss) {
+    render();
+    const input = $('#lid');
+    if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+  }
+}
 
-        function backToLoginStep1() {
-            $('login-step-2').classList.add('hidden');
-            $('login-step-1').classList.remove('hidden');
-        }
+/* ---- REGISTER SCREEN ---- */
+const reg=()=>S.rs==1?`<div class="auth"><div class="brand"><div class="coin s">K</div><div><h1>Join Kinex</h1><p>K 500 welcome bonus</p></div></div><div class="card"><label class="lab" for="rn" style="margin-top:0;display:block">Full legal name</label><div class="fld"><input id="rn" value="${E(S.r.name)}" oninput="onRegNameInput(this.value)" placeholder="As on your ID"></div><label class="lab" for="ri" style="display:block">Choose your Kinex ID</label><div class="fld"><input id="ri" value="${E(shortId(S.r.id))}" oninput="S.r.id=this.value.replace(/@rpay$/i,'');S.r.manual=true;S.r.suggestions=[]" placeholder="yourname"><span>@rpay</span></div>${S.r.suggestions&&S.r.suggestions.length?`<div class="sug-box"><p>That Kinex ID is taken. Pick an available ID:</p><div class="sug-btns">${S.r.suggestions.map(s=>`<button type="button" class="mini" data-a="pickid" data-v="${E(s)}">${E(s)}</button>`).join('')}</div></div>`:''}<label class="lab" for="rp" style="display:block">Mobile number (WhatsApp)</label><div class="fld"><input id="rp" type="tel" maxlength="10" value="${E(S.r.ph)}" oninput="S.r.ph=this.value.replace(/\\D/g,'')" placeholder="10 digits"></div><label class="lab" for="rdob" style="display:block">Date of birth</label><div class="fld"><input id="rdob" type="date" value="${E(S.r.dob)}" oninput="S.r.dob=this.value"></div><p class="lab">Account type</p><div class="seg">${['Personal','Merchant'].map(x=>`<button type="button" data-a="rtype" data-v="${x}" aria-pressed="${S.r.type==x}">${x}</button>`).join('')}</div><button type="button" class="pri" style="margin-top:18px" data-a="rnext">Continue to PIN</button><p class="sub">Already registered? <button type="button" class="lk" data-a="go" data-v="login">Log in</button></p></div></div>`
+:`<div class="auth"><div class="card"><button type="button" class="x" style="position:static;margin-bottom:8px" data-a="rback" aria-label="Back">${ic('back',18)}</button><h2>Create a 4-digit PIN</h2><p class="sub" style="margin:-8px 0 8px">${E(S.r.name)} · ${E(shortId(S.r.id))}@rpay</p>${dots()}${pad('k')}<button type="button" class="pri" data-a="auth">Sign Up (K 500 Bonus)</button></div></div>`;
 
-        // Register Step Logic
-        function proceedToRegPin() {
-            const name = $('reg-name').value.trim();
-            const phone = $('reg-phone').value.replace(/\D/g, '');
-            const dob = $('reg-dob').value;
-            let rawHandle = $('reg-custom-id').value.trim().toLowerCase();
+/* ---- BOSS0 OPERATOR CONSOLE ---- */
+const bossScreen=()=>{
+  const ledger = loadLedger();
+  const users = Object.values(ledger.accounts).filter(u => u.id !== 'Boss0');
+  const allTx = [];
+  users.forEach(u => {
+    (u.tx || []).forEach(t => {
+      if (t.a < 0) allTx.push({ ref: t.ref, sender: u.id, receiver: t.id || t.n, amt: Math.abs(t.a), time: `${t.d}, ${t.t}` });
+    });
+  });
 
-            // Strip @rpay if user typed it into the input box
-            rawHandle = rawHandle.replace(/@rpay$/, '').replace(/[^a-z0-9._]/g, '');
+  return `<div class="boss-wrap">
+    <div class="boss-hdr">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><span class="pill" style="background:rgba(34,211,238,.2)">BOSS0 ROOT CONSOLE</span><h1 style="margin-top:8px;font-size:24px">Kinex Network Authority</h1></div>
+        <button type="button" class="mini dan" data-a="logout">Exit</button>
+      </div>
+      <div class="fld" style="margin-top:14px;background:rgba(0,0,0,.35);border-color:rgba(34,211,238,.4)">
+        <span style="font-size:12px;color:var(--cy)">Master Secret:</span>
+        <input type="password" value="${E(S.adminSecret)}" oninput="S.adminSecret=this.value" style="color:#fff;font-size:13px">
+      </div>
+    </div>
 
-            if (!name) return alert("Please enter your Full Legal Name.");
-            if (phone.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
-            if (!dob) return alert("Please select your Date of Birth.");
-            
-            if (!rawHandle) rawHandle = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-            if (!rawHandle) rawHandle = "user" + Math.floor(Math.random() * 9000 + 1000);
+    <div class="boss-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><b>Global Network Maintenance Lock</b><p style="font-size:12px;color:var(--m)">Pauses all user peer-to-peer transfers</p></div>
+        <button type="button" class="sw ${ledger.maintenance?'on':''}" data-a="bossmaint"><i></i></button>
+      </div>
+    </div>
 
-            selectedUpi = rawHandle + '@rpay';
+    <div class="boss-card">
+      <h3 style="margin-bottom:10px;font-size:16px">Mint / Adjust User Balance</h3>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr auto;gap:8px">
+        <div class="fld" style="height:42px"><input placeholder="user@rpay" value="${E(S.bossTargetId)}" oninput="S.bossTargetId=this.value"></div>
+        <div class="fld" style="height:42px"><input type="number" placeholder="+/- K Amt" value="${E(S.bossMintAmt)}" oninput="S.bossMintAmt=this.value"></div>
+        <button type="button" class="mini okb" style="height:42px" data-a="bossmint">Apply</button>
+      </div>
+    </div>
 
-            $('reg-name-display').innerText = name;
-            $('reg-handle-display').innerText = selectedUpi;
-            $('reg-pin').value = "";
-            $('reg-step-1').classList.add('hidden');
-            $('reg-step-2').classList.remove('hidden');
-        }
+    <div class="boss-card">
+      <h3 style="margin-bottom:8px;font-size:16px">Registered Accounts (${users.length})</h3>
+      ${users.map(u => `<div class="row">
+        ${av(u.n,0,38)}
+        <div class="mt"><b>${E(u.n)} <span style="font-size:11px;color:${u.status==='FROZEN'?'var(--neg)':'var(--pos)'}">(${E(u.status||'ACTIVE')})</span></b><span>${E(u.id)} · K ${fm(u.bal)}</span></div>
+        <button type="button" class="mini ${u.status==='FROZEN'?'okb':'dan'}" data-a="bossfreeze" data-v="${E(u.id)}">${u.status==='FROZEN'?'Unfreeze':'Freeze'}</button>
+      </div>`).join('')}
+    </div>
 
-        function backToRegStep1() {
-            $('reg-step-2').classList.add('hidden');$('reg-step-1').classList.remove('hidden');
-        }
+    <div class="boss-card">
+      <h3 style="margin-bottom:8px;font-size:16px">Recent Ledger Transfers (Clawback)</h3>
+      ${allTx.slice(0,12).map(t => `<div class="row">
+        <div class="mt"><b>${E(t.sender)} → ${E(t.receiver)}</b><span>K ${fm(t.amt)} · ${E(t.ref)} · ${E(t.time)}</span></div>
+        <button type="button" class="mini dan" data-a="bossclaw" data-v="${E(t.ref)}">Reverse</button>
+      </div>`).join('') || '<p class="sub">No user transfers recorded yet.</p>'}
+    </div>
+  </div>`;
+};
 
-        function selectSuggestion(suggestedHandle) {
-            selectedUpi = suggestedHandle;
-            const customInput = $('reg-custom-id');
-            if (customInput) {
-                customInput.value = suggestedHandle.replace('@rpay', '');
-                customInput.dataset.manualEdited = "true";
-            }
-            proceedToRegPin();
-        }
+/* ---- MAIN CONSUMER SCREENS ---- */
+const home=()=>`<header class="hero"><div class="coin" aria-hidden="true">K</div><div class="top"><div class="who">${av(S.u.n,0,46)}<div><b>${E(S.u.n)}</b><button type="button" class="hd" data-a="copy">${E(S.u.id)}@rpay ${ic('copy',14)}</button></div></div><button type="button" class="ib" data-a="bell" aria-label="Notifications">${ic('bell',20)}${S.unreadAlert?'<i class="dot"></i>':''}</button></div><div class="bal"><div class="lr">Kinex balance<button type="button" class="eye" data-a="hide" aria-label="${S.hide?'Show':'Hide'} balance">${ic(S.hide?'eyeoff':'eye',18)}</button></div><p class="amt"><span>K</span><b>${S.hide?'••••••':fm(S.bal)}</b></p></div></header>
+<nav class="acts" aria-label="Quick actions">${[['pay','Pay','pay',1],['qr','My QR','qr'],['book','Passbook','go'],['earn','Earn','earn']].map(([i,l,a,p])=>`<button type="button" class="act ${p?'p':''}" data-a="${a=='go'?'go':a}" data-v="book"><i>${ic(i,24)}</i>${l}</button>`).join('')}</nav>
+<section class="sec" aria-labelledby="rh"><div class="shd"><h2 id="rh">Recent activity</h2><button type="button" class="lnk" data-a="go" data-v="book">See all</button></div><div class="list">${S.tx.slice(0,4).map((t,i)=>txRow(t,i)).join('')||'<p class="sub" style="padding:18px 0">No transactions yet.</p>'}</div></section>`;
 
-        async function register() {
-            const name = $('reg-name').value.trim();
-            const phone = $('reg-phone').value.replace(/\D/g, '');
-            const dob = $('reg-dob').value;
-            const account_type = $('reg-account-type').value;
-            const pin = $('reg-pin').value;
+const people=()=>`<div class="ph"><h1>People</h1></div><label class="srch">${ic('search',18)}<input placeholder="Search name or Kinex ID" aria-label="Search people" oninput="flt(this.value)"></label><div class="sec" style="margin-top:14px"><div class="list">${S.ppl.map((p,i)=>`<div class="row" data-n="${E((p.n+p.id).toLowerCase())}">${av(p.n,i)}<span class="mt"><b>${E(p.n)}</b><span>${E(p.id)}</span></span><button type="button" class="mini" data-a="to" data-v="${i}">Pay</button></div>`).join('')||'<p class="sub" style="padding:16px 0">No other users found.</p>'}</div><button type="button" class="lo" style="color:var(--ac)" data-a="soon" data-v="Directory auto-syncs all verified @rpay users">${ic('users',20)}Verified Directory</button></div>`;
 
-            if (pin.length !== 4) return alert("Please tap a 4-digit PIN.");
+const book=()=>{
+  const g={},[i,o]=sums();
+  S.tx.forEach((t,k)=>{
+    if(S.f=='in'&&t.a<0||S.f=='out'&&t.a>0)return;
+    (g[t.d]=g[t.d]||[]).push(txRow(t,k));
+  });
+  return `<div class="ph"><h1>Passbook</h1></div><div class="sum"><div><span>Received</span><b style="color:var(--pos)">K ${fm(i)}</b></div><div><span>Sent</span><b style="color:var(--neg)">K ${fm(o)}</b></div></div><div class="chips" role="group" aria-label="Filter">${[['all','All'],['in','Received'],['out','Sent']].map(([k,l])=>`<button type="button" class="chip" data-a="f" data-v="${k}" aria-pressed="${S.f==k}">${l}</button>`).join('')}</div>${Object.keys(g).map(d=>`<div class="gl">${E(d)}</div><div class="list">${g[d].join('')}</div>`).join('')||'<p class="sub" style="margin-top:40px">No transactions here yet.</p>'}`;
+};
 
-            // Activate loading overlay
-            $('load-title').innerText = "Creating Account...";
-            $('load-desc').innerText = "Verifying KYC & Generating Kinex Wallet";
-            $('loading-screen').classList.remove('hidden');
+const swt=(i,l,k)=>`<div class="row"><span class="bd">${ic(i,20)}</span><span class="mt"><b>${l}</b></span><button type="button" class="sw ${S[k]?'on':''}" role="switch" aria-checked="${!!S[k]}" aria-label="${l}" data-a="sw" data-v="${k}"><i></i></button></div>`;
+const lk=l=>`<button type="button" class="row" data-a="soon" data-v="${l}"><span class="mt"><b>${l}</b></span>${ic('chev',18)}</button>`;
+const me=()=>`<div class="ph"><h1>Profile</h1></div><div class="sec" style="margin-top:12px"><div class="pc">${av(S.u.n,0,60)}<div><b class="h">${E(S.u.n)}</b><span>${E(S.u.id)}@rpay</span><em>KYC verified · ${E(S.u.type||'Personal')} wallet</em></div></div><div class="list" style="margin-top:14px">${swt('moon','Dark mode','dark')}${swt('bell','Payment alerts','notif')}${swt('shield','Biometric unlock','bio')}${lk('Change PIN')}${lk('Help and support')}</div><button type="button" class="lo" data-a="logout">${ic('out',20)}Log out</button></div>`;
 
-            try {
-                const res = await fetch('/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        upi_id: selectedUpi,
-                        name,
-                        pin,
-                        phone,
-                        dob,
-                        account_type
-                    })
-                });
-                const data = await res.json();
-                $('loading-screen').classList.add('hidden');
+const tab=([i,v,l])=>`<button type="button" class="tab" data-a="go" data-v="${v}" ${S.scr==v?'aria-current="page"':''}>${ic(i)}${l}</button>`;
+const nav=()=>`<nav class="nav" aria-label="Main">${[['home','home','Home'],['users','people','People']].map(tab).join('')}<button type="button" class="tab sc" data-a="scan" aria-label="Scan QR"><i class="fab">${ic('scan',26)}</i>Scan</button>${[['book','book','Passbook'],['user','me','Profile']].map(tab).join('')}</nav>`;
+const main=()=>`<main class="app">${{home,people,book,me}[S.scr]()}</main>${nav()}`;
 
-                if (data.success) {
-                    alert(`Account Created Successfully!\n\nYour Kinex ID: ${data.upi_id}\nStarting Balance: K 500.00 Bonus`);
-                    toggleAuth('login');
-                    $('reg-name').value = "";
-                    $('reg-phone').value = "";
-                    $('reg-dob').value = "";
-                    $('reg-custom-id').value = "";
-                    $('reg-pin').value = "";
-                    if ($('reg-custom-id')) delete$('reg-custom-id').dataset.manualEdited;
-                } else {
-                    if (data.suggestions) {
-                        backToRegStep1();
-                        $('suggestion-box').classList.remove('hidden');$('suggestion-buttons').innerHTML = data.suggestions.map(s => 
-                            `<button type="button" style="background:var(--tile); color:var(--accent); border:1px solid var(--line); border-radius:6px; padding:6px 12px; font-size:13px; font-weight:600; cursor:pointer;" onclick="selectSuggestion('${escapeHTML(s)}')">${escapeHTML(s)}</button>`
-                        ).join('');
-                    } else {
-                        alert(data.error || "Registration failed.");
-                    }
-                }
-            } catch (e) {
-                $('loading-screen').classList.add('hidden');
-                alert("Network error. Please ensure the server is online.");
-            }
-        }
-        function selectSuggestion(suggestedUpi) { selectedUpi = suggestedUpi; proceedToRegPin(); }
+/* ---- QR GENERATOR ---- */
+function fallbackSvgQr(){
+  const n=25;let s=7,o='';const r=()=>(s=(s*9301+49297)%233280)/233280;
+  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+    let on,f=0;
+    for(const[a,b]of[[0,0],[n-7,0],[0,n-7]])if(x>=a&&x<a+7&&y>=b&&y<b+7){const i=x-a,j=y-b;f=1;on=i%6==0||j%6==0||(i>1&&i<5&&j>1&&j<5)}
+    if(!f)on=((x<8&&y<8)||(x>n-9&&y<8)||(x<8&&y>n-9))?0:r()>.52;
+    if(on)o+=`<rect x="${x}" y="${y}" width="1.02" height="1.02"/>`;
+  }
+  return `<svg viewBox="0 0 ${n} ${n}" width="190" height="190" fill="#04142A" role="img" aria-label="Your Kinex QR code">${o}</svg>`;
+}
+function renderRealQR(){
+  const box = $('#live-qr-box');
+  if (!box) return;
+  const reqAmt = parseFloat(S.qrReqAmt);
+  let payload = `${S.u.id}@rpay`;
+  if (Number.isFinite(reqAmt) && reqAmt >= 1) {
+    const cleanAmt = Math.round(reqAmt * 100) / 100;
+    payload = `upi://pay?pa=${encodeURIComponent(S.u.id+'@rpay')}&am=${cleanAmt}`;
+  }
+  if (window.QRCode) {
+    box.innerHTML = '';
+    new QRCode(box, { text: payload, width: 190, height: 190, colorDark: '#04142A', colorLight: '#ffffff' });
+  } else {
+    box.innerHTML = fallbackSvgQr();
+  }
+}
 
-        async function login() {
-    const upi_id = $('log-upi').value.trim();
-    const pin = $('log-pin').value;
-    if (upi_id !== 'Boss0' && pin.length !== 4) return alert("Please tap your 4-digit PIN.");
-    if (upi_id === 'Boss0' && pin.length < 4) return alert("Please enter your Operator Password.");
-    
-    // 1. Show Loading Screen
-    $('load-title').innerText = "Authenticating...";
-    $('load-desc').innerText = "Verifying ID & Security Credentials";
-    $('loading-screen').classList.remove('hidden');
+/* ---- PAY, QR, PASSBOOK DETAIL & EARN QUEST SHEETS ---- */
+function payV(){
+  const p=S.pay, a=Math.round((parseFloat(p.amt)||0)*100)/100;
+  const maxSpendable = Math.max(0, S.bal - 50);
+  let errMsg = '';
+  if (S.u.status === 'FROZEN') errMsg = 'Your account is frozen by Network Security';
+  else if (a > S.bal) errMsg = `Amount is more than your balance (K ${fm(S.bal)})`;
+  else if (a > 0 && S.bal - a < 50) errMsg = `Minimum K 50.00 reserve must remain in your wallet`;
+
+  if(p.step=='who') return `<h3>Pay to</h3><div class="list" style="box-shadow:none;padding:0">${S.ppl.map((q,i)=>`<button type="button" class="row" data-a="to" data-v="${i}">${av(q.n,i)}<span class="mt"><b>${E(q.n)}</b><span>${E(q.id)}</span></span>${ic('chev',18)}</button>`).join('')}</div>`;
+  if(p.step=='amt') return `<div class="who2">${av(p.to.n,0,44)}<div><b>${E(p.to.n)}</b><br><span style="font-size:13px;color:var(--m)">${E(p.to.id)}</span></div></div><div class="big"><span>K</span>${E(p.amt||'0')}</div><p class="err">${E(errMsg)}</p>${p.locked ? `<div class="locked-banner">🔒 Fixed QR Amount (Cannot be edited)</div>` : `<div class="qc">${[50,100,500].map(v=>`<button type="button" class="mini" data-a="qa" data-v="${v}">+ ${v}</button>`).join('')}</div>${pad('ak',1)}`}<button type="button" class="pri" data-a="cont" ${a<1||a>maxSpendable||S.u.status==='FROZEN'?'disabled':''}>Pay K ${fm(a)}</button>`;
+  if(p.step=='pin') return `<h3>Confirm with PIN</h3><p class="sub" style="margin:-6px 0 6px;text-align:left">Paying K ${fm(a)} to ${E(p.to.n)}</p>${dots()}${pad('k')}`;
+  if(p.step=='proc') return `<div class="ctr"><div class="spin"></div><h3 style="padding:0">Sending K ${fm(a)}</h3><p>Securing your payment…</p></div>`;
+  return `<div class="ctr"><div class="ok">${ic('check',40)}</div><h3 style="padding:0">Payment sent</h3><div class="big"><span>K</span>${fm(a)}</div></div><div style="margin-top:12px"><div class="kv"><span>To</span><b>${E(p.to.n)}</b></div><div class="kv"><span>Kinex ID</span><b>${E(p.to.id)}</b></div><div class="kv"><span>Reference</span><b>${E(p.ref)}</b></div></div><div class="two"><button type="button" data-a="soon" data-v="Receipt shared">Share receipt</button><button type="button" data-a="close" style="background:linear-gradient(135deg,var(--cy),var(--bl));color:#04142A">Done</button></div>`;
+}
+
+function earnV(){
+  const claimed = S.u.claimed || [];
+  return `<h3>Earn Kinex Quests</h3><p class="sub" style="margin:-10px 0 14px;text-align:left">Complete network milestones to claim instant Kinex rewards into your passbook.</p>` +
+    QUEST_LIST.map(q => {
+      const isClaimed = claimed.includes(q.id);
+      const unlocked = q.check(S.tx, S.bal);
+      const pct = Math.round(q.prog(S.tx, S.bal));
+      return `<div class="q-card">
+        <div class="q-top"><b>${E(q.title)}</b><span class="mini ${isClaimed?'okb':''}">+ K ${q.reward}</span></div>
+        <p style="font-size:13px;color:var(--m)">${E(q.desc)}</p>
+        <div class="q-bar"><i style="width:${pct}%"></i></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <span style="font-size:12px;color:var(--m)">${pct}% completed</span>
+          ${isClaimed
+            ? `<span style="font-size:12px;font-weight:700;color:var(--pos)">✓ Claimed</span>`
+            : `<button type="button" class="mini" data-a="claimq" data-v="${q.id}" ${!unlocked?'disabled style="opacity:.45"':''}>Claim K ${q.reward}</button>`
+          }
+        </div>
+      </div>`;
+    }).join('');
+}
+
+const sheetV=()=>{
+  const p=S.pay;let c='';
+  if(S.sheet=='pay') c=payV();
+  else if(S.sheet=='earn') c=earnV();
+  else if(S.sheet=='qr'){
+    const reqAmt = parseFloat(S.qrReqAmt);
+    const hasAmt = Number.isFinite(reqAmt) && reqAmt >= 1;
+    c=`<h3>Your Kinex QR</h3><div class="qr" id="live-qr-box">${fallbackSvgQr()}</div><p class="ctr" style="font-weight:700">${E(S.u.id)}@rpay${hasAmt?` · K ${fm(reqAmt)}`:''}</p><p class="ctr" style="font-size:13px;margin-top:2px">${hasAmt?'Payer keypad will be locked to this amount':'Anyone can scan this to pay you'}</p><div class="fld" style="margin-top:12px;height:44px"><input type="number" min="1" placeholder="Optional: Set exact amount (K)" value="${E(S.qrReqAmt)}" oninput="updateQrReqAmt(this.value)">${S.qrReqAmt?`<button type="button" class="mini" data-a="clearqramt">Clear</button>`:''}</div><div class="two"><button type="button" data-a="copy">Copy ID</button><button type="button" data-a="soon" data-v="QR saved">Save image</button></div>`;
+  } else {
+    const t=S.tx[S.txi]||{n:'Transaction',d:'Today',t:'',a:0,ref:'KX00000000'};
+    const refCode = t.ref || ('KX'+(t.n.length*7919+Math.abs(t.a)*31).toString().padStart(8,'0'));
+    c=`<h3>${t.a>0?'Received':'Sent'}</h3><div class="ctr"><div class="big" style="color:${t.a>0?'var(--pos)':'var(--neg)'}"><span style="color:inherit">${t.a>0?'+':'−'} K</span>${fm(Math.abs(t.a))}</div><p>${E(t.n)}</p></div><div style="margin-top:14px"><div class="kv"><span>Date</span><b>${E(t.d)}, ${E(t.t)}</b></div><div class="kv"><span>Status</span><b style="color:var(--pos)">Completed</b></div><div class="kv"><span>Reference</span><b>${E(refCode)}</b></div></div><div class="two"><button type="button" data-a="soon" data-v="Report sent to support">Report issue</button><button type="button" data-a="again" data-v="${S.txi}" ${t.a>0?'disabled style="opacity:.45"':''}>Pay again</button></div>`;
+  }
+  return `<div class="ov" data-a="close"><div class="sheet ${S.fresh?'anim':''}" role="dialog" aria-modal="true">${p&&p.step=='proc'?'':`<button type="button" class="x" data-a="close" aria-label="Close">${ic('x',18)}</button>`}${c}</div></div>`;
+};
+
+const scanV=()=>{
+  const camLbl = `${S.facing=='environment'?'Back Cam':'Front Cam'} · ${S.torch?'Torch ON':'Torch Off'}`;
+  if (S.scanStage === 'standby') {
+    return `<div class="cam" role="dialog" aria-label="Scan QR"><div id="cam-reader" class="hidden"></div><div class="cbar"><button type="button" class="cb" data-a="scanx" aria-label="Close scanner">${ic('back')}</button><span class="pill">${camLbl}</span><button type="button" class="cb ${S.torch?'on':''}" data-a="torch" aria-label="Torch" aria-pressed="${S.torch}">${ic('flash')}</button></div><div class="vf"><div class="cb" style="width:74px;height:74px;border-color:var(--cy);color:var(--cy)">${ic('scan',34)}</div><h3 style="font-size:20px">Camera Ready</h3><p style="font-size:13px;color:rgba(255,255,255,.7);max-width:260px">Adjust Torch, Flip Camera, or pick from Files below. Tap the center Shutter button to start scanning.</p></div><div class="cdeck"><button type="button" class="cl" data-a="qrgallery"><span class="cb">${ic('img')}</span>Files</button><button type="button" class="shut" data-a="armscan" aria-label="Start scanning"><i>${ic('scan',30)}</i></button><button type="button" class="cl" data-a="flipcam"><span class="cb">${ic('flip')}</span>Flip Cam</button></div></div>`;
+  }
+  return `<div class="cam" role="dialog" aria-label="Scan QR"><div id="cam-reader"></div><div class="cbar"><button type="button" class="cb" data-a="scanx" aria-label="Close scanner">${ic('back')}</button><span class="pill" id="live-scan-pill">Align QR code inside square</span><span style="width:48px"></span></div><div class="vf"><div class="ret"><i class="tl1"></i><i class="tr1"></i><i class="bl1"></i><i class="br1"></i><span class="laser"></span></div><button type="button" class="pill" data-a="sim" style="cursor:pointer;pointer-events:auto">Tap to simulate QR scan</button></div><div class="cdeck" style="justify-content:center;min-height:40px"></div></div>`;
+};
+
+function render(){
+  const y=scrollY;
+  $('#app').innerHTML=(S.scr=='login'?login():S.scr=='reg'?reg():S.scr=='boss'?bossScreen():main())+(S.sheet?sheetV():'')+(S.scan?scanV():'');
+  S.fresh=false;
+  if (S.sheet === 'qr') renderRealQR();
+  scrollTo(0,S.top?0:y);
+  S.top=false;
+}
+
+function updateQrReqAmt(val){
+  S.qrReqAmt = val;
+  renderRealQR();
+}
+function onRegNameInput(val){
+  S.r.name = val;
+  if (!S.r.manual) {
+    S.r.id = val.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const ri = $('#ri');
+    if (ri) ri.value = S.r.id;
+  }
+}
+const flt=q=>document.querySelectorAll('[data-n]').forEach(r=>r.hidden=!r.dataset.n.includes(q.toLowerCase().trim()));
+
+const openPay=(to, step='amt', lockedAmt=null)=>{
+  if (to && to.id && to.id.toLowerCase() === S.u.fullId.toLowerCase()) {
+    return T('Security Block: You cannot pay your own Kinex ID');
+  }
+  S.sheet='pay';
+  const hasLock = lockedAmt !== null && lockedAmt !== undefined && lockedAmt !== '';
+  S.pay={
+    to,
+    amt: hasLock ? String(Math.round(parseFloat(lockedAmt)*100)/100) : '',
+    locked: hasLock,
+    step
+  };
+  S.ctx='pay';
+  S.pin='';
+  S.fresh=true;
+};
+
+/* ---- TWO-STAGE CAMERA CONTROLLER ---- */
+let html5QrInstance = null;
+async function startLiveCamera(){
+  if (!window.Html5Qrcode) return;
+  try {
+    const readerEl = $('#cam-reader');
+    if (!readerEl) return;
+    if (!html5QrInstance) html5QrInstance = new Html5Qrcode('cam-reader');
+    if (html5QrInstance.isScanning) await html5QrInstance.stop();
+    await html5QrInstance.start(
+      { facingMode: S.facing },
+      { fps: 12, qrbox: { width: 230, height: 230 } },
+      (decodedText) => handleScannedPayload(decodedText),
+      () => {}
+    );
+    if (S.torch && S.facing === 'environment') {
+      try { await html5QrInstance.applyVideoConstraints({ advanced: [{ torch: true }] }); } catch(e){}
+    }
+  } catch (e) {
+    const pill = $('#live-scan-pill');
+    if (pill) pill.textContent = 'Preview mode · Tap below to simulate scan';
+  }
+}
+async function stopLiveCamera(){
+  try {
+    if (html5QrInstance && html5QrInstance.isScanning) await html5QrInstance.stop();
+  } catch (e) {}
+  S.scan = false;
+  S.scanStage = 'standby';
+}
+async function handleScannedPayload(rawText){
+  await stopLiveCamera();
+  const raw = String(rawText||'').trim();
+  let targetId = '';
+  let lockedAmt = null;
+
+  if (raw.toLowerCase().startsWith('upi://pay')) {
+    const qs = raw.split('?')[1] || '';
+    const params = new URLSearchParams(qs);
+    targetId = cleanHandle(params.get('pa') || '');
+    lockedAmt = params.get('am');
+  } else if (/^[a-z0-9._-]+@[a-z0-9]+$/i.test(raw)) {
+    targetId = cleanHandle(raw);
+  } else {
+    render();
+    return T('Unrecognized QR code. Scan a valid @rpay QR.');
+  }
+  if (!targetId) { render(); return T('Invalid Kinex QR code'); }
+  if (targetId.toLowerCase() === S.u.fullId.toLowerCase()) { render(); return T('You cannot scan and pay your own QR code'); }
+
+  const found = S.ppl.find(p => p.id.toLowerCase() === targetId.toLowerCase()) || {
+    n: shortId(targetId)[0].toUpperCase() + shortId(targetId).slice(1),
+    id: targetId
+  };
+  openPay(found, 'amt', lockedAmt);
+  render();
+}
+$('#qr-file-input').addEventListener('change', async (ev) => {
+  const file = ev.target.files[0];
+  if (!file || !window.Html5Qrcode) return;
+  try {
+    await stopLiveCamera();
+    const fs = new Html5Qrcode('file-qr-reader');
+    const decoded = await fs.scanFile(file, true);
+    fs.clear();
+    ev.target.value = '';
+    handleScannedPayload(decoded);
+  } catch (e) {
+    ev.target.value = '';
+    T('No valid QR code found in that image');
+  }
+});
+
+/* ---- AUTH & DUAL-PASSBOOK PAYMENT EXECUTION ---- */
+async function pinDone(){
+  const enteredPin = S.pin;
+  S.pin = '';
+
+  // 1. LOGIN
+  if (S.ctx === 'login') {
+    const fullId = cleanHandle(S.lid || 'ridhaan');
+    const short = shortId(fullId);
+    const ledger = loadLedger();
 
     try {
-        const res = await fetch('/login', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify({ upi_id, pin }) 
-        });
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ upi_id: fullId, pin: enteredPin })
+      });
+      if (res.ok) {
         const data = await res.json();
-        
-        // 2. Hide Loading Screen
-        $('loading-screen').classList.add('hidden');
-        
         if (data.success) {
-            if (data.user.status === 'FROZEN') return alert("Your account is temporarily frozen by security. Contact support.");
-            currentUser = upi_id; 
-            currentPin = pin;
-            $('auth-screen').classList.add('hidden');
-            
-            if (currentUser === 'Boss0') {
-                $('owner-screen').classList.remove('hidden');
-                adminViewUsers();
-                adminLoadTransactions();
-            } else {
-                currentName = data.user.name;
-                
-                // Save session to localStorage so refresh doesn't log the user out
-                localStorage.setItem('rpay_currentUser', currentUser);
-                localStorage.setItem('rpay_currentName', currentName);
-                
-                $('dashboard-screen').classList.remove('hidden');
-                
-                $('nav-name').innerText = currentName;
-                $('nav-avatar').innerText = currentName.charAt(0).toUpperCase();
-                $('nav-id').innerText = currentUser;
-                
-                $('qr-upi-label').innerText = currentUser;
-                $("qrcode").innerHTML = "";
-                new QRCode($("qrcode"), { text: currentUser, width: 200, height: 200 });
-                
-                updateBalance(); 
-                loadHistory();
-                checkSystemNotices();
-            }
-        } else {
-            alert(data.error);
-            $('log-pin').value = "";
+          S.u = { n: data.name || (short[0].toUpperCase()+short.slice(1)), id: short, fullId, type: data.account_type === 'MERCHANT' ? 'Merchant' : 'Personal', status: data.status || 'ACTIVE', claimed: [] };
+          S.scr = 'home'; S.top = true;
+          await syncUserPassbook(false);
+          render();
+          return T('Welcome back, ' + S.u.n);
         }
-    } catch (e) { 
-        $('loading-screen').classList.add('hidden');
-        alert("Network error. Please ensure server is running."); 
+      }
+    } catch (e) {}
+
+    if (!ledger.accounts[fullId]) {
+      ledger.accounts[fullId] = {
+        id: fullId, n: short[0].toUpperCase() + short.slice(1), pin: enteredPin,
+        ph: '9000000000', dob: '2000-01-01', type: 'Personal', status: 'ACTIVE', bal: 500, claimed: [],
+        tx: [{ n: 'Welcome bonus', id: 'system@rpay', d: 'Today', t: tm(), a: 500, ref: 'KX' + Math.floor(1e7 + Math.random() * 9e7) }]
+      };
+      saveLedger(ledger);
     }
+
+    const acc = ledger.accounts[fullId];
+    S.u = { n: acc.n, id: short, fullId: acc.id, type: acc.type || 'Personal', status: acc.status || 'ACTIVE', claimed: acc.claimed || [] };
+    S.bal = Number(acc.bal);
+    S.tx = acc.tx.slice();
+    S.ppl = Object.values(ledger.accounts).filter(x => x.id.toLowerCase() !== fullId && x.id !== 'Boss0').map(x => ({ n: x.n, id: x.id }));
+    S.lastSyncSig = `${S.bal}_${S.tx.length}_${S.tx[0]?S.tx[0].ref:''}_${S.u.status}`;
+    S.scr = 'home'; S.top = true;
+    render();
+    return T('Welcome back, ' + S.u.n);
+  }
+
+  // 2. REGISTER
+  if (S.ctx === 'reg') {
+    const fullId = cleanHandle(S.r.id);
+    const short = shortId(fullId);
+    const bonusRef = 'KX' + Math.floor(1e7 + Math.random() * 9e7);
+
+    try {
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          upi_id: fullId, name: S.r.name.trim(), pin: enteredPin,
+          phone: S.r.ph, dob: S.r.dob || '2005-01-01', account_type: S.r.type.toUpperCase()
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.success && data.suggestions) {
+          S.rs = 1; S.r.suggestions = data.suggestions;
+          render();
+          return T('That Kinex ID is taken. Choose a suggestion.');
+        }
+      }
+    } catch (e) {}
+
+    const ledger = loadLedger();
+    ledger.accounts[fullId] = {
+      id: fullId, n: S.r.name.trim(), pin: enteredPin, ph: S.r.ph, dob: S.r.dob || '2005-01-01',
+      type: S.r.type, status: 'ACTIVE', bal: 500, claimed: [],
+      tx: [{ n: 'Welcome bonus', id: 'system@rpay', d: 'Today', t: tm(), a: 500, ref: bonusRef }]
+    };
+    saveLedger(ledger);
+
+    S.u = { n: S.r.name.trim(), id: short, fullId, type: S.r.type, status: 'ACTIVE', claimed: [] };
+    S.bal = 500;
+    S.tx = ledger.accounts[fullId].tx.slice();
+    S.ppl = Object.values(ledger.accounts).filter(x => x.id.toLowerCase() !== fullId && x.id !== 'Boss0').map(x => ({ n: x.n, id: x.id }));
+    S.lastSyncSig = `${S.bal}_${S.tx.length}_${bonusRef}_ACTIVE`;
+    S.scr = 'home'; S.top = true;
+    await syncUserPassbook(false);
+    render();
+    return T('Account ready · K 500 bonus added');
+  }
+
+  // 3. PAYMENT (SYNCS BOTH SENDER & RECEIVER PASSBOOKS)
+  if (S.ctx === 'pay' && S.pay) {
+    if (S.isPaying) return;
+    const ledgerCheck = loadLedger();
+    if (ledgerCheck.maintenance) return T('Network is under maintenance. Transfers paused.');
+
+    S.isPaying = true;
+    S.pay.step = 'proc';
+    render();
+
+    const a = Math.round(parseFloat(S.pay.amt) * 100) / 100;
+    const senderId = S.u.fullId.toLowerCase();
+    const receiverId = cleanHandle(S.pay.to.id).toLowerCase();
+    const ref = 'KX' + Math.floor(1e7 + Math.random() * 9e7);
+    const nowTime = tm();
+
+    let backendError = null;
+    try {
+      const res = await fetch('/pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender: senderId, receiver: receiverId, pin: enteredPin, amount: a })
+      });
+      if (res.status === 400) {
+        const errData = await res.json();
+        if (errData && errData.error) backendError = errData.error;
+      }
+    } catch (e) {}
+
+    setTimeout(async () => {
+      S.isPaying = false;
+      if (!S.pay) return;
+      if (backendError) {
+        S.pay.step = 'amt';
+        render();
+        return T(backendError);
+      }
+
+      const ledger = loadLedger();
+      if (!ledger.accounts[senderId]) {
+        ledger.accounts[senderId] = { id: senderId, n: S.u.n, pin: '1234', bal: S.bal, type: S.u.type, status: 'ACTIVE', claimed: [], tx: S.tx.slice() };
+      }
+      if (!ledger.accounts[receiverId]) {
+        ledger.accounts[receiverId] = { id: receiverId, n: S.pay.to.n, pin: '1234', bal: 500, type: 'Personal', status: 'ACTIVE', claimed: [], tx: [] };
+      }
+      if (ledger.accounts[receiverId].status === 'FROZEN') {
+        S.pay.step = 'amt';
+        render();
+        return T('Receiver account is frozen and cannot accept funds.');
+      }
+
+      // Debit Sender & Prepend to Sender Passbook
+      ledger.accounts[senderId].bal = Math.round((Number(ledger.accounts[senderId].bal) - a) * 100) / 100;
+      ledger.accounts[senderId].tx.unshift({
+        n: ledger.accounts[receiverId].n || S.pay.to.n,
+        id: receiverId, d: 'Today', t: nowTime, a: -a, ref: ref
+      });
+
+      // Credit Receiver & Prepend to Receiver Passbook
+      ledger.accounts[receiverId].bal = Math.round((Number(ledger.accounts[receiverId].bal) + a) * 100) / 100;
+      ledger.accounts[receiverId].tx.unshift({
+        n: ledger.accounts[senderId].n || S.u.n,
+        id: senderId, d: 'Today', t: nowTime, a: +a, ref: ref
+      });
+
+      saveLedger(ledger);
+
+      S.bal = ledger.accounts[senderId].bal;
+      S.tx = ledger.accounts[senderId].tx.slice();
+      S.lastSyncSig = `${S.bal}_${S.tx.length}_${ref}_${S.u.status}`;
+      S.pay.ref = ref;
+      S.pay.step = 'ok';
+
+      await syncUserPassbook(true);
+      render();
+    }, 950);
+  }
 }
 
-        /* ---- DASHBOARD DATA BINDING ---- */
-        let hiddenBal = false;
-        let currentBalanceVal = 0;
-        try { hiddenBal = localStorage.getItem('kinex-hide-balance') === '1'; } catch (e) {}
-
-        function renderBalance(value) {
-            $('amount').textContent = hiddenBal ? '••••••' : fmt(value);
-            const eye = $('eye');
-            eye.innerHTML = hiddenBal ? ICON_EYE : ICON_EYE_OFF;
-            eye.setAttribute('aria-pressed', String(hiddenBal));
-            eye.setAttribute('aria-label', hiddenBal ? 'Show balance' : 'Hide balance');
-            $('amountWrap').setAttribute('aria-label', hiddenBal ? 'Balance hidden' : `Balance K ${fmt(currentBalanceVal)}`);
-        }
-
-        function countUp(targetBal) {
-            const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (reduce || hiddenBal) { renderBalance(targetBal); return; }
-            const start = performance.now(), dur = 900;
-            (function tick(now) {
-                const p = Math.min((now - start) / dur, 1);
-                renderBalance(targetBal * (1 - Math.pow(1 - p, 3)));
-                if (p < 1) requestAnimationFrame(tick);
-            })(start);
-        }
-
-        $('eye').addEventListener('click', () => {
-            hiddenBal = !hiddenBal;
-            try { localStorage.setItem('kinex-hide-balance', hiddenBal ? '1' : '0'); } catch (e) {}
-            renderBalance(currentBalanceVal);
-        });
-
-        $('copy-id').addEventListener('click', async () => {
-            try { await navigator.clipboard.writeText(currentUser); toast('Copied ' + currentUser); }
-            catch (e) { toast('Copy is not available here'); }
-        });
-
-        let busyBal = false;
-        async function updateBalance() {
-            if (busyBal) return;
-            busyBal = true;
-            $('balIco').classList.add('spin');$('amountWrap').classList.add('is-loading');
-            
-            try {
-                const res = await fetch('/balance/' + currentUser);
-                const data = await res.json();
-                currentBalanceVal = parseFloat(data.balance);
-                
-                setTimeout(() => {
-                    $('balIco').classList.remove('spin');$('amountWrap').classList.remove('is-loading');
-                    const time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-                    $('asof').textContent = `Updated ${time}`;
-                    toast('Balance is up to date');
-                    busyBal = false;
-                    countUp(currentBalanceVal);
-                }, 700);
-            } catch(e) {
-                busyBal = false;
-                $('balIco').classList.remove('spin');
-            }
-        }
-
-        async function loadHistory() {
-            const res = await fetch('/history/' + currentUser);
-            const data = await res.json();
-            
-            const list = $('list');
-            if (data.length === 0) {
-                list.innerHTML = '<li class="empty"><b>No activity yet</b>Pay someone or scan a QR to make your first transfer.</li>';
-            } else {
-                list.innerHTML = data.slice(0, 4).map(a => {
-                    const incoming = a.receiver === currentUser;
-                    const verb = incoming ? 'Received' : 'Sent';
-                    const sign = incoming ? '+' : '\u2212';
-                    const dir = incoming ? 'in' : 'out';
-                    const who = incoming ? a.sender : a.receiver;
-                    const dateStr = new Date(a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                    
-                    return `<li class="row ${dir}">
-                        <span class="badge" aria-hidden="true">${incoming ? ICON_IN : ICON_OUT}</span>
-                        <div class="meta"><b>${escapeHTML(who)}</b><span>${verb} on ${dateStr}</span></div>
-                        <span class="amt" aria-label="${verb} K ${fmt(parseFloat(a.amount))}">${sign}K ${fmt(parseFloat(a.amount))}</span>
-                    </li>`;
-                }).join('');
-            }
-
-            $('full-history-list').innerHTML = data.length === 0 ? "<p>No records found.</p>" : data.map(t => {
-                const isSender = t.sender === currentUser;
-                const safeTarget = escapeHTML(isSender ? t.receiver : t.sender);
-                return `<div class="card" style="margin-bottom:0; padding:15px; display:flex; justify-content:space-between;">
-                    <div><div style="font-weight:600; font-size:14px;">${isSender ? "To: " : "From: "}${safeTarget}</div><div style="font-size:11px; color:var(--muted);">${new Date(t.created_at).toLocaleDateString()}</div></div>
-                    <div style="font-weight:800; font-size:15px; color:${isSender ? 'var(--neg)' : 'var(--pos)'};">${isSender ? '- ' : '+ '}K ${fmt(parseFloat(t.amount))}</div>
-                </div>`;
-            }).join('');
-        }
-
-        // Action routing for new UI buttons
-        document.addEventListener('click', e => {
-            const btn = e.target.closest('[data-action]');
-            if (!btn) return;
-            const action = btn.dataset.action;
-            if (action === 'balance') return updateBalance();
-            if (action === 'home') return window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (action === 'pay') return openUnifiedPayModal();
-            if (action === 'qr') return openModal('qrModal');
-            if (action === 'passbook') return openModal('historyModal');
-            if (action === 'scan') return startScanner();
-            if (action === 'contacts') return openUnifiedPayModal();
-            if (action === 'me') {
-                $('profile-modal-name').innerText = currentName; 
-                $('profile-modal-upi').innerText = currentUser; 
-                $('profile-modal-avatar').innerText = currentName.charAt(0).toUpperCase(); 
-                
-                // Reset Profile Change PIN flow on open
-                cancelPinChange();
-                return openModal('profileModal');
-            }
-            if (action === 'logout') return logout();
-        });
-
-        let toastTimer;
-        function toast(msg) {
-            const t = $('toast'); t.textContent = msg; t.classList.add('show');
-            clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
-        }
-
-        /* ---- CONTACTS LIST ---- */
-        async function openUnifiedPayModal() {
-            openModal('unifiedPayModal');
-            $('contact-search').value = ""; $('pay-new-btn').style.display = 'none';
-            const res = await fetch('/directory/' + currentUser);
-            globalContacts = await res.json();
-            renderContacts(globalContacts);
-        }
-
-        function renderContacts(contactArray) {
-            const container = $('contacts-list');
-            if(contactArray.length === 0) { 
-                container.innerHTML = "<p style='color:var(--muted); text-align:center; font-size:13px;'>No users found.</p>"; 
-                return; 
-            }
-            container.innerHTML = contactArray.map(c => `
-                <div class="contact-row">
-                    <div style="display:flex; align-items:center; cursor:pointer;" onclick="closeModal('unifiedPayModal'); openScanPayScreen('${escapeHTML(c.upi_id)}')">
-                        <div class="contact-avatar">${escapeHTML(c.name).charAt(0).toUpperCase()}</div>
-                        <div>
-                            <div style="font-weight:600; font-size:14px; color:var(--text);">${escapeHTML(c.name)}</div>
-                            <div style="font-size:11px; color:var(--muted);">${escapeHTML(c.upi_id)}</div>
-                        </div>
-                    </div>
-                    <button class="btn-primary" style="padding: 6px 12px; margin:0; font-size:12px; width:auto;" onclick="closeModal('unifiedPayModal'); openScanPayScreen('${escapeHTML(c.upi_id)}')">Pay</button>
-                </div>
-            `).join('');
-        }
-
-        function filterContacts() {
-            const query = $('contact-search').value.toLowerCase().trim();
-            const btn = $('pay-new-btn');
-            if (query.includes('@')) { btn.style.display = 'block'; btn.innerText = "Pay New ID: " + escapeHTML(query); } 
-            else { btn.style.display = 'none'; }
-            renderContacts(globalContacts.filter(c => c.name.toLowerCase().includes(query) || c.upi_id.toLowerCase().includes(query)));
-        }
-
-        function paySearchedId() { 
-            closeModal('unifiedPayModal'); 
-            openScanPayScreen($('contact-search').value.trim()); 
-        }
-
-/* ---- PAYMENT EXECUTION (With Locked QR Amount & Security Checks) ---- */
-        let currentScanAmount = "0"; 
-        let currentScanReceiver = "";
-        let isScanAmountLocked = false;
-        let isPayingMutex = false;
-
-        function updateReceiveQR() {
-            if (!currentUser) return;
-            const reqAmt = parseFloat($('qr-req-amt') ?$('qr-req-amt').value : 0);
-            let qrData = currentUser;
-            if (Number.isFinite(reqAmt) && reqAmt > 0) {
-                const cleanAmt = Math.round(reqAmt * 100) / 100;
-                qrData = `upi://pay?pa=${encodeURIComponent(currentUser)}&am=${cleanAmt}`;
-                $('qr-upi-label').innerText = `${currentUser} • Requesting K ${fmt(cleanAmt)}`;
-            } else {
-                $('qr-upi-label').innerText = currentUser;
-            }
-            $("qrcode").innerHTML = "";
-            new QRCode($("qrcode"), { text: qrData, width: 200, height: 200 });
-        }
-        
-        function openScanPayScreen(upiId, lockedAmount = null) {
-            const cleanTarget = String(upiId || '').trim();
-            if (!cleanTarget || !cleanTarget.includes('@')) {
-                return toast("Invalid Kinex ID format.");
-            }
-            if (cleanTarget.toLowerCase() === currentUser.toLowerCase()) {
-                return alert("Security Block: You cannot pay your own Kinex ID.");
-            }
-
-            currentScanReceiver = cleanTarget;
-            $('scan-target-upi').innerText = cleanTarget;
-
-            // If QR code includes a valid amount, LOCK the numpad so user cannot edit it
-            if (lockedAmount !== null && lockedAmount !== undefined && lockedAmount !== "") {
-                const parsedAmt = Math.round(parseFloat(lockedAmount) * 100) / 100;
-                if (!Number.isFinite(parsedAmt) || parsedAmt < 1) {
-                    return alert("Invalid QR Code: Specified amount must be at least K 1.00.");
-                }
-                currentScanAmount = String(parsedAmt);
-                isScanAmountLocked = true;
-                $('scan-numpad-grid').classList.add('hidden');$('locked-amt-notice').classList.remove('hidden');
-            } else {
-                currentScanAmount = "0";
-                isScanAmountLocked = false;
-                $('scan-numpad-grid').classList.remove('hidden');$('locked-amt-notice').classList.add('hidden');
-            }
-
-            $('scan-amount-display').innerText = currentScanAmount;
-            $('scan-pay-screen').classList.remove('hidden');
-        }
-        
-        function closeScanPay() { 
-            isScanAmountLocked = false;
-            $('scan-pay-screen').classList.add('hidden'); 
-        }
-        
-        function numpad(val) {
-            // Security Guard: Ignore all keypad presses if QR amount is locked
-            if (isScanAmountLocked) return;
-
-            if (val === 'back') { 
-                currentScanAmount = currentScanAmount.slice(0, -1); 
-                if (currentScanAmount === "") currentScanAmount = "0"; 
-            } else { 
-                if (currentScanAmount === "0") currentScanAmount = val.toString(); 
-                else if (currentScanAmount.length < 6) currentScanAmount += val.toString(); 
-            }
-            $('scan-amount-display').innerText = currentScanAmount;
-        }
-        
-        function proceedToPin() {
-            const numericAmt = parseFloat(currentScanAmount);
-            if (!Number.isFinite(numericAmt) || numericAmt < 1) {
-                return alert("Please enter a valid amount (Minimum K 1.00).");
-            }
-            $('pin-confirm-amt').innerText = fmt(numericAmt);$('pin-confirm-upi').innerText = currentScanReceiver; 
-            $('scan-pay-pin').value = "";
-            openModal('pinConfirmModal');
-        }
-
-        async function executeScanPay() {
-            if (isPayingMutex) return; // Prevent double-tap race condition
-            const pin = $('scan-pay-pin').value;
-            if (pin.length !== 4) return alert("Tap your 4-digit PIN.");
-            
-            const finalAmount = Math.round(parseFloat(currentScanAmount) * 100) / 100;
-            if (!Number.isFinite(finalAmount) || finalAmount < 1) {
-                return alert("Invalid payment amount.");
-            }
-
-            isPayingMutex = true;
-            closeModal('pinConfirmModal'); 
-            $('scan-pay-screen').classList.add('hidden');$('load-title').innerText = "Processing Payment...";
-            $('load-desc').innerText = "Securely connecting to Kinex Network";
-            $('loading-screen').classList.remove('hidden');
-
-            try {
-                const res = await fetch('/pay', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({
-                        sender: currentUser, 
-                        receiver: currentScanReceiver, 
-                        pin: pin, 
-                        amount: finalAmount
-                    }) 
-                });
-                const data = await res.json();
-
-                setTimeout(() => {
-                    isPayingMutex = false;
-                    $('loading-screen').classList.add('hidden');
-                    if (data.success) {
-                        const audio = $('success-audio'); 
-                        if (audio) { audio.currentTime = 0; audio.play().catch(e => {}); }
-                        
-                        $('receipt-amount').innerText = "K " + fmt(finalAmount);
-                        $('receipt-receiver').innerText = escapeHTML(currentScanReceiver);$('receipt-sender').innerText = escapeHTML(currentUser);
-                        $('receipt-time').innerText = new Date().toLocaleString();$('success-screen').classList.remove('hidden');
-                    } else {
-                        const errorMsg = data.error || "Unknown error";
-                        if (errorMsg.toLowerCase().includes("frozen")) {
-                            alert("SECURITY ALERT: Account frozen for investigation.");
-                        } else {
-                            alert("Payment Failed: " + errorMsg);
-                        }
-                    }
-                }, 1200);
-            } catch (e) {
-                isPayingMutex = false;
-                $('loading-screen').classList.add('hidden');
-                alert("Network error processing payment.");
-            }
-        }
-
-        function closeSuccess() { $('success-screen').classList.add('hidden'); updateBalance(); loadHistory(); }
-
-        /* ---- TWO-STAGE CAMERA APP QR SCANNER ---- */
-        let html5QrCode = null;
-        let currentCameraFacing = "environment"; // 'environment' (back) or 'user' (front)
-        let isTorchOn = false;
-        let isScannerBusy = false;
-
-        function updateStandbyStatusLabel() {
-            const camName = currentCameraFacing === "environment" ? "Back Cam" : "Front Cam";
-            const torchState = isTorchOn ? "Torch ON ⚡" : "Torch Off";
-            $('cam-status-lbl').innerText = `${camName} • ${torchState}`;
-        }
-
-        // STAGE 1: Open the Camera Setup Screen (Does NOT start scanning yet)
-        async function startScanner() {
-            $('scannerModal').classList.remove('hidden');
-            
-            // Show all buttons (Torch, Bottom Deck, Standby Prompt) and hide the Reticle Square
-            $('cam-torch-btn').classList.remove('hidden');$('cam-bottom-deck').classList.remove('hidden');
-            $('cam-standby-prompt').classList.remove('hidden');$('cam-viewfinder').classList.add('hidden');
-            
-            updateStandbyStatusLabel();
-        }
-
-        // Pre-configure Front or Back Camera before pressing Shutter
-        function switchCameraFacing() {
-            currentCameraFacing = (currentCameraFacing === "environment") ? "user" : "environment";
-            if (currentCameraFacing === "user") {
-                isTorchOn = false; // Front camera doesn't use rear torch
-                $('cam-torch-btn').classList.remove('active-torch');
-            }
-            updateStandbyStatusLabel();
-            toast(currentCameraFacing === "user" ? "Switched to Front Camera" : "Switched to Back Camera");
-        }
-
-        // Pre-configure Torch ON/OFF before pressing Shutter
-        async function toggleCameraTorch() {
-            if (currentCameraFacing === "user") {
-                return toast("Flashlight is only available on the Back Camera.");
-            }
-            isTorchOn = !isTorchOn;
-            $('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
-            updateStandbyStatusLabel();
-
-            // If camera is already running, apply torch immediately
-            if (html5QrCode && html5QrCode.isScanning) {
-                try {
-                    await html5QrCode.applyVideoConstraints({ advanced: [{ torch: isTorchOn }] });
-                } catch (e) {
-                    isTorchOn = false;
-                    $('cam-torch-btn').classList.remove('active-torch');
-                    toast("Flashlight not supported on this device.");
-                }
-            }
-        }
-
-        // STAGE 2: Triggered when user presses the Center Shutter Button
-        async function activateLiveScanMode() {
-            if (isScannerBusy) return;
-            isScannerBusy = true;
-
-            if (navigator.vibrate) navigator.vibrate(40);
-
-            // 1. Hide all icons EXCEPT the Back button, and show the alignment square in the middle
-            $('cam-torch-btn').classList.add('hidden');
-            $('cam-bottom-deck').classList.add('hidden');$('cam-standby-prompt').classList.add('hidden');
-            $('cam-viewfinder').classList.remove('hidden');$('cam-status-lbl').innerText = "Align QR code inside square";
-
-            // 2. Start the live camera and scan
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode("reader");
-            }
-
-            try {
-                if (html5QrCode.isScanning) {
-                    await html5QrCode.stop();
-                }
-
-                await html5QrCode.start(
-                    { facingMode: currentCameraFacing },
-                    { fps: 12, qrbox: { width: 240, height: 240 }, aspectRatio: window.innerHeight / window.innerWidth },
-                    (decodedText) => {
-                        handleDecodedQR(decodedText);
-                    },
-                    (errorMessage) => {}
-                );
-
-                // If user enabled Torch on the setup screen, turn it on now
-                if (isTorchOn && currentCameraFacing === "environment") {
-                    try {
-                        await html5QrCode.applyVideoConstraints({ advanced: [{ torch: true }] });
-                    } catch (e) {}
-                }
-            } catch (err) {
-                toast("Camera access failed. Returning to setup screen.");
-                await startScanner(); // Return to Stage 1 so user can pick from Files instead
-            } finally {
-                isScannerBusy = false;
-            }
-        }
-
-        // Scan QR from Gallery / Files
-        async function scanQrFromFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            $('cam-status-lbl').innerText = "Reading image file...";
-
-            try {
-                if (html5QrCode && html5QrCode.isScanning) {
-                    await html5QrCode.stop();
-                }
-                const fileScanner = new Html5Qrcode("file-qr-reader");
-                const decodedText = await fileScanner.scanFile(file, true);
-                fileScanner.clear();
-                event.target.value = "";
-                handleDecodedQR(decodedText);
-            } catch (err) {
-                event.target.value = "";
-                alert("No valid QR code found in the selected photo.");
-                updateStandbyStatusLabel();
-            }
-        }
-
-        // Back Button Handler: stops camera and closes modal
-        async function stopScanner() {
-            try {
-                if (html5QrCode && html5QrCode.isScanning) {
-                    await html5QrCode.stop();
-                }
-            } catch (e) {}
-            $('scannerModal').classList.add('hidden');
-        }
-
-        async function handleDecodedQR(decodedText) {
-            if (navigator.vibrate) navigator.vibrate(50);
-            await stopScanner();
-
-            const raw = String(decodedText || '').trim();
-
-            // Case 1: Standard UPI URI (e.g., upi://pay?pa=merchant@rpay&am=250)
-            if (raw.toLowerCase().startsWith("upi://pay")) {
-                const queryString = raw.split('?')[1] || "";
-                const params = new URLSearchParams(queryString);
-                const pa = params.get('pa');
-                const am = params.get('am');
-
-                if (!pa || !pa.includes('@')) {
-                    return alert("Invalid QR Code: Missing recipient Kinex ID.");
-                }
-                return openScanPayScreen(pa, am);
-            }
-
-            // Case 2: Direct Kinex Handle (e.g., user@rpay)
-            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(raw)) {
-                return openScanPayScreen(raw, null);
-            }
-
-            // Case 3: Unrecognized or Malicious QR Code
-            alert("Unrecognized QR Code. Please scan a valid Kinex Network (@rpay) QR code.");
-        }
-       
-        // TWO-STEP PROFILE PIN CHANGE
-        function startPinChange() {
-            $('profile-main').classList.add('hidden');
-            $('profile-pin-flow').classList.remove('hidden');$('profile-old-pin-sec').classList.remove('hidden');
-            $('profile-new-pin-sec').classList.add('hidden');$('profile-pin-title').innerText = "Enter Current PIN";
-            $('old-pin').value = ""; $('new-pin').value = "";
-        }
-        function cancelPinChange() {
-            $('profile-pin-flow').classList.add('hidden');$('profile-main').classList.remove('hidden');
-        }
-        function proceedToNewPin() {
-            if($('old-pin').value.length !== 4) return alert("Enter your current 4-digit PIN.");
-            $('profile-old-pin-sec').classList.add('hidden');
-            $('profile-new-pin-sec').classList.remove('hidden');$('profile-pin-title').innerText = "Enter New PIN";
-        }
-        async function changePin() {
-            const old_pin = $('old-pin').value; const new_pin =$('new-pin').value;
-            if(new_pin.length !== 4) return alert("Enter a valid new 4-digit PIN.");
-            const res = await fetch('/auth/change-pin', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ upi_id: currentUser, old_pin, new_pin }) });
-            if((await res.json()).success) { 
-                alert("PIN updated successfully!"); 
-                currentPin = new_pin; 
-                cancelPinChange(); 
-            } else { 
-                alert("Incorrect current PIN."); 
-                startPinChange(); // Restart flow on error
-            }
-        }
-
-        // Handle Enter-key mapping for Text Fields
-        $('log-upi').addEventListener('keypress', (e) => { if(e.key === 'Enter') proceedToLoginPin(); });$('reg-name').addEventListener('keypress', (e) => { if(e.key === 'Enter') proceedToRegPin(); });
-
-        // UPGRADED ADMIN FUNCTIONS WITH LAYER-2 MASTER SECRET
-        let isNetworkLocked = false;
-
-        function requestMasterSecret(actionLabel) {
-            const secret = prompt(`🔒 LEVEL 2 CLEARANCE REQUIRED\nAction: ${actionLabel}\n\nEnter Master Secret Key:`);
-            return secret ? secret.trim() : null;
-        }
-
-        async function adminSendBroadcast() { 
-            const message = $('admin-notice-msg').value; 
-            if(!message) return; 
-            await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message }) }); 
-            alert("Broadcast Sent!"); 
-            $('admin-notice-msg').value = ""; 
-        }
-
-        async function adminClearBroadcast() { 
-            await fetch('/admin/broadcast', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, message: "" }) }); 
-            alert("Broadcast Cleared."); 
-        }
-
-        async function adminViewUsers() {
-            const res = await fetch('/admin/users', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin }) });
-            const payload = await res.json();
-            if (!payload.success) return alert(payload.error || "Failed to load admin data.");
-
-            // Update Analytics Header
-            if (payload.analytics) {
-                $('stat-circulation').innerText = 'K ' + fmt(payload.analytics.total_circulation);$('stat-accounts').innerText = payload.analytics.total_accounts;
-                $('stat-rewards').innerText = 'K ' + fmt(payload.analytics.total_rewards);
-            }
-
-            // Update Maintenance UI
-            isNetworkLocked = Boolean(payload.maintenance);
-            $('maint-status-text').innerText = isNetworkLocked ? "⚠ Network is LOCKED (All payments paused)" : "Network is ONLINE (Payments Active)";
-            $('maint-status-text').style.color = isNetworkLocked ? "var(--neg)" : "var(--pos)";
-            $('maint-toggle-btn').innerText = isNetworkLocked ? "Unlock Network" : "Lock Network";
-            $('maint-toggle-btn').className = isNetworkLocked ? "btn-primary btn-success" : "btn-primary btn-danger";
-
-            $('admin-viewer-area').innerHTML = payload.data.map(u => `
-                <div class="card" style="margin-bottom:8px; padding:12px; display:flex; justify-content:space-between; border-left:4px solid ${u.status==='FROZEN'?'var(--neg)':'var(--pos)'};">
-                    <div>
-                        <div style="font-weight:700;">${escapeHTML(u.name)}</div>
-                        <div style="font-size:12px; color:var(--muted);">${escapeHTML(u.upi_id)}</div>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-weight:800; font-size:15px; color:var(--pos);">K ${fmt(parseFloat(u.balance))}</div>
-                        <div style="font-size:11px; color:var(--accent);">Rewards: K ${fmt(parseFloat(u.reward_balance || 0))}</div>
-                        <div style="font-size:10px; font-weight:bold; color:${u.status==='FROZEN'?'var(--neg)':'var(--muted)'};">${u.status}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function adminToggleMaintenance() {
-            const master_secret = requestMasterSecret(isNetworkLocked ? "Unlock Network" : "Lock Network");
-            if (!master_secret) return;
-            const res = await fetch('/admin/maintenance', { 
-                method: 'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, master_secret, enable: !isNetworkLocked }) 
-            });
-            const data = await res.json();
-            if (data.success) {
-                toast(data.maintenance ? "Network Locked" : "Network Unlocked");
-                adminViewUsers();
-            } else alert(data.error || "Action Failed.");
-        }
-
-        async function adminAdjust(action) {
-            const target_id = $('admin-target').value.trim(); 
-            const amount = parseFloat($('admin-amount').value || 0);
-            if(!target_id) return alert("Enter target ID.");
-            const master_secret = requestMasterSecret(`${action.toUpperCase()} on ${target_id}`);
-            if (!master_secret) return;
-
-            const res = await fetch('/admin/adjust', { 
-                method: 'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, master_secret, target_id, amount, action }) 
-            });
-            const data = await res.json(); 
-            if(data.success) { alert("Action applied."); adminViewUsers(); } 
-            else alert(data.error || "Action Failed.");
-        }
-
-        async function adminDelete() {
-            const target_id = $('admin-target').value.trim(); 
-            if(!target_id || !confirm("Permanently terminate " + target_id + "?")) return;
-            const master_secret = requestMasterSecret(`TERMINATE ${target_id}`);
-            if (!master_secret) return;
-
-            const res = await fetch('/admin/delete', { 
-                method: 'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, master_secret, target_id }) 
-            });
-            const data = await res.json();
-            if(data.success) { alert("Account Terminated."); adminViewUsers(); adminLoadTransactions(); }
-            else alert(data.error || "Termination Failed.");
-        }
-
-        async function adminLoadTransactions() {
-            const target_id = $('admin-tx-filter') ?$('admin-tx-filter').value.trim() : "";
-            const res = await fetch('/admin/transactions', { 
-                method: 'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, target_id }) 
-            });
-            const payload = await res.json();
-            if (!payload.success) return;
-
-            const container = $('admin-tx-area');
-            if (payload.data.length === 0) {
-                container.innerHTML = "<p style='color:var(--muted); font-size:13px; text-align:center;'>No transactions found.</p>";
-                return;
-            }
-
-            container.innerHTML = payload.data.map(tx => `
-                <div class="card" style="margin-bottom:8px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-size:13px; font-weight:700;">${escapeHTML(tx.sender)} → ${escapeHTML(tx.receiver)}</div>
-                        <div style="font-size:11px; color:var(--muted);">${new Date(tx.created_at).toLocaleString()}</div>
-                        <div style="font-weight:800; font-size:14px; color:var(--cyan); margin-top:3px;">K ${fmt(parseFloat(tx.amount))}</div>
-                    </div>
-                    <button class="btn-danger" style="padding:7px 12px; border-radius:8px; font-size:12px; font-weight:700;" onclick="adminClawback(${tx.id}, '${escapeHTML(tx.sender)}', '${escapeHTML(tx.receiver)}', ${tx.amount})">↩ Reverse</button>
-                </div>
-            `).join('');
-        }
-
-        async function adminClawback(tx_id, sender, receiver, amount) {
-            if (!confirm(`Reverse K ${amount} from ${receiver} back to ${sender}?`)) return;
-            const master_secret = requestMasterSecret(`CLAWBACK TX #${tx_id} (K ${amount})`);
-            if (!master_secret) return;
-
-            const res = await fetch('/admin/clawback', { 
-                method: 'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body: JSON.stringify({ admin_id: currentUser, admin_pin: currentPin, master_secret, tx_id }) 
-            });
-            const data = await res.json();
-            if (data.success) {
-                toast("Transaction reversed!");
-                adminLoadTransactions();
-                adminViewUsers();
-            } else alert(data.error || "Clawback failed.");
-        }
-
-    // 1. ACCIDENTAL REFRESH / TAB CLOSE BLOCKER
-window.addEventListener('beforeunload', (e) => {
-    // Only warn if user is actively logged in and not clicking an internal app link
-    if (currentUser !== "" && !isIntentionalNav) {
-        e.preventDefault();
-        e.returnValue = ''; // Triggers standard browser confirmation dialog
+/* ---- CLICK EVENTS ---- */
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-a]');
+  if (!b || b.disabled) return;
+  const a = b.dataset.a, v = b.dataset.v;
+  if (a == 'close' && b.classList.contains('ov') && e.target !== b) return;
+
+  switch (a) {
+    case 'go':
+      S.scr = v; S.pin = ''; S.ctx = 'login'; S.rs = 1; S.top = true;
+      if (v === 'book' || v === 'home' || v === 'people') await syncUserPassbook(true);
+      break;
+    case 'k':
+      if (v == 'b') S.pin = S.pin.slice(0, -1);
+      else if (S.pin.length < 4) S.pin += v;
+      render();
+      if (S.pin.length == 4) setTimeout(pinDone, 200);
+      return;
+    case 'auth':
+      if (S.pin.length < 4) return T('Enter your 4-digit PIN');
+      pinDone();
+      return;
+    case 'bossauth': {
+      const ledger = loadLedger();
+      const bossAcc = ledger.accounts['Boss0'];
+      if (S.bossPass !== (bossAcc ? bossAcc.pin : 'Kinex_Admin_2026!')) {
+        return T('Invalid Operator Password');
+      }
+      S.bossPass = '';
+      S.scr = 'boss';
+      S.top = true;
+      T('Operator Console Unlocked');
+      break;
     }
+    case 'bossmaint': {
+      const ledger = loadLedger();
+      if (S.adminSecret !== ledger.adminSecret) return T('Invalid Master Secret Key');
+      ledger.maintenance = !ledger.maintenance;
+      saveLedger(ledger);
+      T(ledger.maintenance ? 'Network Maintenance Lock ENABLED' : 'Network Live');
+      break;
+    }
+    case 'bossfreeze': {
+      const ledger = loadLedger();
+      if (S.adminSecret !== ledger.adminSecret) return T('Invalid Master Secret Key');
+      const target = ledger.accounts[v];
+      if (target) {
+        target.status = target.status === 'FROZEN' ? 'ACTIVE' : 'FROZEN';
+        saveLedger(ledger);
+        T(`${target.id} is now ${target.status}`);
+      }
+      break;
+    }
+    case 'bossmint': {
+      const ledger = loadLedger();
+      if (S.adminSecret !== ledger.adminSecret) return T('Invalid Master Secret Key');
+      const tid = cleanHandle(S.bossTargetId).toLowerCase();
+      const amt = Math.round((parseFloat(S.bossMintAmt) || 0) * 100) / 100;
+      if (!ledger.accounts[tid] || !amt) return T('Enter a valid @rpay ID and amount');
+      const ref = 'KX' + Math.floor(1e7 + Math.random() * 9e7);
+      ledger.accounts[tid].bal = Math.max(0, Math.round((ledger.accounts[tid].bal + amt) * 100) / 100);
+      ledger.accounts[tid].tx.unshift({
+        n: amt > 0 ? 'Network Treasury Mint' : 'Network Treasury Burn',
+        id: 'Boss0', d: 'Today', t: tm(), a: amt, ref
+      });
+      saveLedger(ledger);
+      S.bossTargetId = ''; S.bossMintAmt = '';
+      T(`Updated ${tid} balance by K ${fm(amt)}`);
+      break;
+    }
+    case 'bossclaw': {
+      const ledger = loadLedger();
+      if (S.adminSecret !== ledger.adminSecret) return T('Invalid Master Secret Key');
+      let senderAcc = null, receiverAcc = null, txAmt = 0;
+      Object.values(ledger.accounts).forEach(acc => {
+        const found = (acc.tx || []).find(t => t.ref === v);
+        if (found) {
+          if (found.a < 0) { senderAcc = acc; txAmt = Math.abs(found.a); }
+          if (found.a > 0) { receiverAcc = acc; }
+        }
+      });
+      if (!senderAcc || !receiverAcc || !txAmt) return T('Transfer record not found');
+      const revRef = 'KX' + Math.floor(1e7 + Math.random() * 9e7);
+      senderAcc.bal = Math.round((senderAcc.bal + txAmt) * 100) / 100;
+      receiverAcc.bal = Math.max(0, Math.round((receiverAcc.bal - txAmt) * 100) / 100);
+      senderAcc.tx.unshift({ n: 'Admin Clawback Refund', id: receiverAcc.id, d: 'Today', t: tm(), a: +txAmt, ref: revRef });
+      receiverAcc.tx.unshift({ n: 'Admin Clawback Reversal', id: senderAcc.id, d: 'Today', t: tm(), a: -txAmt, ref: revRef });
+      saveLedger(ledger);
+      T(`Reversed K ${fm(txAmt)} (${v})`);
+      break;
+    }
+    case 'rtype': S.r.type = v; break;
+    case 'pickid': S.r.id = shortId(v); S.r.manual = true; S.r.suggestions = []; break;
+    case 'rnext': {
+      if (S.r.name.trim().length < 2) return T('Enter your full legal name');
+      const cleanId = cleanHandle(S.r.id);
+      if (!/^[a-z0-9._]{3,}@rpay\$/i.test(cleanId)) return T('Kinex ID needs 3+ letters or numbers');
+      if (!/^\d{10}\$/.test(S.r.ph)) return T('Enter a valid 10-digit mobile number');
+      if (!S.r.dob) return T('Select your date of birth');
+
+      const ledger = loadLedger();
+      if (ledger.accounts[cleanId]) {
+        const base = shortId(cleanId);
+        S.r.suggestions = [
+          base + Math.floor(Math.random() * 90 + 10) + '@rpay',
+          base + Math.floor(Math.random() * 900 + 100) + '@rpay',
+          base + (Math.floor(Math.random() * 9000) + 1000) + '@rpay'
+        ];
+        render();
+        return T('That Kinex ID is already taken');
+      }
+      const dupPhone = Object.values(ledger.accounts).find(x => x.ph === S.r.ph);
+      if (dupPhone) return T(`Mobile number already linked to ${dupPhone.id}`);
+      S.rs = 2; S.ctx = 'reg'; S.pin = '';
+      break;
+    }
+    case 'rback': S.rs = 1; S.pin = ''; break;
+    case 'hide': S.hide = !S.hide; break;
+    case 'copy':
+      navigator.clipboard && navigator.clipboard.writeText(S.u.id + '@rpay').catch(() => {});
+      return T('Kinex ID copied: ' + S.u.id + '@rpay');
+    case 'bell':
+      if (S.unreadAlert) { const msg = S.unreadAlert; S.unreadAlert = ''; render(); return T(msg); }
+      return T('No new alerts');
+    case 'earn':
+      S.sheet = 'earn'; S.fresh = true;
+      break;
+    case 'claimq': {
+      const q = QUEST_LIST.find(x => x.id === v);
+      if (!q) return;
+      const ledger = loadLedger();
+      const myId = S.u.fullId.toLowerCase();
+      const acc = ledger.accounts[myId];
+      if (!acc) return;
+      acc.claimed = acc.claimed || [];
+      if (acc.claimed.includes(q.id)) return T('Quest already claimed');
+      const ref = 'KX' + Math.floor(1e7 + Math.random() * 9e7);
+      acc.claimed.push(q.id);
+      acc.bal = Math.round((acc.bal + q.reward) * 100) / 100;
+      acc.tx.unshift({ n: `Quest: ${q.title}`, id: 'system@rpay', d: 'Today', t: tm(), a: +q.reward, ref });
+      saveLedger(ledger);
+      S.u.claimed = acc.claimed.slice();
+      S.bal = acc.bal;
+      S.tx = acc.tx.slice();
+      T(`Claimed +K ${q.reward} into your Passbook!`);
+      break;
+    }
+    case 'soon': return T(v);
+    case 'pay': await syncUserPassbook(true); openPay(null, 'who'); break;
+    case 'to': openPay(S.ppl[v], 'amt', null); break;
+    case 'again': {
+      const t = S.tx[v];
+      openPay(S.ppl.find(p => p.n == t.n) || { n: t.n, id: t.id || (t.n.toLowerCase().replace(/\W/g, '') + '@rpay') });
+      break;
+    }
+    case 'qr':
+    case 'scanqr':
+      await stopLiveCamera(); S.sheet = 'qr'; S.fresh = true; break;
+    case 'clearqramt': S.qrReqAmt = ''; break;
+    case 'tx': S.sheet = 'tx'; S.txi = +v; S.fresh = true; break;
+    case 'f': S.f = v; break;
+    case 'sw':
+      S[v] = !S[v];
+      if (v == 'dark') document.documentElement.dataset.theme = S.dark ? 'dark' : 'light';
+      break;
+    case 'logout':
+      S.scr = 'login'; S.pin = ''; S.ctx = 'login'; S.lastSyncSig = '';
+      T('Logged out');
+      break;
+    case 'scan': S.scan = true; S.scanStage = 'standby'; S.torch = false; break;
+    case 'scanx': await stopLiveCamera(); break;
+    case 'torch':
+      if (S.facing === 'user') return T('Flashlight is only available on Back Camera');
+      S.torch = !S.torch; break;
+    case 'flipcam':
+      S.facing = S.facing === 'environment' ? 'user' : 'environment';
+      if (S.facing === 'user') S.torch = false;
+      T(S.facing === 'user' ? 'Switched to Front Camera' : 'Switched to Back Camera');
+      break;
+    case 'qrgallery': \$('#qr-file-input').click(); return;
+    case 'armscan':
+      S.scanStage = 'live'; render(); await startLiveCamera(); return;
+    case 'sim':
+      await stopLiveCamera();
+      openPay(S.ppl[Math.floor(Math.random() * S.ppl.length)]);
+      T('QR detected');
+      break;
+    case 'ak': {
+      const p = S.pay;
+      if (p.locked) return;
+      if (v == 'b') p.amt = p.amt.slice(0, -1);
+      else if (v == '.') { if (!p.amt.includes('.')) p.amt = (p.amt || '0') + '.'; }
+      else if (p.amt == '0') p.amt = v;
+      else if (p.amt.replace('.', '').length < 7 && !/\.\d\d\$/.test(p.amt)) p.amt += v;
+      break;
+    }
+    case 'qa': if (S.pay && !S.pay.locked) S.pay.amt = String((parseFloat(S.pay.amt) || 0) + +v); break;
+    case 'cont': S.pay.step = 'pin'; S.pin = ''; S.fresh = true; break;
+    case 'close': S.sheet = null; S.pay = null; S.pin = ''; await syncUserPassbook(true); break;
+  }
+  render();
 });
 
-// 2. AUTO-RESTORE SESSION ON PAGE LOAD
-window.addEventListener('DOMContentLoaded', () => {
-    const savedUser = localStorage.getItem('rpay_currentUser');
-    const savedName = localStorage.getItem('rpay_currentName');
-    
-    // Auto-restore standard user accounts (Boss0 always requires fresh password auth)
-    if (savedUser && savedUser !== 'Boss0') {
-        currentUser = savedUser;
-        currentName = savedName || savedUser.split('@')[0];
-        
-        $('auth-screen').classList.add('hidden');
-        $('dashboard-screen').classList.remove('hidden');
-        
-        $('nav-name').innerText = currentName;
-        $('nav-avatar').innerText = currentName.charAt(0).toUpperCase();
-        $('nav-id').innerText = currentUser;
-        
-        $('qr-upi-label').innerText = currentUser;
-        $("qrcode").innerHTML = "";
-        new QRCode($("qrcode"), { text: currentUser, width: 200, height: 200 });
-        
-        updateBalance();
-        loadHistory();
-        checkSystemNotices();
-    }
-});
-
-/* ---- PWA SERVICE WORKER & ONE-TAP INSTALL ---- */
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW setup:', err));
-            });
-        }
-
-        let deferredInstallPrompt = null;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredInstallPrompt = e;
-            const banner = $('pwa-install-banner');
-            if (banner) banner.classList.remove('hidden');
-        });
-
-        async function installKinexApp() {
-            if (!deferredInstallPrompt) return;
-            deferredInstallPrompt.prompt();
-            const { outcome } = await deferredInstallPrompt.userChoice;
-            if (outcome === 'accepted') {
-                const banner = $('pwa-install-banner');
-                if (banner) banner.classList.add('hidden');
-            }
-            deferredInstallPrompt = null;
-        }
-        
-    </script>
+document.documentElement.dataset.theme = S.dark ? 'dark' : 'light';
+(function init(){
+  const ledger = loadLedger();
+  const defAcc = ledger.accounts['ridhaan@rpay'];
+  if (defAcc) {
+    S.bal = defAcc.bal;
+    S.tx = defAcc.tx.slice();
+    S.ppl = Object.values(ledger.accounts).filter(x => x.id !== 'ridhaan@rpay' && x.id !== 'Boss0').map(x => ({ n: x.n, id: x.id }));
+  }
+  render();
+})();
+</script>
 </body>
 </html>

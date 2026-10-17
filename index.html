@@ -1,1090 +1,2594 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>RPAY — Kinex Network</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#04142A">
-<link rel="apple-touch-icon" href="/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kinex">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/html5-qrcode" defer></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-<style>
-:root{--bg:#EEF3F8;--s:#fff;--t:#0A1A2F;--m:#586A80;--l:#E3EAF2;--tile:#EAF3FA;--ac:#0B6B8A;--pos:#0E8A47;--neg:#C62F2F;--cy:#22D3EE;--bl:#0EA5E9;--ha:#04142A;--hb:#0B3157;--sh:0 14px 32px -18px rgba(4,20,42,.5);
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#030D1A;--s:#0B1A2E;--t:#E8F1FA;--m:#93A7BD;--l:#16304B;--tile:#12293F;--ac:#4DD8F5;--pos:#3DD68C;--neg:#FF7B7B;--ha:#020B18;--hb:#0A2A4E;--sh:0 14px 32px -18px rgba(0,0,0,.85)}}
-:root[data-theme="dark"]{--bg:#030D1A;--s:#0B1A2E;--t:#E8F1FA;--m:#93A7BD;--l:#16304B;--tile:#12293F;--ac:#4DD8F5;--pos:#3DD68C;--neg:#FF7B7B;--ha:#020B18;--hb:#0A2A4E;--sh:0 14px 32px -18px rgba(0,0,0,.85)}
-html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
-*,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--bg);color:var(--t);font:500 15px/1.35 Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
-button:focus-visible,input:focus-visible{outline:2px solid var(--cy);outline-offset:3px;border-radius:12px}
-svg{display:block}h1,h2,h3,p{margin:0}
-.h,h1,h2,h3{font-family:Sora,system-ui,sans-serif}
-.hidden{display:none!important}
-.app{max-width:480px;margin:0 auto;padding-bottom:120px}
-.hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(165deg,var(--ha),var(--hb));padding:18px 20px 70px;border-radius:0 0 32px 32px}
-.top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2}
-.who{display:flex;gap:12px;align-items:center}.who b{font-size:17px;display:block}
-.av{border-radius:50%;display:inline-grid;place-items:center;font-family:Sora,sans-serif;font-weight:700;color:var(--t);flex:none}
-.hero .av{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25)}
-.hd{display:flex;gap:6px;align-items:center;font-size:14px;color:rgba(255,255,255,.78)}
-.ib{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;position:relative}
-.dot{position:absolute;top:11px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--cy)}
-.bal{position:relative;z-index:2;margin-top:28px}
-.lr{display:flex;align-items:center;gap:4px;font-weight:600;color:rgba(255,255,255,.78)}
-.eye{width:36px;height:36px;display:grid;place-items:center;border-radius:50%}
-.amt{display:flex;align-items:baseline;gap:8px;font-family:Sora,sans-serif;font-weight:700;letter-spacing:-.02em}
-.amt span{font-size:24px;color:var(--cy)}.amt b{font-size:clamp(34px,10vw,46px);line-height:1.1}
-.coin{position:absolute;right:-32px;top:62px;width:140px;height:140px;border-radius:50%;display:grid;place-items:center;font:800 62px Sora,sans-serif;color:#04142A;background:radial-gradient(circle at 30% 25%,#A5F3FC,#22D3EE 45%,#0B6FD1);box-shadow:0 0 44px rgba(34,211,238,.45),inset 0 0 0 8px rgba(255,255,255,.28);transform:rotate(-14deg)}
-.coin.s{position:static;width:64px;height:64px;font-size:30px;transform:none;box-shadow:0 0 28px rgba(34,211,238,.5),inset 0 0 0 4px rgba(255,255,255,.28)}
-.acts{position:relative;z-index:3;margin:-38px 16px 0;padding:16px 4px;background:var(--s);border-radius:24px;box-shadow:var(--sh);display:grid;grid-template-columns:repeat(4,1fr)}
-.act{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px;font-weight:600}
-.act i{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:var(--tile);color:var(--ac);transition:transform .15s}
-.act:active i{transform:scale(.92)}.act.p i{background:linear-gradient(135deg,var(--cy),var(--bl));color:#04142A}
-.sec{margin:24px 16px 0}.shd{display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 10px}
-.shd h2{font-size:18px}.lnk{font-size:14px;font-weight:600;color:var(--ac);padding:6px 4px}
-.list{background:var(--s);border-radius:24px;padding:4px 16px;box-shadow:var(--sh)}
-.row{display:flex;align-items:center;gap:12px;padding:13px 0;width:100%;text-align:left}.row+.row{border-top:1px solid var(--l)}
-.bd{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--tile);color:var(--ac);flex:none}
-.in .bd{background:rgba(14,138,71,.14);color:var(--pos)}.out .bd{background:rgba(198,47,47,.12);color:var(--neg)}
-.mt{flex:1;min-width:0}.mt b{display:block;font-size:16px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mt>span,.mt em{font-size:13px;color:var(--m);font-style:normal}
-.am{font:600 16px Sora,sans-serif;white-space:nowrap}.in .am{color:var(--pos)}.out .am{color:var(--neg)}
-.ph{padding:22px 20px 4px}.ph h1{font-size:28px;letter-spacing:-.02em}
-.srch{display:flex;align-items:center;gap:10px;margin:12px 16px 0;padding:0 14px;height:48px;border-radius:16px;background:var(--s);box-shadow:var(--sh);color:var(--m)}
-.srch input{flex:1;border:0;background:none;font:inherit;color:var(--t);height:100%;min-width:0}.srch input:focus-visible{outline:0}
-.mini{padding:7px 14px;border-radius:12px;background:var(--tile);color:var(--ac);font-weight:700;font-size:13px;white-space:nowrap}
-.mini.dan{background:rgba(198,47,47,.14);color:var(--neg)}
-.mini.okb{background:rgba(14,138,71,.14);color:var(--pos)}
-.chips{display:flex;gap:8px;margin:14px 16px 0;overflow-x:auto}.chip{padding:9px 16px;border-radius:999px;background:var(--s);font-weight:600;font-size:14px;box-shadow:var(--sh);white-space:nowrap}.chip[aria-pressed="true"]{background:var(--ha);color:#fff}
-.sum{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 16px 0}.sum div{background:var(--s);border-radius:20px;padding:14px 16px;box-shadow:var(--sh)}.sum span{font-size:13px;color:var(--m)}.sum b{display:block;font:700 20px Sora,sans-serif;margin-top:4px}
-.gl{margin:20px 20px 8px;font-size:14px;font-weight:600;color:var(--m)}.gl+.list{margin:0 16px}
-.pc{display:flex;gap:14px;align-items:center;padding:18px;border-radius:24px;background:linear-gradient(160deg,var(--ha),var(--hb));color:#fff}.pc .av{background:rgba(255,255,255,.14);color:#fff}
-.pc b{font-size:19px;display:block}.pc span{font-size:14px;opacity:.78}.pc em{display:block;margin-top:6px;font-style:normal;font-size:12px;font-weight:700;color:var(--cy)}
-.sw{width:50px;height:30px;border-radius:30px;background:var(--l);position:relative;transition:background .2s;flex:none}.sw i{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}.sw.on{background:var(--bl)}.sw.on i{transform:translateX(20px)}
-.lo{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;height:52px;border-radius:16px;color:var(--neg);font-weight:700;background:var(--s);box-shadow:var(--sh)}
-.nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:20;width:100%;max-width:480px;display:grid;grid-template-columns:repeat(5,1fr);align-items:end;background:var(--s);border-top:1px solid var(--l);padding:8px 8px calc(10px + env(safe-area-inset-bottom,0px))}
-.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--m);padding:4px 0}.tab[aria-current="page"]{color:var(--ac)}
-.fab{width:62px;height:62px;border-radius:50%;margin-top:-36px;display:grid;place-items:center;color:#04142A;background:linear-gradient(135deg,var(--cy),var(--bl));border:5px solid var(--s);box-shadow:0 10px 22px -8px rgba(14,165,233,.85)}.sc{color:var(--t)}
-.auth{max-width:420px;margin:0 auto;padding:36px 20px 40px;position:relative}
-.auth::before{content:"";position:absolute;inset:-60px -40px auto;height:340px;background:radial-gradient(60% 60% at 70% 20%,rgba(34,211,238,.28),transparent 70%);pointer-events:none}
-.brand{position:relative;display:flex;align-items:center;gap:14px;margin-bottom:24px}.brand h1{font-size:30px;letter-spacing:-.02em}.brand p{color:var(--m);font-size:14px}
-.card{position:relative;background:var(--s);border-radius:28px;padding:24px 20px;box-shadow:var(--sh);border:1px solid var(--l)}
-.card h2{font-size:22px;margin-bottom:16px}.lab{font-size:13px;font-weight:600;color:var(--m);margin:14px 0 6px}
-.fld{display:flex;align-items:center;gap:8px;height:52px;padding:0 14px;border-radius:14px;background:var(--bg);border:1px solid var(--l)}.fld:focus-within{border-color:var(--cy)}
-.fld input{flex:1;min-width:0;height:100%;border:0;background:none;font:inherit;font-size:16px;color:var(--t)}.fld input:focus-visible{outline:0}.fld span{color:var(--m);font-weight:700}
-.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;border-radius:14px;background:var(--bg)}.seg button{height:44px;border-radius:11px;font-weight:600}.seg button[aria-pressed="true"]{background:var(--s);box-shadow:var(--sh);color:var(--ac)}
-.dots{display:flex;justify-content:center;gap:16px;margin:10px 0 16px}.dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--m);transition:.15s}.dots i.on{background:var(--cy);border-color:var(--cy);box-shadow:0 0 14px var(--cy)}
-.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}.pad button{height:54px;border-radius:16px;background:var(--tile);font:600 22px Sora,sans-serif;display:grid;place-items:center}.pad button:active{transform:scale(.95)}
-.pri{width:100%;height:52px;border-radius:16px;font-weight:700;font-size:16px;color:#04142A;background:linear-gradient(135deg,var(--cy),var(--bl))}.pri:disabled{opacity:.45;cursor:not-allowed}
-.sub{text-align:center;margin-top:14px;font-size:14px;color:var(--m)}.lk{color:var(--ac);font-weight:700;text-decoration:underline}
-.ov{position:fixed;inset:0;z-index:50;background:rgba(2,10,20,.65);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center}
-.sheet{position:relative;width:100%;max-width:480px;max-height:94vh;overflow:auto;background:var(--s);border-radius:28px 28px 0 0;padding:24px 20px calc(22px + env(safe-area-inset-bottom,0px))}
-.anim{animation:up .3s cubic-bezier(.2,.8,.2,1)}@keyframes up{from{transform:translateY(48px);opacity:0}}
-.x{position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--bg)}
-.sheet h3{font-size:19px;margin-bottom:14px;padding-right:40px}
-.who2{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:6px}
-.big{text-align:center;font:700 52px/1.1 Sora,sans-serif;letter-spacing:-.02em;margin:10px 0 4px}.big span{font-size:26px;color:var(--ac);margin-right:6px}
-.err{text-align:center;color:var(--neg);font-size:13px;font-weight:600;min-height:18px}
-.qc{display:flex;gap:8px;justify-content:center;margin:8px 0 14px}
-.ctr{text-align:center}.ctr p{color:var(--m)}
-.spin{width:54px;height:54px;border-radius:50%;border:5px solid var(--l);border-top-color:var(--cy);animation:sp .8s linear infinite;margin:30px auto 18px}@keyframes sp{to{transform:rotate(360deg)}}
-.ok{width:78px;height:78px;border-radius:50%;margin:10px auto 14px;display:grid;place-items:center;background:var(--pos);color:#fff;animation:pop .45s cubic-bezier(.2,1.4,.4,1)}@keyframes pop{from{transform:scale(.3);opacity:0}}
-.kv{display:flex;justify-content:space-between;padding:11px 0;border-top:1px solid var(--l);font-size:14px}.kv span{color:var(--m)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.two button{height:50px;border-radius:15px;font-weight:700;background:var(--tile);color:var(--ac)}
-.qr{width:220px;min-height:220px;margin:6px auto 12px;padding:14px;border-radius:22px;background:#fff;display:grid;place-items:center}
-.qr canvas,.qr img{max-width:100%;height:auto;display:block}
-.cam{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;z-index:60;display:flex;flex-direction:column;justify-content:space-between;color:#fff;background:radial-gradient(70% 50% at 30% 30%,#27414f,transparent),radial-gradient(60% 50% at 80% 75%,#1a2b3d,transparent),#05090e;overflow:hidden}
-#cam-reader{position:absolute;inset:0;width:100%!important;height:100%!important;z-index:1;border:none!important}
-#cam-reader video{width:100%!important;height:100%!important;object-fit:cover!important}
-.cbar,.cdeck{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 16px;position:relative;z-index:5}.cdeck{padding:20px 24px calc(30px + env(safe-area-inset-bottom,0px));background:linear-gradient(0deg,rgba(0,0,0,.85) 0%,transparent 100%)}
-.cb{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.16);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.28);color:#fff}.cb.on{background:var(--cy);color:#04142A;border-color:var(--cy);box-shadow:0 0 16px var(--cy)}
-.pill{padding:7px 14px;border-radius:999px;font-size:13px;font-weight:600;background:rgba(4,20,42,.75);backdrop-filter:blur(8px);border:1px solid rgba(34,211,238,.4)}
-.vf{position:relative;z-index:4;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px;text-align:center}
-.ret{position:relative;width:240px;height:240px;border-radius:26px;box-shadow:0 0 0 4000px rgba(0,0,0,.6);overflow:hidden}
-.ret i{position:absolute;width:34px;height:34px;border:0 solid var(--cy)}.tl1{top:0;left:0;border-top-width:4px!important;border-left-width:4px!important;border-top-left-radius:22px}.tr1{top:0;right:0;border-top-width:4px!important;border-right-width:4px!important;border-top-right-radius:22px}.bl1{bottom:0;left:0;border-bottom-width:4px!important;border-left-width:4px!important;border-bottom-left-radius:22px}.br1{bottom:0;right:0;border-bottom-width:4px!important;border-right-width:4px!important;border-bottom-right-radius:22px}
-.laser{position:absolute;left:8%;right:8%;height:2px;background:var(--cy);box-shadow:0 0 14px 2px var(--cy);animation:ls 2.2s ease-in-out infinite}@keyframes ls{0%,100%{top:10%}50%{top:90%}}
-.shut{width:76px;height:76px;border-radius:50%;border:4px solid #fff;padding:5px;transition:transform .15s}.shut:active{transform:scale(.9)}.shut i{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,var(--cy),var(--bl));color:#04142A;box-shadow:0 0 20px rgba(34,211,238,.6)}
-.cl{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600}
-.locked-banner{background:var(--tile);border:1px dashed var(--ac);color:var(--ac);padding:11px 14px;border-radius:14px;font-size:13px;font-weight:700;text-align:center;margin:10px 0 16px}
-.sug-box{margin-top:8px;padding:10px 12px;border-radius:12px;background:rgba(198,47,47,.08);border:1px solid var(--neg)}
-.sug-box p{font-size:12px;color:var(--neg);font-weight:700;margin-bottom:8px}
-.sug-btns{display:flex;gap:6px;flex-wrap:wrap}
-.q-card{background:var(--bg);border:1px solid var(--l);border-radius:18px;padding:14px;margin-bottom:10px}
-.q-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.q-bar{height:7px;border-radius:8px;background:var(--l);overflow:hidden;margin:8px 0}.q-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cy),var(--bl));border-radius:8px}
-.boss-wrap{max-width:540px;margin:0 auto;padding:20px 16px 100px}
-.boss-hdr{background:linear-gradient(160deg,#1a0b2e,#04142A);color:#fff;padding:20px;border-radius:24px;border:1px solid var(--cy);margin-bottom:16px}
-.boss-card{background:var(--s);border:1px solid var(--l);border-radius:22px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
-.pwa-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(34,211,238,.1);border:1px solid var(--cy);border-radius:18px;padding:12px 14px;margin-bottom:16px}
-#toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));z-index:90;transform:translate(-50%,12px);opacity:0;pointer-events:none;background:#04142A;color:#fff;padding:11px 16px;border-radius:14px;font-size:14px;max-width:calc(100% - 32px);text-align:center;transition:.2s;border:1px solid rgba(34,211,238,.3)}#toast.show{opacity:1;transform:translate(-50%,0)}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>RPAY — Kinex Network</title>
+
+    <!-- PWA App Icon & Fullscreen Configuration -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#04142A">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kinex">
+
+    <!-- Fonts: Sora & Figtree -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- QR Code Libraries -->
+    <script src="https://unpkg.com/html5-qrcode" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+
+    <style>
+        :root {
+            --bg: #EEF3F8;
+            --surface: #FFFFFF;
+            --text: #0A1A2F;
+            --muted: #586A80;
+            --line: #E3EAF2;
+            --tile: #EAF3FA;
+            --accent: #0B6B8A;
+            --pos: #0E8A47;
+            --neg: #C62F2F;
+            --cyan: #22D3EE;
+            --blue: #0EA5E9;
+            --hero-a: #04142A;
+            --hero-b: #0B3157;
+            --shadow: 0 14px 32px -18px rgba(4, 20, 42, 0.5);
+        }
+
+        :root[data-theme="dark"] {
+            --bg: #030D1A;
+            --surface: #0B1A2E;
+            --text: #E8F1FA;
+            --muted: #93A7BD;
+            --line: #16304B;
+            --tile: #12293F;
+            --accent: #4DD8F5;
+            --pos: #3DD68C;
+            --neg: #FF7B7B;
+            --hero-a: #020B18;
+            --hero-b: #0A2A4E;
+            --shadow: 0 14px 32px -18px rgba(0, 0, 0, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Figtree', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 15px;
+            line-height: 1.4;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, .sora {
+            font-family: 'Sora', sans-serif;
+            margin: 0;
+        }
+
+        p { margin: 0; }
+
+        button {
+            font-family: inherit;
+            color: inherit;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        input {
+            font-family: inherit;
+            color: var(--text);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ---------- Auth Screens (Login & Register) ---------- */
+        .auth-wrapper {
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 32px 20px 48px;
+            position: relative;
+        }
+
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .coin-logo {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 30px;
+            color: #04142A;
+            background: radial-gradient(circle at 30% 25%, #A5F3FC, #22D3EE 45%, #0B6FD1);
+            box-shadow: 0 0 28px rgba(34, 211, 238, 0.5), inset 0 0 0 4px rgba(255, 255, 255, 0.28);
+            flex-shrink: 0;
+        }
+
+        .auth-card {
+            background: var(--surface);
+            border-radius: 28px;
+            padding: 24px 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--line);
+        }
+
+        .auth-card h2 {
+            font-size: 22px;
+            margin-bottom: 16px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            margin: 14px 0 6px;
+        }
+
+        .field-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 52px;
+            padding: 0 14px;
+            border-radius: 14px;
+            background: var(--bg);
+            border: 1px solid var(--line);
+        }
+
+        .field-box:focus-within {
+            border-color: var(--cyan);
+        }
+
+        .field-box input {
+            flex: 1;
+            min-width: 0;
+            height: 100%;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .field-suffix {
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .seg-control {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            padding: 4px;
+            border-radius: 14px;
+            background: var(--bg);
+        }
+
+        .seg-btn {
+            height: 44px;
+            border-radius: 11px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .seg-btn.active {
+            background: var(--surface);
+            color: var(--accent);
+            box-shadow: var(--shadow);
+        }
+
+        .pin-dots {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin: 12px 0 18px;
+        }
+
+        .pin-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid var(--muted);
+            transition: all 0.15s ease;
+        }
+
+        .pin-dot.filled {
+            background: var(--cyan);
+            border-color: var(--cyan);
+            box-shadow: 0 0 14px var(--cyan);
+        }
+
+        .numpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .num-btn {
+            height: 54px;
+            border-radius: 16px;
+            background: var(--tile);
+            font-family: 'Sora', sans-serif;
+            font-weight: 600;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease;
+        }
+
+        .num-btn:active {
+            transform: scale(0.94);
+        }
+
+        .btn-primary {
+            width: 100%;
+            height: 52px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            color: #04142A;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .sub-text {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .text-link {
+            color: var(--accent);
+            font-weight: 700;
+            text-decoration: underline;
+        }
+
+        .suggestions-alert {
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 14px;
+            background: rgba(198, 47, 47, 0.1);
+            border: 1px solid var(--neg);
+        }
+
+        .suggestions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        /* ---------- Main App Layout ---------- */
+        .app-shell {
+            max-width: 480px;
+            margin: 0 auto;
+            padding-bottom: 115px;
+        }
+
+        .hero-banner {
+            position: relative;
+            overflow: hidden;
+            color: #FFFFFF;
+            background: linear-gradient(165deg, var(--hero-a), var(--hero-b));
+            padding: 20px 20px 70px;
+            border-radius: 0 0 32px 32px;
+        }
+
+        .hero-coin-bg {
+            position: absolute;
+            right: -32px;
+            top: 62px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: 62px;
+            color: #04142A;
+            background: radial-gradient(circle at 30% 25%, #A5F3FC, #22D3EE 45%, #0B6FD1);
+            box-shadow: 0 0 44px rgba(34, 211, 238, 0.45), inset 0 0 0 8px rgba(255, 255, 255, 0.28);
+            transform: rotate(-14deg);
+            pointer-events: none;
+        }
+
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar-circle {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            background: rgba(255, 255, 255, 0.14);
+            color: #FFFFFF;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            flex-shrink: 0;
+        }
+
+        .handle-copy-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.78);
+            margin-top: 2px;
+        }
+
+        .icon-circle-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #FFFFFF;
+            position: relative;
+        }
+
+        .notif-dot {
+            position: absolute;
+            top: 10px;
+            right: 11px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--cyan);
+        }
+
+        .balance-block {
+            position: relative;
+            z-index: 2;
+            margin-top: 28px;
+        }
+
+        .balance-label-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        .balance-amount-row {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .balance-amount-row span {
+            font-size: 24px;
+            color: var(--cyan);
+        }
+
+        .balance-amount-row b {
+            font-size: 40px;
+            line-height: 1.1;
+        }
+
+        .quick-actions-bar {
+            position: relative;
+            z-index: 3;
+            margin: -38px 16px 0;
+            padding: 16px 4px;
+            background: var(--surface);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .quick-act-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .quick-act-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--tile);
+            color: var(--accent);
+            font-size: 22px;
+        }
+
+        .quick-act-btn.primary .quick-act-icon {
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            color: #04142A;
+        }
+
+        .section-block {
+            margin: 24px 16px 0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0 4px 10px;
+        }
+
+        .section-header h2 {
+            font-size: 18px;
+        }
+
+        .card-list {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 4px 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .list-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 0;
+            width: 100%;
+            text-align: left;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .list-row:last-child {
+            border-bottom: none;
+        }
+
+        .tx-badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--tile);
+            color: var(--accent);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .list-row.in .tx-badge {
+            background: rgba(14, 138, 71, 0.14);
+            color: var(--pos);
+        }
+
+        .list-row.out .tx-badge {
+            background: rgba(198, 47, 47, 0.12);
+            color: var(--neg);
+        }
+
+        .row-meta {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .row-meta b {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .row-meta span {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .tx-amount {
+            font-family: 'Sora', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        .list-row.in .tx-amount { color: var(--pos); }
+        .list-row.out .tx-amount { color: var(--neg); }
+
+        .page-title {
+            padding: 22px 20px 4px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 12px 16px 0;
+            padding: 0 14px;
+            height: 48px;
+            border-radius: 16px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        .search-bar input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .mini-btn {
+            padding: 8px 14px;
+            border-radius: 12px;
+            background: var(--tile);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 14px 16px 0;
+        }
+
+        .summary-box {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 14px 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .summary-box span {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .summary-box b {
+            display: block;
+            font-family: 'Sora', sans-serif;
+            font-size: 20px;
+            margin-top: 4px;
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 8px;
+            margin: 14px 16px 0;
+        }
+
+        .chip-btn {
+            padding: 9px 16px;
+            border-radius: 999px;
+            background: var(--surface);
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: var(--shadow);
+        }
+
+        .chip-btn.active {
+            background: var(--hero-a);
+            color: #FFFFFF;
+        }
+
+        .profile-banner {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            padding: 18px;
+            border-radius: 24px;
+            background: linear-gradient(160deg, var(--hero-a), var(--hero-b));
+            color: #FFFFFF;
+        }
+
+        .switch-toggle {
+            width: 50px;
+            height: 30px;
+            border-radius: 30px;
+            background: var(--line);
+            position: relative;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .switch-toggle i {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            transition: transform 0.2s;
+        }
+
+        .switch-toggle.on {
+            background: var(--blue);
+        }
+
+        .switch-toggle.on i {
+            transform: translateX(20px);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 16px;
+            height: 52px;
+            border-radius: 16px;
+            color: var(--neg);
+            font-weight: 700;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+        }
+
+        /* ---------- Bottom Navigation Bar ---------- */
+        .bottom-nav {
+            position: fixed;
+            left: 50%;
+            bottom: 0;
+            transform: translateX(-50%);
+            z-index: 20;
+            width: 100%;
+            max-width: 480px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            align-items: end;
+            background: var(--surface);
+            border-top: 1px solid var(--line);
+            padding: 8px 8px calc(10px + env(safe-area-inset-bottom, 0px));
+        }
+
+        .nav-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            padding: 4px 0;
+        }
+
+        .nav-tab.active {
+            color: var(--accent);
+        }
+
+        .scan-fab {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            margin-top: -36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #04142A;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            border: 5px solid var(--surface);
+            box-shadow: 0 10px 22px -8px rgba(14, 165, 233, 0.85);
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        /* ---------- Modals & Slide-Up Sheets ---------- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            background: rgba(2, 10, 20, 0.68);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .sheet-box {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            max-height: 92vh;
+            overflow-y: auto;
+            background: var(--surface);
+            border-radius: 28px 28px 0 0;
+            padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+        }
+
+        .sheet-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .big-pay-amount {
+            text-align: center;
+            font-family: 'Sora', sans-serif;
+            font-weight: 700;
+            font-size: 48px;
+            margin: 10px 0 4px;
+        }
+
+        .big-pay-amount span {
+            font-size: 26px;
+            color: var(--accent);
+            margin-right: 6px;
+        }
+
+        .locked-amt-banner {
+            background: var(--tile);
+            border: 1px dashed var(--accent);
+            color: var(--accent);
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            margin: 12px 0 16px;
+        }
+
+        .kv-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 11px 0;
+            border-top: 1px solid var(--line);
+            font-size: 14px;
+        }
+
+        .kv-row span { color: var(--muted); }
+
+        /* ---------- Full-Screen Two-Stage Camera App UI ---------- */
+        .cam-scanner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            background: #000000;
+            z-index: 10550 !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            color: #FFFFFF;
+        }
+
+        #reader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 1;
+            background: #000000;
+        }
+
+        #reader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
+        .cam-top-bar {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 16px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.78) 0%, transparent 100%);
+        }
+
+        .cam-circle-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .cam-circle-btn.active-torch {
+            background: var(--cyan);
+            color: #04142A;
+            border-color: var(--cyan);
+            box-shadow: 0 0 16px var(--cyan);
+        }
+
+        .cam-status-pill {
+            background: rgba(4, 20, 42, 0.8);
+            border: 1px solid rgba(34, 211, 238, 0.4);
+            color: #FFFFFF;
+            padding: 7px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .cam-viewfinder-wrap {
+            position: relative;
+            z-index: 4;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .cam-reticle {
+            width: 245px;
+            height: 245px;
+            border-radius: 24px;
+            position: relative;
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.58);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .cam-corner {
+            position: absolute;
+            width: 34px;
+            height: 34px;
+            border-color: var(--cyan);
+            border-style: solid;
+            border-width: 0;
+        }
+
+        .cam-corner.tl { top: 0; left: 0; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 20px; }
+        .cam-corner.tr { top: 0; right: 0; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 20px; }
+        .cam-corner.bl { bottom: 0; left: 0; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 20px; }
+        .cam-corner.br { bottom: 0; right: 0; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 20px; }
+
+        .cam-laser {
+            position: absolute;
+            left: 8%;
+            right: 8%;
+            height: 2px;
+            background: var(--cyan);
+            box-shadow: 0 0 12px 2px var(--cyan);
+            animation: camLaserScan 2.2s ease-in-out infinite;
+        }
+
+        @keyframes camLaserScan {
+            0%, 100% { top: 10%; opacity: 0.6; }
+            50% { top: 90%; opacity: 1; }
+        }
+
+        .cam-bottom-deck {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 24px 28px calc(32px + env(safe-area-inset-bottom, 0px));
+            background: linear-gradient(0deg, rgba(0,0,0,0.88) 0%, transparent 100%);
+        }
+
+        .cam-side-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: #FFFFFF;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .cam-side-btn .ico-ring {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .cam-shutter-btn {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            border: 4px solid #FFFFFF;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .cam-shutter-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--blue));
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #04142A;
+            font-weight: 800;
+            font-size: 22px;
+        }
+
+        /* ---------- Toast Notification ---------- */
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 95px;
+            transform: translateX(-50%);
+            z-index: 20000;
+            background: #04142A;
+            color: #FFFFFF;
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid rgba(34, 211, 238, 0.4);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        #toast.show {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
-<div id="app"></div>
-<div id="file-qr-reader" class="hidden"></div>
-<input type="file" id="qr-file-input" accept="image/*" class="hidden">
-<div id="toast" role="status" aria-live="polite"></div>
 
-<script>
-const P={
-  pay:'<path d="M7 17 17 7M8 7h9v9"/>',
-  qr:'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 20v-2"/>',
-  book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3zM5 17a3 3 0 0 1 3-3h11"/>',
-  earn:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 10h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4"/>',
-  scan:'<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16"/>',
-  home:'<path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
-  users:'<circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3 6"/>',
-  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-  bell:'<path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15zM10 21h4"/>',
-  down:'<path d="M17 7 7 17M16 17H7V8"/>',
-  eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
-  eyeoff:'<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4M6.5 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7c1.6 0 3-.4 4.3-1M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
-  x:'<path d="M6 6l12 12M18 6 6 18"/>',
-  back:'<path d="M15 6l-6 6 6 6"/>',
-  del:'<path d="M20 6H9l-5 6 5 6h11zM12.5 9.5l4 5M16.5 9.5l-4 5"/>',
-  flash:'<path d="M13 3 5 14h6l-1 7 8-11h-6z"/>',
-  moon:'<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/>',
-  out:'<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 8l4 4-4 4M20 12H9"/>',
-  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
-  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
-  shield:'<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>',
-  chev:'<path d="m9 6 6 6-6 6"/>',
-  check:'<path d="m5 12 5 5 9-10"/>',
-  img:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="m4 18 5-5 4 4 3-3 4 4"/>',
-  flip:'<path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>'
-};
-const ic=(n,s=22)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
-const $=s=>document.querySelector(s);
-const E=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const fm=n=>Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
-const tm=()=>new Date().toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'});
-const CO=['#22D3EE','#3DD68C','#F5A524','#A78BFA','#FB7185'];
-const T=m=>{const t=$('#toast');if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(T.h);T.h=setTimeout(()=>t.classList.remove('show'),2400)};
-const av=(n,i=0,z=44)=>`<span class="av" style="width:${z}px;height:${z}px;font-size:${z*.4}px;background:${CO[i%5]}30">${E((n||'U')[0].toUpperCase())}</span>`;
-
-/* ---- HANDLE HELPERS ---- */
-function isBossInput(raw){
-  return String(raw||'').trim().toLowerCase().replace(/@rpay$/i,'') === 'boss0';
-}
-function cleanHandle(raw){
-  if (isBossInput(raw)) return 'Boss0';
-  let h=String(raw||'').trim().toLowerCase().replace(/@rpay$/i,'').replace(/[^a-z0-9._]/g,'');
-  return h ? h+'@rpay' : '';
-}
-function shortId(raw){
-  if (isBossInput(raw)) return 'Boss0';
-  return String(raw||'').trim().toLowerCase().replace(/@rpay$/i,'');
-}
-
-/* ---- SHARED MULTI-USER LEDGER (SYNCED ACROSS TABS & USERS) ---- */
-const LEDGER_KEY = 'kinex_multiuser_ledger_v3';
-const syncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('kinex_realtime_sync') : null;
-
-function getDefaultLedger(){
-  return {
-    maintenance: false,
-    adminSecret: 'KINEX_MASTER_2026',
-    accounts: {
-      'Boss0': {
-        id: 'Boss0', n: 'System Operator', pin: 'Kinex_Admin_2026!', ph: '0000000000', dob: '2000-01-01', type: 'Merchant', status: 'ACTIVE', bal: 1000000, claimed: [], tx: []
-      },
-      'ridhaan@rpay': {
-        id: 'ridhaan@rpay', n: 'Ridhaan', pin: '1234', ph: '9876543210', dob: '2005-01-01', type: 'Personal', status: 'ACTIVE', bal: 2450, claimed: [],
-        tx: [
-          { n: 'Aarav S.', id: 'aarav@rpay', d: 'Today', t: '6:12 pm', a: 250, ref: 'KX84920144' },
-          { n: 'Corner Store', id: 'cornerstore@rpay', d: 'Today', t: '1:05 pm', a: -40, ref: 'KX84920110' },
-          { n: 'Meera K.', id: 'meera@rpay', d: 'Yesterday', t: '9:40 pm', a: -120, ref: 'KX84919822' },
-          { n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '10:00 am', a: 500, ref: 'KX84900001' }
-        ]
-      },
-      'aarav@rpay': {
-        id: 'aarav@rpay', n: 'Aarav S.', pin: '1234', ph: '9876543211', dob: '2004-05-12', type: 'Personal', status: 'ACTIVE', bal: 1850, claimed: [],
-        tx: [
-          { n: 'Ridhaan', id: 'ridhaan@rpay', d: 'Today', t: '6:12 pm', a: -250, ref: 'KX84920144' },
-          { n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '9:30 am', a: 500, ref: 'KX84900002' }
-        ]
-      },
-      'meera@rpay': {
-        id: 'meera@rpay', n: 'Meera K.', pin: '1234', ph: '9876543212', dob: '2003-08-19', type: 'Personal', status: 'ACTIVE', bal: 1620, claimed: [],
-        tx: [
-          { n: 'Ridhaan', id: 'ridhaan@rpay', d: 'Yesterday', t: '9:40 pm', a: 120, ref: 'KX84919822' },
-          { n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '9:00 am', a: 500, ref: 'KX84900003' }
-        ]
-      },
-      'kabir@rpay': {
-        id: 'kabir@rpay', n: 'Kabir R.', pin: '1234', ph: '9876543213', dob: '2002-11-04', type: 'Personal', status: 'ACTIVE', bal: 900, claimed: [],
-        tx: [{ n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '11:00 am', a: 500, ref: 'KX84900004' }]
-      },
-      'diya@rpay': {
-        id: 'diya@rpay', n: 'Diya T.', pin: '1234', ph: '9876543214', dob: '2004-02-25', type: 'Personal', status: 'ACTIVE', bal: 1150, claimed: [],
-        tx: [{ n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '11:15 am', a: 500, ref: 'KX84900005' }]
-      },
-      'cornerstore@rpay': {
-        id: 'cornerstore@rpay', n: 'Corner Store', pin: '1234', ph: '9876543215', dob: '1995-06-10', type: 'Merchant', status: 'ACTIVE', bal: 5400, claimed: [],
-        tx: [
-          { n: 'Ridhaan', id: 'ridhaan@rpay', d: 'Today', t: '1:05 pm', a: 40, ref: 'KX84920110' },
-          { n: 'Welcome bonus', id: 'system@rpay', d: 'Monday', t: '8:00 am', a: 500, ref: 'KX84900006' }
-        ]
-      }
-    }
-  };
-}
-
-function loadLedger(){
-  try {
-    const raw = localStorage.getItem(LEDGER_KEY);
-    if (!raw) {
-      const def = getDefaultLedger();
-      localStorage.setItem(LEDGER_KEY, JSON.stringify(def));
-      return def;
-    }
-    return JSON.parse(raw);
-  } catch (e) {
-    return getDefaultLedger();
-  }
-}
-
-function saveLedger(ledger){
-  try {
-    localStorage.setItem(LEDGER_KEY, JSON.stringify(ledger));
-    if (syncChannel) syncChannel.postMessage({ type: 'LEDGER_UPDATED', ts: Date.now() });
-  } catch (e) {}
-}
-
-/* ---- QUEST DEFINITIONS ---- */
-const QUEST_LIST = [
-  { id: 'q_first', title: 'First Step', desc: 'Complete at least 1 outgoing transfer', reward: 25, check: (tx, bal) => tx.filter(t => t.a < 0).length >= 1, prog: (tx) => Math.min(100, tx.filter(t => t.a < 0).length * 100) },
-  { id: 'q_five', title: 'Active Networker', desc: 'Complete 5 transfers on Kinex Network', reward: 75, check: (tx, bal) => tx.filter(t => t.a < 0).length >= 5, prog: (tx) => Math.min(100, (tx.filter(t => t.a < 0).length / 5) * 100) },
-  { id: 'q_whale', title: 'Kinex Whale', desc: 'Hold a wallet balance of K 2,000 or more', reward: 100, check: (tx, bal) => bal >= 2000, prog: (tx, bal) => Math.min(100, (bal / 2000) * 100) }
-];
-
-/* ---- APPLICATION STATE ---- */
-const S={
-  scr:'login', ctx:'login', pin:'', bossPass:'', rs:1, lid:'ridhaan',
-  r:{name:'',id:'',ph:'',dob:'',type:'Personal',suggestions:[]},
-  u:{n:'Ridhaan',id:'ridhaan',fullId:'ridhaan@rpay',type:'Personal',status:'ACTIVE',claimed:[]},
-  bal:2450, hide:false, f:'all', sheet:null, pay:null,
-  scan:false, scanStage:'standby', torch:false, facing:'environment',
-  qrReqAmt:'', fresh:false, isPaying:false, unreadAlert:'',
-  adminSecret:'KINEX_MASTER_2026', bossTargetId:'', bossMintAmt:'',
-  dark:matchMedia('(prefers-color-scheme: dark)').matches, notif:true, bio:false,
-  tx:[], ppl:[], lastSyncSig:'', pwaPrompt:null
-};
-
-/* ---- PWA INSTALL HANDLER ---- */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(()=>{}));
-}
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  S.pwaPrompt = e;
-  render();
-});
-async function installPwa(){
-  if (!S.pwaPrompt) return;
-  S.pwaPrompt.prompt();
-  const { outcome } = await S.pwaPrompt.userChoice;
-  if (outcome === 'accepted') S.pwaPrompt = null;
-  render();
-}
-
-/* ---- REAL-TIME DUAL-USER PASSBOOK SYNC ---- */
-async function syncUserPassbook(silent = true){
-  if (!S.u || !S.u.fullId || S.scr === 'login' || S.scr === 'reg' || S.scr === 'boss') return;
-  const myId = S.u.fullId.toLowerCase();
-
-  let serverSynced = false;
-  try {
-    const res = await fetch(`/api/user-state/${encodeURIComponent(myId)}?t=${Date.now()}`, {
-      method: 'GET',
-      headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
-      cache: 'no-store'
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.success) {
-        serverSynced = true;
-        const prevBal = S.bal;
-        const prevTopRef = S.tx[0] ? S.tx[0].ref : '';
-
-        S.bal = Number(data.balance);
-        S.u.n = data.name || S.u.n;
-        S.u.status = data.status || 'ACTIVE';
-        S.u.type = data.account_type === 'MERCHANT' ? 'Merchant' : 'Personal';
-        S.tx = Array.isArray(data.transactions) ? data.transactions : [];
-        S.ppl = Array.isArray(data.contacts) ? data.contacts.filter(p => p.id.toLowerCase() !== myId) : S.ppl;
-
-        const newSig = `${S.bal}_${S.tx.length}_${S.tx[0]?S.tx[0].ref:''}_${S.u.status}`;
-        if (S.lastSyncSig && S.lastSyncSig !== newSig) {
-          if (S.bal > prevBal && S.tx[0] && S.tx[0].a > 0 && S.tx[0].ref !== prevTopRef) {
-            S.unreadAlert = `Received K ${fm(S.tx[0].a)} from ${S.tx[0].n}`;
-            if (S.notif) T(S.unreadAlert);
-          }
-          render();
-        }
-        S.lastSyncSig = newSig;
-      }
-    }
-  } catch (e) {}
-
-  if (!serverSynced) {
-    const ledger = loadLedger();
-    const acc = ledger.accounts[myId] || ledger.accounts[S.u.fullId];
-    if (acc) {
-      const prevBal = S.bal;
-      const prevTopRef = S.tx[0] ? S.tx[0].ref : '';
-
-      S.bal = Number(acc.bal);
-      S.u.n = acc.n;
-      S.u.status = acc.status || 'ACTIVE';
-      S.u.type = acc.type || 'Personal';
-      S.u.claimed = Array.isArray(acc.claimed) ? acc.claimed : [];
-      S.tx = acc.tx.slice();
-      S.ppl = Object.values(ledger.accounts)
-        .filter(x => x.id.toLowerCase() !== myId && x.id !== 'Boss0')
-        .map(x => ({ n: x.n, id: x.id }));
-
-      const newSig = `${S.bal}_${S.tx.length}_${S.tx[0]?S.tx[0].ref:''}_${S.u.status}`;
-      if (S.lastSyncSig && S.lastSyncSig !== newSig) {
-        if (S.bal > prevBal && S.tx[0] && S.tx[0].a > 0 && S.tx[0].ref !== prevTopRef) {
-          S.unreadAlert = `Received K ${fm(S.tx[0].a)} from ${S.tx[0].n}`;
-          if (S.notif) T(S.unreadAlert);
-        }
-        if (!silent || S.sheet !== 'pay') render();
-      }
-      S.lastSyncSig = newSig;
-    }
-  }
-}
-
-if (syncChannel) {
-  syncChannel.onmessage = () => {
-    if (S.scr === 'boss') render();
-    else syncUserPassbook(false);
-  };
-}
-window.addEventListener('storage', (e) => {
-  if (e.key === LEDGER_KEY) {
-    if (S.scr === 'boss') render();
-    else syncUserPassbook(false);
-  }
-});
-window.addEventListener('focus', () => syncUserPassbook(false));
-document.addEventListener('visibilitychange', () => { if (!document.hidden) syncUserPassbook(false); });
-setInterval(() => syncUserPassbook(true), 2500);
-
-/* ---- UI COMPONENTS ---- */
-const dots=()=>`<div class="dots" aria-label="${S.pin.length} of 4 digits entered">${[0,1,2,3].map(i=>`<i class="${i<S.pin.length?'on':''}"></i>`).join('')}</div>`;
-const pad=(a,dot)=>`<div class="pad">${[1,2,3,4,5,6,7,8,9,dot?'.':'',0,'b'].map(k=>k===''?'<span></span>':`<button type="button" data-a="${a}" data-v="${k}" aria-label="${k=='b'?'Delete':k}">${k=='b'?ic('del'):k}</button>`).join('')}</div>`;
-const txRow=(t,i)=>`<button type="button" class="row ${t.a>0?'in':'out'}" data-a="tx" data-v="${i}"><span class="bd">${ic(t.a>0?'down':'pay',20)}</span><span class="mt"><b>${E(t.n)}</b><span>${E(t.d)}, ${E(t.t)}</span></span><span class="am">${t.a>0?'+':'−'} K ${fm(Math.abs(t.a))}</span></button>`;
-const sums=()=>[S.tx.filter(t=>t.a>0).reduce((s,t)=>s+Number(t.a),0),Math.abs(S.tx.filter(t=>t.a<0).reduce((s,t)=>s+Number(t.a),0))];
-
-/* ---- LOGIN SCREEN (AUTO-DETECTS BOSS0 FOR ALPHANUMERIC PASSWORD) ---- */
-const login=()=>{
-  const bossMode = isBossInput(S.lid);
-  return `<div class="auth"><div class="brand"><div class="coin s">K</div><div><h1>RPAY</h1><p>Kinex Network</p></div></div>
-  ${S.pwaPrompt ? `<div class="pwa-bar"><div><b style="font-size:13px;display:block">Install Kinex App</b><span style="font-size:11px;color:var(--m)">Add icon to Home Screen</span></div><button type="button" class="mini" onclick="installPwa()">Install</button></div>` : ''}
-  <div class="card"><h2>${bossMode ? 'Operator Clearance' : 'Welcome back'}</h2><label class="lab" for="lid" style="margin-top:0;display:block">Kinex ID</label><div class="fld"><input id="lid" value="${E(S.lid)}" oninput="onLoginIdInput(this.value)" autocomplete="off"><span>${bossMode ? 'ADMIN' : '@rpay'}</span></div>
-  ${bossMode
-    ? `<label class="lab" for="bpass" style="display:block">Operator Alphanumeric Password</label><div class="fld" style="margin-bottom:16px"><input id="bpass" type="password" value="${E(S.bossPass)}" oninput="S.bossPass=this.value" placeholder="Enter operator password"></div><button type="button" class="pri" data-a="bossauth">Unlock Operator Console</button>`
-    : `<p class="lab">Enter your 4-digit PIN</p>${dots()}${pad('k')}<button type="button" class="pri" data-a="auth">Log in securely</button>`
-  }
-  <p class="sub">New to Kinex? <button type="button" class="lk" data-a="go" data-v="reg">Create account</button></p></div></div>`;
-};
-
-function onLoginIdInput(val){
-  const prevBoss = isBossInput(S.lid);
-  S.lid = val.replace(/@rpay$/i,'');
-  if (isBossInput(S.lid) !== prevBoss) {
-    render();
-    const input = $('#lid');
-    if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
-  }
-}
-
-/* ---- REGISTER SCREEN ---- */
-const reg=()=>S.rs==1?`<div class="auth"><div class="brand"><div class="coin s">K</div><div><h1>Join Kinex</h1><p>K 500 welcome bonus</p></div></div><div class="card"><label class="lab" for="rn" style="margin-top:0;display:block">Full legal name</label><div class="fld"><input id="rn" value="${E(S.r.name)}" oninput="onRegNameInput(this.value)" placeholder="As on your ID"></div><label class="lab" for="ri" style="display:block">Choose your Kinex ID</label><div class="fld"><input id="ri" value="${E(shortId(S.r.id))}" oninput="S.r.id=this.value.replace(/@rpay$/i,'');S.r.manual=true;S.r.suggestions=[]" placeholder="yourname"><span>@rpay</span></div>${S.r.suggestions&&S.r.suggestions.length?`<div class="sug-box"><p>That Kinex ID is taken. Pick an available ID:</p><div class="sug-btns">${S.r.suggestions.map(s=>`<button type="button" class="mini" data-a="pickid" data-v="${E(s)}">${E(s)}</button>`).join('')}</div></div>`:''}<label class="lab" for="rp" style="display:block">Mobile number (WhatsApp)</label><div class="fld"><input id="rp" type="tel" maxlength="10" value="${E(S.r.ph)}" oninput="S.r.ph=this.value.replace(/\\D/g,'')" placeholder="10 digits"></div><label class="lab" for="rdob" style="display:block">Date of birth</label><div class="fld"><input id="rdob" type="date" value="${E(S.r.dob)}" oninput="S.r.dob=this.value"></div><p class="lab">Account type</p><div class="seg">${['Personal','Merchant'].map(x=>`<button type="button" data-a="rtype" data-v="${x}" aria-pressed="${S.r.type==x}">${x}</button>`).join('')}</div><button type="button" class="pri" style="margin-top:18px" data-a="rnext">Continue to PIN</button><p class="sub">Already registered? <button type="button" class="lk" data-a="go" data-v="login">Log in</button></p></div></div>`
-:`<div class="auth"><div class="card"><button type="button" class="x" style="position:static;margin-bottom:8px" data-a="rback" aria-label="Back">${ic('back',18)}</button><h2>Create a 4-digit PIN</h2><p class="sub" style="margin:-8px 0 8px">${E(S.r.name)} · ${E(shortId(S.r.id))}@rpay</p>${dots()}${pad('k')}<button type="button" class="pri" data-a="auth">Sign Up (K 500 Bonus)</button></div></div>`;
-
-/* ---- BOSS0 OPERATOR CONSOLE ---- */
-const bossScreen=()=>{
-  const ledger = loadLedger();
-  const users = Object.values(ledger.accounts).filter(u => u.id !== 'Boss0');
-  const allTx = [];
-  users.forEach(u => {
-    (u.tx || []).forEach(t => {
-      if (t.a < 0) allTx.push({ ref: t.ref, sender: u.id, receiver: t.id || t.n, amt: Math.abs(t.a), time: `${t.d}, ${t.t}` });
-    });
-  });
-
-  return `<div class="boss-wrap">
-    <div class="boss-hdr">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><span class="pill" style="background:rgba(34,211,238,.2)">BOSS0 ROOT CONSOLE</span><h1 style="margin-top:8px;font-size:24px">Kinex Network Authority</h1></div>
-        <button type="button" class="mini dan" data-a="logout">Exit</button>
-      </div>
-      <div class="fld" style="margin-top:14px;background:rgba(0,0,0,.35);border-color:rgba(34,211,238,.4)">
-        <span style="font-size:12px;color:var(--cy)">Master Secret:</span>
-        <input type="password" value="${E(S.adminSecret)}" oninput="S.adminSecret=this.value" style="color:#fff;font-size:13px">
-      </div>
-    </div>
-
-    <div class="boss-card">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div><b>Global Network Maintenance Lock</b><p style="font-size:12px;color:var(--m)">Pauses all user peer-to-peer transfers</p></div>
-        <button type="button" class="sw ${ledger.maintenance?'on':''}" data-a="bossmaint"><i></i></button>
-      </div>
-    </div>
-
-    <div class="boss-card">
-      <h3 style="margin-bottom:10px;font-size:16px">Mint / Adjust User Balance</h3>
-      <div style="display:grid;grid-template-columns:1.2fr 1fr auto;gap:8px">
-        <div class="fld" style="height:42px"><input placeholder="user@rpay" value="${E(S.bossTargetId)}" oninput="S.bossTargetId=this.value"></div>
-        <div class="fld" style="height:42px"><input type="number" placeholder="+/- K Amt" value="${E(S.bossMintAmt)}" oninput="S.bossMintAmt=this.value"></div>
-        <button type="button" class="mini okb" style="height:42px" data-a="bossmint">Apply</button>
-      </div>
-    </div>
-
-    <div class="boss-card">
-      <h3 style="margin-bottom:8px;font-size:16px">Registered Accounts (${users.length})</h3>
-      ${users.map(u => `<div class="row">
-        ${av(u.n,0,38)}
-        <div class="mt"><b>${E(u.n)} <span style="font-size:11px;color:${u.status==='FROZEN'?'var(--neg)':'var(--pos)'}">(${E(u.status||'ACTIVE')})</span></b><span>${E(u.id)} · K ${fm(u.bal)}</span></div>
-        <button type="button" class="mini ${u.status==='FROZEN'?'okb':'dan'}" data-a="bossfreeze" data-v="${E(u.id)}">${u.status==='FROZEN'?'Unfreeze':'Freeze'}</button>
-      </div>`).join('')}
-    </div>
-
-    <div class="boss-card">
-      <h3 style="margin-bottom:8px;font-size:16px">Recent Ledger Transfers (Clawback)</h3>
-      ${allTx.slice(0,12).map(t => `<div class="row">
-        <div class="mt"><b>${E(t.sender)} → ${E(t.receiver)}</b><span>K ${fm(t.amt)} · ${E(t.ref)} · ${E(t.time)}</span></div>
-        <button type="button" class="mini dan" data-a="bossclaw" data-v="${E(t.ref)}">Reverse</button>
-      </div>`).join('') || '<p class="sub">No user transfers recorded yet.</p>'}
-    </div>
-  </div>`;
-};
-
-/* ---- MAIN CONSUMER SCREENS ---- */
-const home=()=>`<header class="hero"><div class="coin" aria-hidden="true">K</div><div class="top"><div class="who">${av(S.u.n,0,46)}<div><b>${E(S.u.n)}</b><button type="button" class="hd" data-a="copy">${E(S.u.id)}@rpay ${ic('copy',14)}</button></div></div><button type="button" class="ib" data-a="bell" aria-label="Notifications">${ic('bell',20)}${S.unreadAlert?'<i class="dot"></i>':''}</button></div><div class="bal"><div class="lr">Kinex balance<button type="button" class="eye" data-a="hide" aria-label="${S.hide?'Show':'Hide'} balance">${ic(S.hide?'eyeoff':'eye',18)}</button></div><p class="amt"><span>K</span><b>${S.hide?'••••••':fm(S.bal)}</b></p></div></header>
-<nav class="acts" aria-label="Quick actions">${[['pay','Pay','pay',1],['qr','My QR','qr'],['book','Passbook','go'],['earn','Earn','earn']].map(([i,l,a,p])=>`<button type="button" class="act ${p?'p':''}" data-a="${a=='go'?'go':a}" data-v="book"><i>${ic(i,24)}</i>${l}</button>`).join('')}</nav>
-<section class="sec" aria-labelledby="rh"><div class="shd"><h2 id="rh">Recent activity</h2><button type="button" class="lnk" data-a="go" data-v="book">See all</button></div><div class="list">${S.tx.slice(0,4).map((t,i)=>txRow(t,i)).join('')||'<p class="sub" style="padding:18px 0">No transactions yet.</p>'}</div></section>`;
-
-const people=()=>`<div class="ph"><h1>People</h1></div><label class="srch">${ic('search',18)}<input placeholder="Search name or Kinex ID" aria-label="Search people" oninput="flt(this.value)"></label><div class="sec" style="margin-top:14px"><div class="list">${S.ppl.map((p,i)=>`<div class="row" data-n="${E((p.n+p.id).toLowerCase())}">${av(p.n,i)}<span class="mt"><b>${E(p.n)}</b><span>${E(p.id)}</span></span><button type="button" class="mini" data-a="to" data-v="${i}">Pay</button></div>`).join('')||'<p class="sub" style="padding:16px 0">No other users found.</p>'}</div><button type="button" class="lo" style="color:var(--ac)" data-a="soon" data-v="Directory auto-syncs all verified @rpay users">${ic('users',20)}Verified Directory</button></div>`;
-
-const book=()=>{
-  const g={},[i,o]=sums();
-  S.tx.forEach((t,k)=>{
-    if(S.f=='in'&&t.a<0||S.f=='out'&&t.a>0)return;
-    (g[t.d]=g[t.d]||[]).push(txRow(t,k));
-  });
-  return `<div class="ph"><h1>Passbook</h1></div><div class="sum"><div><span>Received</span><b style="color:var(--pos)">K ${fm(i)}</b></div><div><span>Sent</span><b style="color:var(--neg)">K ${fm(o)}</b></div></div><div class="chips" role="group" aria-label="Filter">${[['all','All'],['in','Received'],['out','Sent']].map(([k,l])=>`<button type="button" class="chip" data-a="f" data-v="${k}" aria-pressed="${S.f==k}">${l}</button>`).join('')}</div>${Object.keys(g).map(d=>`<div class="gl">${E(d)}</div><div class="list">${g[d].join('')}</div>`).join('')||'<p class="sub" style="margin-top:40px">No transactions here yet.</p>'}`;
-};
-
-const swt=(i,l,k)=>`<div class="row"><span class="bd">${ic(i,20)}</span><span class="mt"><b>${l}</b></span><button type="button" class="sw ${S[k]?'on':''}" role="switch" aria-checked="${!!S[k]}" aria-label="${l}" data-a="sw" data-v="${k}"><i></i></button></div>`;
-const lk=l=>`<button type="button" class="row" data-a="soon" data-v="${l}"><span class="mt"><b>${l}</b></span>${ic('chev',18)}</button>`;
-const me=()=>`<div class="ph"><h1>Profile</h1></div><div class="sec" style="margin-top:12px"><div class="pc">${av(S.u.n,0,60)}<div><b class="h">${E(S.u.n)}</b><span>${E(S.u.id)}@rpay</span><em>KYC verified · ${E(S.u.type||'Personal')} wallet</em></div></div><div class="list" style="margin-top:14px">${swt('moon','Dark mode','dark')}${swt('bell','Payment alerts','notif')}${swt('shield','Biometric unlock','bio')}${lk('Change PIN')}${lk('Help and support')}</div><button type="button" class="lo" data-a="logout">${ic('out',20)}Log out</button></div>`;
-
-const tab=([i,v,l])=>`<button type="button" class="tab" data-a="go" data-v="${v}" ${S.scr==v?'aria-current="page"':''}>${ic(i)}${l}</button>`;
-const nav=()=>`<nav class="nav" aria-label="Main">${[['home','home','Home'],['users','people','People']].map(tab).join('')}<button type="button" class="tab sc" data-a="scan" aria-label="Scan QR"><i class="fab">${ic('scan',26)}</i>Scan</button>${[['book','book','Passbook'],['user','me','Profile']].map(tab).join('')}</nav>`;
-const main=()=>`<main class="app">${{home,people,book,me}[S.scr]()}</main>${nav()}`;
-
-/* ---- QR GENERATOR ---- */
-function fallbackSvgQr(){
-  const n=25;let s=7,o='';const r=()=>(s=(s*9301+49297)%233280)/233280;
-  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-    let on,f=0;
-    for(const[a,b]of[[0,0],[n-7,0],[0,n-7]])if(x>=a&&x<a+7&&y>=b&&y<b+7){const i=x-a,j=y-b;f=1;on=i%6==0||j%6==0||(i>1&&i<5&&j>1&&j<5)}
-    if(!f)on=((x<8&&y<8)||(x>n-9&&y<8)||(x<8&&y>n-9))?0:r()>.52;
-    if(on)o+=`<rect x="${x}" y="${y}" width="1.02" height="1.02"/>`;
-  }
-  return `<svg viewBox="0 0 ${n} ${n}" width="190" height="190" fill="#04142A" role="img" aria-label="Your Kinex QR code">${o}</svg>`;
-}
-function renderRealQR(){
-  const box = $('#live-qr-box');
-  if (!box) return;
-  const reqAmt = parseFloat(S.qrReqAmt);
-  let payload = `${S.u.id}@rpay`;
-  if (Number.isFinite(reqAmt) && reqAmt >= 1) {
-    const cleanAmt = Math.round(reqAmt * 100) / 100;
-    payload = `upi://pay?pa=${encodeURIComponent(S.u.id+'@rpay')}&am=${cleanAmt}`;
-  }
-  if (window.QRCode) {
-    box.innerHTML = '';
-    new QRCode(box, { text: payload, width: 190, height: 190, colorDark: '#04142A', colorLight: '#ffffff' });
-  } else {
-    box.innerHTML = fallbackSvgQr();
-  }
-}
-
-/* ---- PAY, QR, PASSBOOK DETAIL & EARN QUEST SHEETS ---- */
-function payV(){
-  const p=S.pay, a=Math.round((parseFloat(p.amt)||0)*100)/100;
-  const maxSpendable = Math.max(0, S.bal - 50);
-  let errMsg = '';
-  if (S.u.status === 'FROZEN') errMsg = 'Your account is frozen by Network Security';
-  else if (a > S.bal) errMsg = `Amount is more than your balance (K ${fm(S.bal)})`;
-  else if (a > 0 && S.bal - a < 50) errMsg = `Minimum K 50.00 reserve must remain in your wallet`;
-
-  if(p.step=='who') return `<h3>Pay to</h3><div class="list" style="box-shadow:none;padding:0">${S.ppl.map((q,i)=>`<button type="button" class="row" data-a="to" data-v="${i}">${av(q.n,i)}<span class="mt"><b>${E(q.n)}</b><span>${E(q.id)}</span></span>${ic('chev',18)}</button>`).join('')}</div>`;
-  if(p.step=='amt') return `<div class="who2">${av(p.to.n,0,44)}<div><b>${E(p.to.n)}</b><br><span style="font-size:13px;color:var(--m)">${E(p.to.id)}</span></div></div><div class="big"><span>K</span>${E(p.amt||'0')}</div><p class="err">${E(errMsg)}</p>${p.locked ? `<div class="locked-banner">🔒 Fixed QR Amount (Cannot be edited)</div>` : `<div class="qc">${[50,100,500].map(v=>`<button type="button" class="mini" data-a="qa" data-v="${v}">+ ${v}</button>`).join('')}</div>${pad('ak',1)}`}<button type="button" class="pri" data-a="cont" ${a<1||a>maxSpendable||S.u.status==='FROZEN'?'disabled':''}>Pay K ${fm(a)}</button>`;
-  if(p.step=='pin') return `<h3>Confirm with PIN</h3><p class="sub" style="margin:-6px 0 6px;text-align:left">Paying K ${fm(a)} to ${E(p.to.n)}</p>${dots()}${pad('k')}`;
-  if(p.step=='proc') return `<div class="ctr"><div class="spin"></div><h3 style="padding:0">Sending K ${fm(a)}</h3><p>Securing your payment…</p></div>`;
-  return `<div class="ctr"><div class="ok">${ic('check',40)}</div><h3 style="padding:0">Payment sent</h3><div class="big"><span>K</span>${fm(a)}</div></div><div style="margin-top:12px"><div class="kv"><span>To</span><b>${E(p.to.n)}</b></div><div class="kv"><span>Kinex ID</span><b>${E(p.to.id)}</b></div><div class="kv"><span>Reference</span><b>${E(p.ref)}</b></div></div><div class="two"><button type="button" data-a="soon" data-v="Receipt shared">Share receipt</button><button type="button" data-a="close" style="background:linear-gradient(135deg,var(--cy),var(--bl));color:#04142A">Done</button></div>`;
-}
-
-function earnV(){
-  const claimed = S.u.claimed || [];
-  return `<h3>Earn Kinex Quests</h3><p class="sub" style="margin:-10px 0 14px;text-align:left">Complete network milestones to claim instant Kinex rewards into your passbook.</p>` +
-    QUEST_LIST.map(q => {
-      const isClaimed = claimed.includes(q.id);
-      const unlocked = q.check(S.tx, S.bal);
-      const pct = Math.round(q.prog(S.tx, S.bal));
-      return `<div class="q-card">
-        <div class="q-top"><b>${E(q.title)}</b><span class="mini ${isClaimed?'okb':''}">+ K ${q.reward}</span></div>
-        <p style="font-size:13px;color:var(--m)">${E(q.desc)}</p>
-        <div class="q-bar"><i style="width:${pct}%"></i></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
-          <span style="font-size:12px;color:var(--m)">${pct}% completed</span>
-          ${isClaimed
-            ? `<span style="font-size:12px;font-weight:700;color:var(--pos)">✓ Claimed</span>`
-            : `<button type="button" class="mini" data-a="claimq" data-v="${q.id}" ${!unlocked?'disabled style="opacity:.45"':''}>Claim K ${q.reward}</button>`
-          }
+    <!-- ==================== 1. AUTH SCREEN (LOGIN & REGISTER) ==================== -->
+    <div id="auth-screen" class="auth-wrapper">
+        <!-- One-Tap PWA Install Banner -->
+        <div id="pwa-install-banner" class="auth-card hidden" style="margin-bottom: 14px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-color: var(--cyan);">
+            <div>
+                <b style="font-size: 14px; display: block;">Install Kinex App</b>
+                <span style="font-size: 12px; color: var(--muted);">Add icon to Home Screen</span>
+            </div>
+            <button type="button" class="mini-btn" onclick="installKinexApp()">Install</button>
         </div>
-      </div>`;
-    }).join('');
-}
 
-const sheetV=()=>{
-  const p=S.pay;let c='';
-  if(S.sheet=='pay') c=payV();
-  else if(S.sheet=='earn') c=earnV();
-  else if(S.sheet=='qr'){
-    const reqAmt = parseFloat(S.qrReqAmt);
-    const hasAmt = Number.isFinite(reqAmt) && reqAmt >= 1;
-    c=`<h3>Your Kinex QR</h3><div class="qr" id="live-qr-box">${fallbackSvgQr()}</div><p class="ctr" style="font-weight:700">${E(S.u.id)}@rpay${hasAmt?` · K ${fm(reqAmt)}`:''}</p><p class="ctr" style="font-size:13px;margin-top:2px">${hasAmt?'Payer keypad will be locked to this amount':'Anyone can scan this to pay you'}</p><div class="fld" style="margin-top:12px;height:44px"><input type="number" min="1" placeholder="Optional: Set exact amount (K)" value="${E(S.qrReqAmt)}" oninput="updateQrReqAmt(this.value)">${S.qrReqAmt?`<button type="button" class="mini" data-a="clearqramt">Clear</button>`:''}</div><div class="two"><button type="button" data-a="copy">Copy ID</button><button type="button" data-a="soon" data-v="QR saved">Save image</button></div>`;
-  } else {
-    const t=S.tx[S.txi]||{n:'Transaction',d:'Today',t:'',a:0,ref:'KX00000000'};
-    const refCode = t.ref || ('KX'+(t.n.length*7919+Math.abs(t.a)*31).toString().padStart(8,'0'));
-    c=`<h3>${t.a>0?'Received':'Sent'}</h3><div class="ctr"><div class="big" style="color:${t.a>0?'var(--pos)':'var(--neg)'}"><span style="color:inherit">${t.a>0?'+':'−'} K</span>${fm(Math.abs(t.a))}</div><p>${E(t.n)}</p></div><div style="margin-top:14px"><div class="kv"><span>Date</span><b>${E(t.d)}, ${E(t.t)}</b></div><div class="kv"><span>Status</span><b style="color:var(--pos)">Completed</b></div><div class="kv"><span>Reference</span><b>${E(refCode)}</b></div></div><div class="two"><button type="button" data-a="soon" data-v="Report sent to support">Report issue</button><button type="button" data-a="again" data-v="${S.txi}" ${t.a>0?'disabled style="opacity:.45"':''}>Pay again</button></div>`;
-  }
-  return `<div class="ov" data-a="close"><div class="sheet ${S.fresh?'anim':''}" role="dialog" aria-modal="true">${p&&p.step=='proc'?'':`<button type="button" class="x" data-a="close" aria-label="Close">${ic('x',18)}</button>`}${c}</div></div>`;
-};
+        <div class="brand-header">
+            <div class="coin-logo">K</div>
+            <div>
+                <h1 style="font-size: 30px;">RPAY</h1>
+                <p style="color: var(--muted); font-size: 14px;">Kinex Network</p>
+            </div>
+        </div>
 
-const scanV=()=>{
-  const camLbl = `${S.facing=='environment'?'Back Cam':'Front Cam'} · ${S.torch?'Torch ON':'Torch Off'}`;
-  if (S.scanStage === 'standby') {
-    return `<div class="cam" role="dialog" aria-label="Scan QR"><div id="cam-reader" class="hidden"></div><div class="cbar"><button type="button" class="cb" data-a="scanx" aria-label="Close scanner">${ic('back')}</button><span class="pill">${camLbl}</span><button type="button" class="cb ${S.torch?'on':''}" data-a="torch" aria-label="Torch" aria-pressed="${S.torch}">${ic('flash')}</button></div><div class="vf"><div class="cb" style="width:74px;height:74px;border-color:var(--cy);color:var(--cy)">${ic('scan',34)}</div><h3 style="font-size:20px">Camera Ready</h3><p style="font-size:13px;color:rgba(255,255,255,.7);max-width:260px">Adjust Torch, Flip Camera, or pick from Files below. Tap the center Shutter button to start scanning.</p></div><div class="cdeck"><button type="button" class="cl" data-a="qrgallery"><span class="cb">${ic('img')}</span>Files</button><button type="button" class="shut" data-a="armscan" aria-label="Start scanning"><i>${ic('scan',30)}</i></button><button type="button" class="cl" data-a="flipcam"><span class="cb">${ic('flip')}</span>Flip Cam</button></div></div>`;
-  }
-  return `<div class="cam" role="dialog" aria-label="Scan QR"><div id="cam-reader"></div><div class="cbar"><button type="button" class="cb" data-a="scanx" aria-label="Close scanner">${ic('back')}</button><span class="pill" id="live-scan-pill">Align QR code inside square</span><span style="width:48px"></span></div><div class="vf"><div class="ret"><i class="tl1"></i><i class="tr1"></i><i class="bl1"></i><i class="br1"></i><span class="laser"></span></div><button type="button" class="pill" data-a="sim" style="cursor:pointer;pointer-events:auto">Tap to simulate QR scan</button></div><div class="cdeck" style="justify-content:center;min-height:40px"></div></div>`;
-};
+        <!-- LOGIN SECTION -->
+        <div id="login-section" class="auth-card">
+            <h2 id="login-heading">Welcome back</h2>
+            <label class="field-label" for="login-id" style="margin-top: 0;">Kinex ID</label>
+            <div class="field-box">
+                <input type="text" id="login-id" value="ridhaan" placeholder="yourname" autocomplete="off" oninput="handleLoginIdChange(this.value)">
+                <span id="login-suffix" class="field-suffix">@rpay</span>
+            </div>
 
-function render(){
-  const y=scrollY;
-  $('#app').innerHTML=(S.scr=='login'?login():S.scr=='reg'?reg():S.scr=='boss'?bossScreen():main())+(S.sheet?sheetV():'')+(S.scan?scanV():'');
-  S.fresh=false;
-  if (S.sheet === 'qr') renderRealQR();
-  scrollTo(0,S.top?0:y);
-  S.top=false;
-}
+            <!-- Standard 4-Digit PIN Login -->
+            <div id="user-pin-login-block">
+                <span class="field-label">Enter your 4-digit PIN</span>
+                <div class="pin-dots" id="login-pin-dots">
+                    <i class="pin-dot"></i><i class="pin-dot"></i><i class="pin-dot"></i><i class="pin-dot"></i>
+                </div>
+                <div class="numpad-grid">
+                    <button type="button" class="num-btn" onclick="pressLoginPin('1')">1</button>
+                    <button type="button" class="num-btn" onclick="pressLoginPin('2')">2</button>
+                    <button type="button" class="num-btn" onclick="pressLoginPin('3')">3</button>
+                    <button type="button" class="num-btn" onclick="pressLoginPin('4')">4</button>
+                    <button type="button" class="num-btn" onclick="pressLoginPin('5')">5</button>
+                    <button type="button" class="num-btn" onclick="pressLoginPin('6')">6</button>
+                    <button type="button" class="num-btn" onclick="pressLoginPin('7')">7</button>
+                    <button type="button" class="num-btn" onclick="pressLoginPin('8')">8</button>
+                    <button type="button" class="num-btn" onclick="pressLoginPin('9')">9</button>
+                    <span></span>
+                    <button type="button" class="num-btn" onclick="pressLoginPin('0')">0</button>
+                    <button type="button" class="num-btn" onclick="pressLoginPin('back')">⌫</button>
+                </div>
+                <button type="button" class="btn-primary" onclick="submitUserLogin()">Log in securely</button>
+            </div>
 
-function updateQrReqAmt(val){
-  S.qrReqAmt = val;
-  renderRealQR();
-}
-function onRegNameInput(val){
-  S.r.name = val;
-  if (!S.r.manual) {
-    S.r.id = val.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const ri = $('#ri');
-    if (ri) ri.value = S.r.id;
-  }
-}
-const flt=q=>document.querySelectorAll('[data-n]').forEach(r=>r.hidden=!r.dataset.n.includes(q.toLowerCase().trim()));
+            <!-- Boss0 Operator Alphanumeric Login Block (Auto-revealed when typing Boss0) -->
+            <div id="boss-pass-login-block" class="hidden">
+                <label class="field-label" for="boss-password-input">Operator Alphanumeric Password</label>
+                <div class="field-box" style="margin-bottom: 16px;">
+                    <input type="password" id="boss-password-input" placeholder="Enter Operator Password">
+                </div>
+                <button type="button" class="btn-primary" onclick="submitBossLogin()">Unlock Operator Console</button>
+            </div>
 
-const openPay=(to, step='amt', lockedAmt=null)=>{
-  if (to && to.id && to.id.toLowerCase() === S.u.fullId.toLowerCase()) {
-    return T('Security Block: You cannot pay your own Kinex ID');
-  }
-  S.sheet='pay';
-  const hasLock = lockedAmt !== null && lockedAmt !== undefined && lockedAmt !== '';
-  S.pay={
-    to,
-    amt: hasLock ? String(Math.round(parseFloat(lockedAmt)*100)/100) : '',
-    locked: hasLock,
-    step
-  };
-  S.ctx='pay';
-  S.pin='';
-  S.fresh=true;
-};
+            <p class="sub-text">New to Kinex? <button type="button" class="text-link" onclick="showRegisterScreen()">Create account</button></p>
+        </div>
 
-/* ---- TWO-STAGE CAMERA CONTROLLER ---- */
-let html5QrInstance = null;
-async function startLiveCamera(){
-  if (!window.Html5Qrcode) return;
-  try {
-    const readerEl = $('#cam-reader');
-    if (!readerEl) return;
-    if (!html5QrInstance) html5QrInstance = new Html5Qrcode('cam-reader');
-    if (html5QrInstance.isScanning) await html5QrInstance.stop();
-    await html5QrInstance.start(
-      { facingMode: S.facing },
-      { fps: 12, qrbox: { width: 230, height: 230 } },
-      (decodedText) => handleScannedPayload(decodedText),
-      () => {}
-    );
-    if (S.torch && S.facing === 'environment') {
-      try { await html5QrInstance.applyVideoConstraints({ advanced: [{ torch: true }] }); } catch(e){}
-    }
-  } catch (e) {
-    const pill = $('#live-scan-pill');
-    if (pill) pill.textContent = 'Preview mode · Tap below to simulate scan';
-  }
-}
-async function stopLiveCamera(){
-  try {
-    if (html5QrInstance && html5QrInstance.isScanning) await html5QrInstance.stop();
-  } catch (e) {}
-  S.scan = false;
-  S.scanStage = 'standby';
-}
-async function handleScannedPayload(rawText){
-  await stopLiveCamera();
-  const raw = String(rawText||'').trim();
-  let targetId = '';
-  let lockedAmt = null;
+        <!-- REGISTER SECTION -->
+        <div id="register-section" class="auth-card hidden">
+            <!-- Step 1: KYC Details -->
+            <div id="reg-step-1">
+                <h2>Join Kinex (K 500 Bonus)</h2>
 
-  if (raw.toLowerCase().startsWith('upi://pay')) {
-    const qs = raw.split('?')[1] || '';
-    const params = new URLSearchParams(qs);
-    targetId = cleanHandle(params.get('pa') || '');
-    lockedAmt = params.get('am');
-  } else if (/^[a-z0-9._-]+@[a-z0-9]+$/i.test(raw)) {
-    targetId = cleanHandle(raw);
-  } else {
-    render();
-    return T('Unrecognized QR code. Scan a valid @rpay QR.');
-  }
-  if (!targetId) { render(); return T('Invalid Kinex QR code'); }
-  if (targetId.toLowerCase() === S.u.fullId.toLowerCase()) { render(); return T('You cannot scan and pay your own QR code'); }
+                <label class="field-label" for="reg-name" style="margin-top: 0;">Full legal name</label>
+                <div class="field-box">
+                    <input type="text" id="reg-name" placeholder="As on your ID" oninput="autoSuggestHandle(this.value)">
+                </div>
 
-  const found = S.ppl.find(p => p.id.toLowerCase() === targetId.toLowerCase()) || {
-    n: shortId(targetId)[0].toUpperCase() + shortId(targetId).slice(1),
-    id: targetId
-  };
-  openPay(found, 'amt', lockedAmt);
-  render();
-}
-$('#qr-file-input').addEventListener('change', async (ev) => {
-  const file = ev.target.files[0];
-  if (!file || !window.Html5Qrcode) return;
-  try {
-    await stopLiveCamera();
-    const fs = new Html5Qrcode('file-qr-reader');
-    const decoded = await fs.scanFile(file, true);
-    fs.clear();
-    ev.target.value = '';
-    handleScannedPayload(decoded);
-  } catch (e) {
-    ev.target.value = '';
-    T('No valid QR code found in that image');
-  }
-});
+                <label class="field-label" for="reg-custom-id">Choose your Kinex ID</label>
+                <div class="field-box">
+                    <input type="text" id="reg-custom-id" placeholder="yourname" oninput="onCustomHandleTyped(this.value)">
+                    <span class="field-suffix">@rpay</span>
+                </div>
 
-/* ---- AUTH & DUAL-PASSBOOK PAYMENT EXECUTION ---- */
-async function pinDone(){
-  const enteredPin = S.pin;
-  S.pin = '';
+                <!-- Duplicate Username Suggestions Box -->
+                <div id="reg-suggestions-box" class="suggestions-alert hidden">
+                    <p style="font-size: 12px; font-weight: 700; color: var(--neg);">That Kinex ID is already taken. Tap an available ID:</p>
+                    <div id="reg-suggestions-list" class="suggestions-list"></div>
+                </div>
 
-  // 1. LOGIN
-  if (S.ctx === 'login') {
-    const fullId = cleanHandle(S.lid || 'ridhaan');
-    const short = shortId(fullId);
-    const ledger = loadLedger();
+                <label class="field-label" for="reg-phone">Mobile number (WhatsApp)</label>
+                <div class="field-box">
+                    <input type="tel" id="reg-phone" maxlength="10" placeholder="10 digits" oninput="this.value=this.value.replace(/\D/g,'')">
+                </div>
 
-    try {
-      const res = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ upi_id: fullId, pin: enteredPin })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          S.u = { n: data.name || (short[0].toUpperCase()+short.slice(1)), id: short, fullId, type: data.account_type === 'MERCHANT' ? 'Merchant' : 'Personal', status: data.status || 'ACTIVE', claimed: [] };
-          S.scr = 'home'; S.top = true;
-          await syncUserPassbook(false);
-          render();
-          return T('Welcome back, ' + S.u.n);
+                <label class="field-label" for="reg-dob">Date of birth</label>
+                <div class="field-box">
+                    <input type="date" id="reg-dob">
+                </div>
+
+                <span class="field-label">Account type</span>
+                <div class="seg-control" style="margin-bottom: 18px;">
+                    <button type="button" id="seg-personal" class="seg-btn active" onclick="setRegAccountType('PERSONAL')">Personal</button>
+                    <button type="button" id="seg-merchant" class="seg-btn" onclick="setRegAccountType('MERCHANT')">Merchant</button>
+                </div>
+
+                <button type="button" class="btn-primary" onclick="proceedToRegPin()">Continue to PIN</button>
+                <p class="sub-text">Already registered? <button type="button" class="text-link" onclick="showLoginScreen()">Log in</button></p>
+            </div>
+
+            <!-- Step 2: Set 4-Digit PIN -->
+            <div id="reg-step-2" class="hidden">
+                <button type="button" class="mini-btn" style="margin-bottom: 12px;" onclick="backToRegStep1()">← Back</button>
+                <h2>Create a 4-digit PIN</h2>
+                <p class="sub-text" style="text-align: left; margin: -6px 0 12px;">
+                    <span id="reg-name-display" style="font-weight: 700; color: var(--text);"></span> · 
+                    <span id="reg-handle-display" style="color: var(--accent);"></span>
+                </p>
+
+                <div class="pin-dots" id="reg-pin-dots">
+                    <i class="pin-dot"></i><i class="pin-dot"></i><i class="pin-dot"></i><i class="pin-dot"></i>
+                </div>
+
+                <div class="numpad-grid">
+                    <button type="button" class="num-btn" onclick="pressRegPin('1')">1</button>
+                    <button type="button" class="num-btn" onclick="pressRegPin('2')">2</button>
+                    <button type="button" class="num-btn" onclick="pressRegPin('3')">3</button>
+                    <button type="button" class="num-btn" onclick="pressRegPin('4')">4</button>
+                    <button type="button" class="num-btn" onclick="pressRegPin('5')">5</button>
+                    <button type="button" class="num-btn" onclick="pressRegPin('6')">6</button>
+                    <button type="button" class="num-btn" onclick="pressRegPin('7')">7</button>
+                    <button type="button" class="num-btn" onclick="pressRegPin('8')">8</button>
+                    <button type="button" class="num-btn" onclick="pressRegPin('9')">9</button>
+                    <span></span>
+                    <button type="button" class="num-btn" onclick="pressRegPin('0')">0</button>
+                    <button type="button" class="num-btn" onclick="pressRegPin('back')">⌫</button>
+                </div>
+
+                <button type="button" class="btn-primary" onclick="submitRegistration()">Complete Sign Up (K 500 Bonus)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 2. MAIN CONSUMER APP ==================== -->
+    <div id="main-app" class="app-shell hidden">
+
+        <!-- TAB VIEW 1: HOME -->
+        <div id="view-home">
+            <header class="hero-banner">
+                <div class="hero-coin-bg" aria-hidden="true">K</div>
+                <div class="hero-top">
+                    <div class="user-pill">
+                        <div class="avatar-circle" id="home-avatar">R</div>
+                        <div>
+                            <b id="home-user-name" style="font-size: 17px; display: block;">Ridhaan</b>
+                            <button type="button" class="handle-copy-btn" onclick="copyMyKinexId()">
+                                <span id="home-user-handle">ridhaan@rpay</span> 📋
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" class="icon-circle-btn" onclick="checkNotifications()" aria-label="Notifications">
+                        🔔
+                        <i id="notif-dot-indicator" class="notif-dot hidden"></i>
+                    </button>
+                </div>
+
+                <div class="balance-block">
+                    <div class="balance-label-row">
+                        <span>Kinex balance</span>
+                        <button type="button" onclick="toggleHideBalance()" style="color: #fff; font-size: 15px; padding: 4px;">👁</button>
+                    </div>
+                    <div class="balance-amount-row">
+                        <span>K</span>
+                        <b id="balance-display">0.00</b>
+                    </div>
+                </div>
+            </header>
+
+            <nav class="quick-actions-bar" aria-label="Quick actions">
+                <button type="button" class="quick-act-btn primary" onclick="switchTab('people')">
+                    <span class="quick-act-icon">↗</span>
+                    Pay
+                </button>
+                <button type="button" class="quick-act-btn" onclick="openReceiveQrModal()">
+                    <span class="quick-act-icon">⊞</span>
+                    My QR
+                </button>
+                <button type="button" class="quick-act-btn" onclick="switchTab('passbook')">
+                    <span class="quick-act-icon">☰</span>
+                    Passbook
+                </button>
+                <button type="button" class="quick-act-btn" onclick="openModal('earnModal')">
+                    <span class="quick-act-icon">★</span>
+                    Earn
+                </button>
+            </nav>
+
+            <section class="section-block">
+                <div class="section-header">
+                    <h2>Recent activity</h2>
+                    <button type="button" class="text-link" style="text-decoration: none;" onclick="switchTab('passbook')">See all</button>
+                </div>
+                <div id="home-recent-list" class="card-list"></div>
+            </section>
+        </div>
+
+        <!-- TAB VIEW 2: PEOPLE DIRECTORY -->
+        <div id="view-people" class="hidden">
+            <div class="page-title"><h1>People</h1></div>
+            <div class="search-bar">
+                <span>🔍</span>
+                <input type="text" id="people-search-input" placeholder="Search name or Kinex ID" oninput="filterPeopleList(this.value)">
+            </div>
+            <section class="section-block" style="margin-top: 14px;">
+                <div id="people-directory-list" class="card-list"></div>
+            </section>
+        </div>
+
+        <!-- TAB VIEW 3: PASSBOOK -->
+        <div id="view-passbook" class="hidden">
+            <div class="page-title"><h1>Passbook</h1></div>
+            <div class="summary-grid">
+                <div class="summary-box">
+                    <span>Received</span>
+                    <b id="passbook-total-in" style="color: var(--pos);">K 0.00</b>
+                </div>
+                <div class="summary-box">
+                    <span>Sent</span>
+                    <b id="passbook-total-out" style="color: var(--neg);">K 0.00</b>
+                </div>
+            </div>
+            <div class="filter-chips">
+                <button type="button" id="flt-all" class="chip-btn active" onclick="setPassbookFilter('all')">All</button>
+                <button type="button" id="flt-in" class="chip-btn" onclick="setPassbookFilter('in')">Received</button>
+                <button type="button" id="flt-out" class="chip-btn" onclick="setPassbookFilter('out')">Sent</button>
+            </div>
+            <section class="section-block" style="margin-top: 14px;">
+                <div id="passbook-full-list" class="card-list"></div>
+            </section>
+        </div>
+
+        <!-- TAB VIEW 4: PROFILE -->
+        <div id="view-profile" class="hidden">
+            <div class="page-title"><h1>Profile</h1></div>
+            <section class="section-block" style="margin-top: 12px;">
+                <div class="profile-banner">
+                    <div class="avatar-circle" id="profile-avatar" style="width: 58px; height: 58px; font-size: 22px;">R</div>
+                    <div>
+                        <b id="profile-name" class="sora" style="font-size: 19px; display: block;">Ridhaan</b>
+                        <span id="profile-handle" style="font-size: 14px; opacity: 0.8;">ridhaan@rpay</span>
+                        <em id="profile-badge" style="display: block; margin-top: 6px; font-style: normal; font-size: 12px; font-weight: 700; color: var(--cyan);">KYC Verified · Personal Wallet</em>
+                    </div>
+                </div>
+
+                <div class="card-list" style="margin-top: 14px;">
+                    <div class="list-row">
+                        <div class="row-meta"><b>Dark mode</b></div>
+                        <button type="button" id="sw-dark" class="switch-toggle on" onclick="toggleThemeMode()"><i></i></button>
+                    </div>
+                    <div class="list-row">
+                        <div class="row-meta"><b>Payment alerts</b></div>
+                        <button type="button" id="sw-notif" class="switch-toggle on" onclick="this.classList.toggle('on')"><i></i></button>
+                    </div>
+                    <div class="list-row">
+                        <div class="row-meta"><b>Biometric unlock</b></div>
+                        <button type="button" id="sw-bio" class="switch-toggle" onclick="this.classList.toggle('on'); toast('Biometric preference updated')"><i></i></button>
+                    </div>
+                </div>
+
+                <button type="button" class="logout-btn" onclick="logoutUser()">Log out</button>
+            </section>
+        </div>
+
+        <!-- BOTTOM NAVIGATION BAR -->
+        <nav class="bottom-nav">
+            <button type="button" id="nav-home" class="nav-tab active" onclick="switchTab('home')">
+                <span style="font-size: 20px;">⌂</span>
+                <span>Home</span>
+            </button>
+            <button type="button" id="nav-people" class="nav-tab" onclick="switchTab('people')">
+                <span style="font-size: 20px;">👥</span>
+                <span>People</span>
+            </button>
+            <button type="button" class="nav-tab" onclick="startScanner()">
+                <span class="scan-fab">⊞</span>
+                <span style="color: var(--text);">Scan</span>
+            </button>
+            <button type="button" id="nav-passbook" class="nav-tab" onclick="switchTab('passbook')">
+                <span style="font-size: 20px;">☰</span>
+                <span>Passbook</span>
+            </button>
+            <button type="button" id="nav-profile" class="nav-tab" onclick="switchTab('profile')">
+                <span style="font-size: 20px;">👤</span>
+                <span>Profile</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- ==================== 3. BOSS0 OPERATOR CONSOLE ==================== -->
+    <div id="boss-screen" class="app-shell hidden" style="padding-top: 20px;">
+        <div class="section-block" style="margin-top: 0;">
+            <div class="profile-banner" style="flex-direction: column; align-items: stretch;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--cyan);">BOSS0 ROOT AUTHORITY</span>
+                        <h2 style="font-size: 22px; margin-top: 4px;">Operator Console</h2>
+                    </div>
+                    <button type="button" class="mini-btn" style="background: rgba(198,47,47,0.25); color: #fff;" onclick="logoutUser()">Exit</button>
+                </div>
+                <div class="field-box" style="margin-top: 14px; height: 44px; background: rgba(0,0,0,0.35); border-color: rgba(34,211,238,0.4);">
+                    <span style="font-size: 12px; color: var(--cyan); font-weight: 700;">Master Secret:</span>
+                    <input type="password" id="boss-master-secret" value="KINEX_MASTER_2026" style="color: #fff; font-size: 13px;">
+                </div>
+            </div>
+
+            <div class="auth-card" style="margin-top: 14px; padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <b>Global Network Maintenance</b>
+                        <p style="font-size: 12px; color: var(--muted);">Pauses all peer-to-peer transfers</p>
+                    </div>
+                    <button type="button" id="boss-maint-switch" class="switch-toggle" onclick="bossToggleMaintenance()"><i></i></button>
+                </div>
+            </div>
+
+            <div class="auth-card" style="margin-top: 14px; padding: 16px;">
+                <h3 style="font-size: 16px; margin-bottom: 10px;">Mint / Adjust User Balance</h3>
+                <div style="display: flex; gap: 8px;">
+                    <div class="field-box" style="flex: 1.2; height: 44px;">
+                        <input type="text" id="boss-mint-user" placeholder="user@rpay">
+                    </div>
+                    <div class="field-box" style="flex: 1; height: 44px;">
+                        <input type="number" id="boss-mint-amt" placeholder="+/- K Amt">
+                    </div>
+                    <button type="button" class="mini-btn" onclick="bossAdjustBalance()">Apply</button>
+                </div>
+            </div>
+
+            <div class="auth-card" style="margin-top: 14px; padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="font-size: 16px;">Registered Accounts</h3>
+                    <button type="button" class="mini-btn" onclick="loadBossDashboard()">Refresh</button>
+                </div>
+                <div id="boss-users-list"></div>
+            </div>
+
+            <div class="auth-card" style="margin-top: 14px; padding: 16px;">
+                <h3 style="font-size: 16px; margin-bottom: 10px;">Global Ledger (1-Click Clawback)</h3>
+                <div id="boss-tx-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 4. TWO-STAGE CAMERA APP QR SCANNER ==================== -->
+    <div id="scannerModal" class="cam-scanner-overlay hidden">
+        <div id="reader"></div>
+        <div id="file-qr-reader" class="hidden"></div>
+
+        <!-- Top Camera Overlay Bar -->
+        <div class="cam-top-bar">
+            <button type="button" class="cam-circle-btn" onclick="stopScanner()" aria-label="Back">←</button>
+            <div class="cam-status-pill" id="cam-status-lbl">Back Cam • Torch Off</div>
+            <button type="button" class="cam-circle-btn" id="cam-torch-btn" onclick="toggleCameraTorch()" aria-label="Toggle Flashlight">⚡</button>
+        </div>
+
+        <!-- Stage 1: Standby Prompt (Visible BEFORE pressing Shutter) -->
+        <div id="cam-standby-prompt" class="cam-viewfinder-wrap" style="text-align: center; padding: 24px;">
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(34, 211, 238, 0.14); border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 30px;">⊞</div>
+            <h3 style="font-size: 20px;">Camera Ready</h3>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; max-width: 260px;">Adjust Torch, Flip Camera, or pick from Files below. Tap the center Shutter button to start scanning.</p>
+        </div>
+
+        <!-- Stage 2: Center Viewfinder Reticle (Hidden until Shutter is pressed) -->
+        <div id="cam-viewfinder" class="cam-viewfinder-wrap hidden">
+            <div class="cam-reticle" id="cam-reticle-box">
+                <div class="cam-corner tl"></div>
+                <div class="cam-corner tr"></div>
+                <div class="cam-corner bl"></div>
+                <div class="cam-corner br"></div>
+                <div class="cam-laser"></div>
+            </div>
+        </div>
+
+        <!-- Bottom Camera Control Deck (Hides when Shutter is pressed) -->
+        <div id="cam-bottom-deck" class="cam-bottom-deck">
+            <input type="file" id="qr-file-input" accept="image/*" class="hidden" onchange="scanQrFromFile(event)">
+            <button type="button" class="cam-side-btn" onclick="document.getElementById('qr-file-input').click()">
+                <span class="ico-ring">🖼</span>
+                <span>Files</span>
+            </button>
+            <button type="button" class="cam-shutter-btn" onclick="activateLiveScanMode()" aria-label="Start Scanning">
+                <span class="cam-shutter-inner">⊞</span>
+            </button>
+            <button type="button" class="cam-side-btn" onclick="switchCameraFacing()">
+                <span class="ico-ring">⇄</span>
+                <span>Flip Cam</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== 5. PAYMENT SHEET & LOCKED KEYPAD MODAL ==================== -->
+    <div id="scan-pay-screen" class="modal-overlay hidden">
+        <div class="sheet-box">
+            <button type="button" class="sheet-close" onclick="closeScanPay()">✕</button>
+            <div style="text-align: center;">
+                <p style="font-size: 13px; color: var(--muted);">Paying to</p>
+                <h3 id="scan-target-upi" style="color: var(--accent); font-size: 18px; margin-top: 2px;"></h3>
+            </div>
+
+            <div class="big-pay-amount">
+                <span>K</span><b id="scan-amount-display">0</b>
+            </div>
+
+            <p id="pay-balance-error" style="text-align: center; color: var(--neg); font-size: 13px; font-weight: 600; min-height: 18px;"></p>
+
+            <!-- Shown only when QR code locks the amount -->
+            <div id="locked-amt-notice" class="locked-amt-banner hidden">
+                🔒 Fixed QR Amount (Cannot be edited)
+            </div>
+
+            <!-- Quick Chips & Numpad (Automatically hidden if QR has a locked amount) -->
+            <div id="scan-numpad-wrapper">
+                <div style="display: flex; justify-content: center; gap: 8px; margin: 8px 0 14px;">
+                    <button type="button" class="mini-btn" onclick="addQuickAmount(50)">+ 50</button>
+                    <button type="button" class="mini-btn" onclick="addQuickAmount(100)">+ 100</button>
+                    <button type="button" class="mini-btn" onclick="addQuickAmount(500)">+ 500</button>
+                </div>
+                <div class="numpad-grid">
+                    <button type="button" class="num-btn" onclick="numpad('1')">1</button>
+                    <button type="button" class="num-btn" onclick="numpad('2')">2</button>
+                    <button type="button" class="num-btn" onclick="numpad('3')">3</button>
+                    <button type="button" class="num-btn" onclick="numpad('4')">4</button>
+                    <button type="button" class="num-btn" onclick="numpad('5')">5</button>
+                    <button type="button" class="num-btn" onclick="numpad('6')">6</button>
+                    <button type="button" class="num-btn" onclick="numpad('7')">7</button>
+                    <button type="button" class="num-btn" onclick="numpad('8')">8</button>
+                    <button type="button" class="num-btn" onclick="numpad('9')">9</button>
+                    <button type="button" class="num-btn" onclick="numpad('.')">.</button>
+                    <button type="button" class="num-btn" onclick="numpad('0')">0</button>
+                    <button type="button" class="num-btn" onclick="numpad('back')">⌫</button>
+                </div>
+            </div>
+
+            <button type="button" id="proceed-pay-btn" class="btn-primary" onclick="proceedToPin()">Proceed to Pay</button>
+        </div>
+    </div>
+
+    <!-- ==================== 6. PIN CONFIRMATION MODAL ==================== -->
+    <div id="pinConfirmModal" class="modal-overlay hidden">
+        <div class="sheet-box">
+            <button type="button" class="sheet-close" onclick="closeModal('pinConfirmModal')">✕</button>
+            <h3>Confirm with PIN</h3>
+            <p style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">
+                Paying <b style="color: var(--accent);">K <span id="pin-confirm-amt">0.00</span></b> to <b id="pin-confirm-upi"></b>
+            </p>
+            <div class="pin-dots" id="pay-pin-dots">
+                <i class="pin-dot"></i><i class="pin-dot"></i><i class="pin-dot"></i><i class="pin-dot"></i>
+            </div>
+            <div class="numpad-grid">
+                <button type="button" class="num-btn" onclick="pressPayPin('1')">1</button>
+                <button type="button" class="num-btn" onclick="pressPayPin('2')">2</button>
+                <button type="button" class="num-btn" onclick="pressPayPin('3')">3</button>
+                <button type="button" class="num-btn" onclick="pressPayPin('4')">4</button>
+                <button type="button" class="num-btn" onclick="pressPayPin('5')">5</button>
+                <button type="button" class="num-btn" onclick="pressPayPin('6')">6</button>
+                <button type="button" class="num-btn" onclick="pressPayPin('7')">7</button>
+                <button type="button" class="num-btn" onclick="pressPayPin('8')">8</button>
+                <button type="button" class="num-btn" onclick="pressPayPin('9')">9</button>
+                <span></span>
+                <button type="button" class="num-btn" onclick="pressPayPin('0')">0</button>
+                <button type="button" class="num-btn" onclick="pressPayPin('back')">⌫</button>
+            </div>
+            <button type="button" class="btn-primary" onclick="executeScanPay()">Send Payment Now</button>
+        </div>
+    </div>
+
+    <!-- ==================== 7. RECEIVE / MY QR MODAL ==================== -->
+    <div id="qrModal" class="modal-overlay hidden">
+        <div class="sheet-box" style="text-align: center;">
+            <button type="button" class="sheet-close" onclick="closeModal('qrModal')">✕</button>
+            <h3>Your Kinex QR</h3>
+            <div id="qrcode" style="background: #FFFFFF; padding: 16px; border-radius: 20px; display: inline-block; margin: 10px auto;"></div>
+            <p id="qr-upi-label" style="font-size: 15px; font-weight: 700; color: var(--accent); margin: 6px 0 14px;"></p>
+
+            <div style="text-align: left; border-top: 1px solid var(--line); padding-top: 12px;">
+                <label class="field-label" style="margin-top: 0;">SET EXACT AMOUNT (OPTIONAL - LOCKS PAYER KEYPAD)</label>
+                <div style="display: flex; gap: 8px;">
+                    <div class="field-box" style="flex: 1; height: 44px;">
+                        <input type="number" id="qr-req-amt" placeholder="Enter amount (K)" min="1" oninput="updateReceiveQR()">
+                    </div>
+                    <button type="button" class="mini-btn" onclick="document.getElementById('qr-req-amt').value=''; updateReceiveQR();">Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 8. TRANSACTION DETAIL MODAL ==================== -->
+    <div id="txDetailModal" class="modal-overlay hidden">
+        <div class="sheet-box">
+            <button type="button" class="sheet-close" onclick="closeModal('txDetailModal')">✕</button>
+            <h3 id="tx-detail-type">Transaction Details</h3>
+            <div style="text-align: center; margin: 14px 0;">
+                <div id="tx-detail-amt" class="big-pay-amount" style="font-size: 40px;"></div>
+                <p id="tx-detail-party" style="font-weight: 700; font-size: 16px;"></p>
+            </div>
+            <div class="kv-row"><span>Date & Time</span><b id="tx-detail-time"></b></div>
+            <div class="kv-row"><span>Status</span><b style="color: var(--pos);">Completed</b></div>
+            <div class="kv-row"><span>Reference</span><b id="tx-detail-ref"></b></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px;">
+                <button type="button" class="mini-btn" style="height: 48px;" onclick="toast('Support ticket logged for review')">Report issue</button>
+                <button type="button" id="tx-pay-again-btn" class="btn-primary" style="height: 48px;">Pay again</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 9. EARN KINEX QUESTS MODAL ==================== -->
+    <div id="earnModal" class="modal-overlay hidden">
+        <div class="sheet-box">
+            <button type="button" class="sheet-close" onclick="closeModal('earnModal')">✕</button>
+            <h3>Earn Kinex Quests</h3>
+            <p style="font-size: 13px; color: var(--muted); margin-bottom: 14px;">Complete real ecosystem milestones to earn bonus Kinex.</p>
+            <div class="card-list" style="background: var(--bg); padding: 12px 16px;">
+                <div class="list-row">
+                    <div class="row-meta">
+                        <b>Welcome Verification Bonus</b>
+                        <span>Complete KYC sign-up on Kinex Network</span>
+                    </div>
+                    <span class="mini-btn" style="color: var(--pos);">+ K 500 Claimed</span>
+                </div>
+                <div class="list-row">
+                    <div class="row-meta">
+                        <b>Active Networker</b>
+                        <span>Send Kinex to verified peers via QR or Directory</span>
+                    </div>
+                    <span class="mini-btn">Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 10. PROCESSING & SUCCESS RECEIPT ==================== -->
+    <div id="loading-screen" class="modal-overlay hidden" style="align-items: center;">
+        <div class="auth-card" style="text-align: center; width: 320px;">
+            <h3 id="load-title" style="margin-bottom: 8px;">Processing Payment...</h3>
+            <p id="load-desc" style="color: var(--muted); font-size: 13px;">Securing ledger update on Kinex Network</p>
+        </div>
+    </div>
+
+    <div id="success-screen" class="modal-overlay hidden">
+        <div class="sheet-box" style="text-align: center;">
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--pos); color: #fff; font-size: 36px; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px;">✓</div>
+            <h3>Payment Sent</h3>
+            <div id="receipt-amount" class="big-pay-amount" style="font-size: 42px;">K 0.00</div>
+            <div style="text-align: left; margin-top: 14px;">
+                <div class="kv-row"><span>To</span><b id="receipt-receiver"></b></div>
+                <div class="kv-row"><span>From</span><b id="receipt-sender"></b></div>
+                <div class="kv-row"><span>Reference</span><b id="receipt-ref"></b></div>
+                <div class="kv-row"><span>Time</span><b id="receipt-time"></b></div>
+            </div>
+            <button type="button" class="btn-primary" style="margin-top: 18px;" onclick="closeSuccess()">Done</button>
+        </div>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <!-- ==================== JAVASCRIPT ENGINE ==================== -->
+    <script>
+        function $(id) { return document.getElementById(id); }
+
+        function escapeHTML(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
         }
-      }
-    } catch (e) {}
 
-    if (!ledger.accounts[fullId]) {
-      ledger.accounts[fullId] = {
-        id: fullId, n: short[0].toUpperCase() + short.slice(1), pin: enteredPin,
-        ph: '9000000000', dob: '2000-01-01', type: 'Personal', status: 'ACTIVE', bal: 500, claimed: [],
-        tx: [{ n: 'Welcome bonus', id: 'system@rpay', d: 'Today', t: tm(), a: 500, ref: 'KX' + Math.floor(1e7 + Math.random() * 9e7) }]
-      };
-      saveLedger(ledger);
-    }
-
-    const acc = ledger.accounts[fullId];
-    S.u = { n: acc.n, id: short, fullId: acc.id, type: acc.type || 'Personal', status: acc.status || 'ACTIVE', claimed: acc.claimed || [] };
-    S.bal = Number(acc.bal);
-    S.tx = acc.tx.slice();
-    S.ppl = Object.values(ledger.accounts).filter(x => x.id.toLowerCase() !== fullId && x.id !== 'Boss0').map(x => ({ n: x.n, id: x.id }));
-    S.lastSyncSig = `${S.bal}_${S.tx.length}_${S.tx[0]?S.tx[0].ref:''}_${S.u.status}`;
-    S.scr = 'home'; S.top = true;
-    render();
-    return T('Welcome back, ' + S.u.n);
-  }
-
-  // 2. REGISTER
-  if (S.ctx === 'reg') {
-    const fullId = cleanHandle(S.r.id);
-    const short = shortId(fullId);
-    const bonusRef = 'KX' + Math.floor(1e7 + Math.random() * 9e7);
-
-    try {
-      const res = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          upi_id: fullId, name: S.r.name.trim(), pin: enteredPin,
-          phone: S.r.ph, dob: S.r.dob || '2005-01-01', account_type: S.r.type.toUpperCase()
-        })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (!data.success && data.suggestions) {
-          S.rs = 1; S.r.suggestions = data.suggestions;
-          render();
-          return T('That Kinex ID is taken. Choose a suggestion.');
+        function fmt(num) {
+            var n = parseFloat(num || 0);
+            return n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
-      }
-    } catch (e) {}
 
-    const ledger = loadLedger();
-    ledger.accounts[fullId] = {
-      id: fullId, n: S.r.name.trim(), pin: enteredPin, ph: S.r.ph, dob: S.r.dob || '2005-01-01',
-      type: S.r.type, status: 'ACTIVE', bal: 500, claimed: [],
-      tx: [{ n: 'Welcome bonus', id: 'system@rpay', d: 'Today', t: tm(), a: 500, ref: bonusRef }]
-    };
-    saveLedger(ledger);
-
-    S.u = { n: S.r.name.trim(), id: short, fullId, type: S.r.type, status: 'ACTIVE', claimed: [] };
-    S.bal = 500;
-    S.tx = ledger.accounts[fullId].tx.slice();
-    S.ppl = Object.values(ledger.accounts).filter(x => x.id.toLowerCase() !== fullId && x.id !== 'Boss0').map(x => ({ n: x.n, id: x.id }));
-    S.lastSyncSig = `${S.bal}_${S.tx.length}_${bonusRef}_ACTIVE`;
-    S.scr = 'home'; S.top = true;
-    await syncUserPassbook(false);
-    render();
-    return T('Account ready · K 500 bonus added');
-  }
-
-  // 3. PAYMENT (SYNCS BOTH SENDER & RECEIVER PASSBOOKS)
-  if (S.ctx === 'pay' && S.pay) {
-    if (S.isPaying) return;
-    const ledgerCheck = loadLedger();
-    if (ledgerCheck.maintenance) return T('Network is under maintenance. Transfers paused.');
-
-    S.isPaying = true;
-    S.pay.step = 'proc';
-    render();
-
-    const a = Math.round(parseFloat(S.pay.amt) * 100) / 100;
-    const senderId = S.u.fullId.toLowerCase();
-    const receiverId = cleanHandle(S.pay.to.id).toLowerCase();
-    const ref = 'KX' + Math.floor(1e7 + Math.random() * 9e7);
-    const nowTime = tm();
-
-    let backendError = null;
-    try {
-      const res = await fetch('/pay', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sender: senderId, receiver: receiverId, pin: enteredPin, amount: a })
-      });
-      if (res.status === 400) {
-        const errData = await res.json();
-        if (errData && errData.error) backendError = errData.error;
-      }
-    } catch (e) {}
-
-    setTimeout(async () => {
-      S.isPaying = false;
-      if (!S.pay) return;
-      if (backendError) {
-        S.pay.step = 'amt';
-        render();
-        return T(backendError);
-      }
-
-      const ledger = loadLedger();
-      if (!ledger.accounts[senderId]) {
-        ledger.accounts[senderId] = { id: senderId, n: S.u.n, pin: '1234', bal: S.bal, type: S.u.type, status: 'ACTIVE', claimed: [], tx: S.tx.slice() };
-      }
-      if (!ledger.accounts[receiverId]) {
-        ledger.accounts[receiverId] = { id: receiverId, n: S.pay.to.n, pin: '1234', bal: 500, type: 'Personal', status: 'ACTIVE', claimed: [], tx: [] };
-      }
-      if (ledger.accounts[receiverId].status === 'FROZEN') {
-        S.pay.step = 'amt';
-        render();
-        return T('Receiver account is frozen and cannot accept funds.');
-      }
-
-      // Debit Sender & Prepend to Sender Passbook
-      ledger.accounts[senderId].bal = Math.round((Number(ledger.accounts[senderId].bal) - a) * 100) / 100;
-      ledger.accounts[senderId].tx.unshift({
-        n: ledger.accounts[receiverId].n || S.pay.to.n,
-        id: receiverId, d: 'Today', t: nowTime, a: -a, ref: ref
-      });
-
-      // Credit Receiver & Prepend to Receiver Passbook
-      ledger.accounts[receiverId].bal = Math.round((Number(ledger.accounts[receiverId].bal) + a) * 100) / 100;
-      ledger.accounts[receiverId].tx.unshift({
-        n: ledger.accounts[senderId].n || S.u.n,
-        id: senderId, d: 'Today', t: nowTime, a: +a, ref: ref
-      });
-
-      saveLedger(ledger);
-
-      S.bal = ledger.accounts[senderId].bal;
-      S.tx = ledger.accounts[senderId].tx.slice();
-      S.lastSyncSig = `${S.bal}_${S.tx.length}_${ref}_${S.u.status}`;
-      S.pay.ref = ref;
-      S.pay.step = 'ok';
-
-      await syncUserPassbook(true);
-      render();
-    }, 950);
-  }
-}
-
-/* ---- CLICK EVENTS ---- */
-document.addEventListener('click', async e => {
-  const b = e.target.closest('[data-a]');
-  if (!b || b.disabled) return;
-  const a = b.dataset.a, v = b.dataset.v;
-  if (a == 'close' && b.classList.contains('ov') && e.target !== b) return;
-
-  switch (a) {
-    case 'go':
-      S.scr = v; S.pin = ''; S.ctx = 'login'; S.rs = 1; S.top = true;
-      if (v === 'book' || v === 'home' || v === 'people') await syncUserPassbook(true);
-      break;
-    case 'k':
-      if (v == 'b') S.pin = S.pin.slice(0, -1);
-      else if (S.pin.length < 4) S.pin += v;
-      render();
-      if (S.pin.length == 4) setTimeout(pinDone, 200);
-      return;
-    case 'auth':
-      if (S.pin.length < 4) return T('Enter your 4-digit PIN');
-      pinDone();
-      return;
-    case 'bossauth': {
-      const ledger = loadLedger();
-      const bossAcc = ledger.accounts['Boss0'];
-      if (S.bossPass !== (bossAcc ? bossAcc.pin : 'Kinex_Admin_2026!')) {
-        return T('Invalid Operator Password');
-      }
-      S.bossPass = '';
-      S.scr = 'boss';
-      S.top = true;
-      T('Operator Console Unlocked');
-      break;
-    }
-    case 'bossmaint': {
-      const ledger = loadLedger();
-      if (S.adminSecret !== ledger.adminSecret) return T('Invalid Master Secret Key');
-      ledger.maintenance = !ledger.maintenance;
-      saveLedger(ledger);
-      T(ledger.maintenance ? 'Network Maintenance Lock ENABLED' : 'Network Live');
-      break;
-    }
-    case 'bossfreeze': {
-      const ledger = loadLedger();
-      if (S.adminSecret !== ledger.adminSecret) return T('Invalid Master Secret Key');
-      const target = ledger.accounts[v];
-      if (target) {
-        target.status = target.status === 'FROZEN' ? 'ACTIVE' : 'FROZEN';
-        saveLedger(ledger);
-        T(`${target.id} is now ${target.status}`);
-      }
-      break;
-    }
-    case 'bossmint': {
-      const ledger = loadLedger();
-      if (S.adminSecret !== ledger.adminSecret) return T('Invalid Master Secret Key');
-      const tid = cleanHandle(S.bossTargetId).toLowerCase();
-      const amt = Math.round((parseFloat(S.bossMintAmt) || 0) * 100) / 100;
-      if (!ledger.accounts[tid] || !amt) return T('Enter a valid @rpay ID and amount');
-      const ref = 'KX' + Math.floor(1e7 + Math.random() * 9e7);
-      ledger.accounts[tid].bal = Math.max(0, Math.round((ledger.accounts[tid].bal + amt) * 100) / 100);
-      ledger.accounts[tid].tx.unshift({
-        n: amt > 0 ? 'Network Treasury Mint' : 'Network Treasury Burn',
-        id: 'Boss0', d: 'Today', t: tm(), a: amt, ref
-      });
-      saveLedger(ledger);
-      S.bossTargetId = ''; S.bossMintAmt = '';
-      T(`Updated ${tid} balance by K ${fm(amt)}`);
-      break;
-    }
-    case 'bossclaw': {
-      const ledger = loadLedger();
-      if (S.adminSecret !== ledger.adminSecret) return T('Invalid Master Secret Key');
-      let senderAcc = null, receiverAcc = null, txAmt = 0;
-      Object.values(ledger.accounts).forEach(acc => {
-        const found = (acc.tx || []).find(t => t.ref === v);
-        if (found) {
-          if (found.a < 0) { senderAcc = acc; txAmt = Math.abs(found.a); }
-          if (found.a > 0) { receiverAcc = acc; }
+        var toastTimer = null;
+        function toast(msg) {
+            var t = $('toast');
+            if (!t) return;
+            t.innerText = msg;
+            t.classList.add('show');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2400);
         }
-      });
-      if (!senderAcc || !receiverAcc || !txAmt) return T('Transfer record not found');
-      const revRef = 'KX' + Math.floor(1e7 + Math.random() * 9e7);
-      senderAcc.bal = Math.round((senderAcc.bal + txAmt) * 100) / 100;
-      receiverAcc.bal = Math.max(0, Math.round((receiverAcc.bal - txAmt) * 100) / 100);
-      senderAcc.tx.unshift({ n: 'Admin Clawback Refund', id: receiverAcc.id, d: 'Today', t: tm(), a: +txAmt, ref: revRef });
-      receiverAcc.tx.unshift({ n: 'Admin Clawback Reversal', id: senderAcc.id, d: 'Today', t: tm(), a: -txAmt, ref: revRef });
-      saveLedger(ledger);
-      T(`Reversed K ${fm(txAmt)} (${v})`);
-      break;
-    }
-    case 'rtype': S.r.type = v; break;
-    case 'pickid': S.r.id = shortId(v); S.r.manual = true; S.r.suggestions = []; break;
-    case 'rnext': {
-      if (S.r.name.trim().length < 2) return T('Enter your full legal name');
-      const cleanId = cleanHandle(S.r.id);
-      if (!/^[a-z0-9._]{3,}@rpay\$/i.test(cleanId)) return T('Kinex ID needs 3+ letters or numbers');
-      if (!/^\d{10}\$/.test(S.r.ph)) return T('Enter a valid 10-digit mobile number');
-      if (!S.r.dob) return T('Select your date of birth');
 
-      const ledger = loadLedger();
-      if (ledger.accounts[cleanId]) {
-        const base = shortId(cleanId);
-        S.r.suggestions = [
-          base + Math.floor(Math.random() * 90 + 10) + '@rpay',
-          base + Math.floor(Math.random() * 900 + 100) + '@rpay',
-          base + (Math.floor(Math.random() * 9000) + 1000) + '@rpay'
-        ];
-        render();
-        return T('That Kinex ID is already taken');
-      }
-      const dupPhone = Object.values(ledger.accounts).find(x => x.ph === S.r.ph);
-      if (dupPhone) return T(`Mobile number already linked to ${dupPhone.id}`);
-      S.rs = 2; S.ctx = 'reg'; S.pin = '';
-      break;
-    }
-    case 'rback': S.rs = 1; S.pin = ''; break;
-    case 'hide': S.hide = !S.hide; break;
-    case 'copy':
-      navigator.clipboard && navigator.clipboard.writeText(S.u.id + '@rpay').catch(() => {});
-      return T('Kinex ID copied: ' + S.u.id + '@rpay');
-    case 'bell':
-      if (S.unreadAlert) { const msg = S.unreadAlert; S.unreadAlert = ''; render(); return T(msg); }
-      return T('No new alerts');
-    case 'earn':
-      S.sheet = 'earn'; S.fresh = true;
-      break;
-    case 'claimq': {
-      const q = QUEST_LIST.find(x => x.id === v);
-      if (!q) return;
-      const ledger = loadLedger();
-      const myId = S.u.fullId.toLowerCase();
-      const acc = ledger.accounts[myId];
-      if (!acc) return;
-      acc.claimed = acc.claimed || [];
-      if (acc.claimed.includes(q.id)) return T('Quest already claimed');
-      const ref = 'KX' + Math.floor(1e7 + Math.random() * 9e7);
-      acc.claimed.push(q.id);
-      acc.bal = Math.round((acc.bal + q.reward) * 100) / 100;
-      acc.tx.unshift({ n: `Quest: ${q.title}`, id: 'system@rpay', d: 'Today', t: tm(), a: +q.reward, ref });
-      saveLedger(ledger);
-      S.u.claimed = acc.claimed.slice();
-      S.bal = acc.bal;
-      S.tx = acc.tx.slice();
-      T(`Claimed +K ${q.reward} into your Passbook!`);
-      break;
-    }
-    case 'soon': return T(v);
-    case 'pay': await syncUserPassbook(true); openPay(null, 'who'); break;
-    case 'to': openPay(S.ppl[v], 'amt', null); break;
-    case 'again': {
-      const t = S.tx[v];
-      openPay(S.ppl.find(p => p.n == t.n) || { n: t.n, id: t.id || (t.n.toLowerCase().replace(/\W/g, '') + '@rpay') });
-      break;
-    }
-    case 'qr':
-    case 'scanqr':
-      await stopLiveCamera(); S.sheet = 'qr'; S.fresh = true; break;
-    case 'clearqramt': S.qrReqAmt = ''; break;
-    case 'tx': S.sheet = 'tx'; S.txi = +v; S.fresh = true; break;
-    case 'f': S.f = v; break;
-    case 'sw':
-      S[v] = !S[v];
-      if (v == 'dark') document.documentElement.dataset.theme = S.dark ? 'dark' : 'light';
-      break;
-    case 'logout':
-      S.scr = 'login'; S.pin = ''; S.ctx = 'login'; S.lastSyncSig = '';
-      T('Logged out');
-      break;
-    case 'scan': S.scan = true; S.scanStage = 'standby'; S.torch = false; break;
-    case 'scanx': await stopLiveCamera(); break;
-    case 'torch':
-      if (S.facing === 'user') return T('Flashlight is only available on Back Camera');
-      S.torch = !S.torch; break;
-    case 'flipcam':
-      S.facing = S.facing === 'environment' ? 'user' : 'environment';
-      if (S.facing === 'user') S.torch = false;
-      T(S.facing === 'user' ? 'Switched to Front Camera' : 'Switched to Back Camera');
-      break;
-    case 'qrgallery': \$('#qr-file-input').click(); return;
-    case 'armscan':
-      S.scanStage = 'live'; render(); await startLiveCamera(); return;
-    case 'sim':
-      await stopLiveCamera();
-      openPay(S.ppl[Math.floor(Math.random() * S.ppl.length)]);
-      T('QR detected');
-      break;
-    case 'ak': {
-      const p = S.pay;
-      if (p.locked) return;
-      if (v == 'b') p.amt = p.amt.slice(0, -1);
-      else if (v == '.') { if (!p.amt.includes('.')) p.amt = (p.amt || '0') + '.'; }
-      else if (p.amt == '0') p.amt = v;
-      else if (p.amt.replace('.', '').length < 7 && !/\.\d\d\$/.test(p.amt)) p.amt += v;
-      break;
-    }
-    case 'qa': if (S.pay && !S.pay.locked) S.pay.amt = String((parseFloat(S.pay.amt) || 0) + +v); break;
-    case 'cont': S.pay.step = 'pin'; S.pin = ''; S.fresh = true; break;
-    case 'close': S.sheet = null; S.pay = null; S.pin = ''; await syncUserPassbook(true); break;
-  }
-  render();
-});
+        /* ---- GLOBAL STATE ---- */
+        var currentUser = null;
+        var currentUserName = '';
+        var currentAccountType = 'PERSONAL';
+        var currentBalance = 0;
+        var isBalanceHidden = false;
+        var loginPinBuffer = '';
+        var regPinBuffer = '';
+        var payPinBuffer = '';
+        var regAccountType = 'PERSONAL';
+        var selectedUpi = '';
+        var isCustomHandleEdited = false;
 
-document.documentElement.dataset.theme = S.dark ? 'dark' : 'light';
-(function init(){
-  const ledger = loadLedger();
-  const defAcc = ledger.accounts['ridhaan@rpay'];
-  if (defAcc) {
-    S.bal = defAcc.bal;
-    S.tx = defAcc.tx.slice();
-    S.ppl = Object.values(ledger.accounts).filter(x => x.id !== 'ridhaan@rpay' && x.id !== 'Boss0').map(x => ({ n: x.n, id: x.id }));
-  }
-  render();
-})();
-</script>
+        var currentScanAmount = '0';
+        var currentScanReceiver = '';
+        var isScanAmountLocked = false;
+        var isPayingMutex = false;
+
+        var cachedTransactions = [];
+        var cachedContacts = [];
+        var currentPassbookFilter = 'all';
+        var lastKnownBalance = null;
+        var unreadNotificationText = '';
+
+        var syncChannel = ('BroadcastChannel' in window) ? new BroadcastChannel('kinex_live_ledger') : null;
+        if (syncChannel) {
+            syncChannel.onmessage = function() {
+                if (currentUser && currentUser.toLowerCase() !== 'boss0') {
+                    updateBalance();
+                    loadHistory();
+                }
+            };
+        }
+
+        /* ---- PIN DOTS RENDERER ---- */
+        function renderPinDots(containerId, length) {
+            var box = $(containerId);
+            if (!box) return;
+            var dots = box.querySelectorAll('.pin-dot');
+            for (var i = 0; i < dots.length; i++) {
+                if (i < length) dots[i].classList.add('filled');
+                else dots[i].classList.remove('filled');
+            }
+        }
+
+        /* ---- LOGIN & BOSS0 DETECTION ---- */
+        function handleLoginIdChange(val) {
+            var clean = String(val || '').trim().toLowerCase().replace(/@rpay$/i, '');
+            if (clean === 'boss0') {
+                $('login-heading').innerText = 'Operator Clearance';
+                $('login-suffix').innerText = 'ADMIN';
+                $('user-pin-login-block').classList.add('hidden');
+                $('boss-pass-login-block').classList.remove('hidden');
+            } else {
+                $('login-heading').innerText = 'Welcome back';
+                $('login-suffix').innerText = '@rpay';
+                $('user-pin-login-block').classList.remove('hidden');
+                $('boss-pass-login-block').classList.add('hidden');
+            }
+        }
+
+        function pressLoginPin(key) {
+            if (key === 'back') loginPinBuffer = loginPinBuffer.slice(0, -1);
+            else if (loginPinBuffer.length < 4) loginPinBuffer += key;
+            renderPinDots('login-pin-dots', loginPinBuffer.length);
+            if (loginPinBuffer.length === 4) {
+                setTimeout(submitUserLogin, 180);
+            }
+        }
+
+        async function submitUserLogin() {
+            var rawId = $('login-id').value.trim().toLowerCase().replace(/@rpay$/i, '').replace(/[^a-z0-9._]/g, '');
+            if (!rawId) return toast('Enter your Kinex ID');
+            if (loginPinBuffer.length !== 4) return toast('Enter your 4-digit PIN');
+
+            var fullUpi = rawId + '@rpay';
+            var pinToUse = loginPinBuffer;
+            loginPinBuffer = '';
+            renderPinDots('login-pin-dots', 0);
+
+            try {
+                var res = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ upi_id: fullUpi, pin: pinToUse })
+                });
+                var data = await res.json();
+                if (!res.ok || !data.success) {
+                    return toast(data.error || 'Invalid Kinex ID or PIN');
+                }
+                completeUserSessionStart(data.upi_id || fullUpi, data.name || rawId, data.account_type || 'PERSONAL');
+            } catch (e) {
+                toast('Network error connecting to server');
+            }
+        }
+
+        async function submitBossLogin() {
+            var pass = $('boss-password-input').value;
+            if (!pass) return toast('Enter Operator Password');
+            try {
+                var res = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ upi_id: 'Boss0', pin: pass })
+                });
+                var data = await res.json();
+                if (!res.ok || !data.success) {
+                    return toast(data.error || 'Invalid Operator Password');
+                }
+                currentUser = 'Boss0';
+                $('boss-password-input').value = '';
+                $('auth-screen').classList.add('hidden');
+                $('main-app').classList.add('hidden');
+                $('boss-screen').classList.remove('hidden');
+                loadBossDashboard();
+                toast('Operator Console Unlocked');
+            } catch (e) {
+                toast('Server connection failed');
+            }
+        }
+
+        /* ---- REGISTRATION (SINGLE @RPAY SANITIZER + DUPLICATE CHECK) ---- */
+        function showRegisterScreen() {
+            $('login-section').classList.add('hidden');
+            $('register-section').classList.remove('hidden');
+            $('reg-step-1').classList.remove('hidden');
+            $('reg-step-2').classList.add('hidden');
+        }
+
+        function showLoginScreen() {
+            $('register-section').classList.add('hidden');
+            $('login-section').classList.remove('hidden');
+        }
+
+        function autoSuggestHandle(nameVal) {
+            if (!isCustomHandleEdited) {
+                var clean = String(nameVal || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                $('reg-custom-id').value = clean;
+            }
+        }
+
+        function onCustomHandleTyped(val) {
+            isCustomHandleEdited = true;
+            $('reg-custom-id').value = String(val || '').toLowerCase().replace(/@rpay$/i, '').replace(/[^a-z0-9._]/g, '');
+            $('reg-suggestions-box').classList.add('hidden');
+        }
+
+        function setRegAccountType(type) {
+            regAccountType = type;
+            $('seg-personal').classList.toggle('active', type === 'PERSONAL');
+            $('seg-merchant').classList.toggle('active', type === 'MERCHANT');
+        }
+
+        function proceedToRegPin() {
+            var name = $('reg-name').value.trim();
+            var phone = $('reg-phone').value.replace(/\D/g, '');
+            var dob = $('reg-dob').value;
+            var rawHandle = $('reg-custom-id').value.trim().toLowerCase();
+
+            // Strip @rpay if user typed it, preventing @rpay@rpay bug
+            rawHandle = rawHandle.replace(/@rpay$/i, '').replace(/[^a-z0-9._]/g, '');
+
+            if (name.length < 2) return toast('Please enter your Full Legal Name');
+            if (rawHandle.length < 3) return toast('Kinex ID needs at least 3 characters');
+            if (phone.length !== 10) return toast('Please enter a valid 10-digit mobile number');
+            if (!dob) return toast('Please select your Date of Birth');
+
+            selectedUpi = rawHandle + '@rpay';
+            regPinBuffer = '';
+            renderPinDots('reg-pin-dots', 0);
+
+            $('reg-name-display').innerText = name;
+            $('reg-handle-display').innerText = selectedUpi;
+            $('reg-step-1').classList.add('hidden');
+            $('reg-step-2').classList.remove('hidden');
+        }
+
+        function backToRegStep1() {
+            $('reg-step-2').classList.add('hidden');
+            $('reg-step-1').classList.remove('hidden');
+        }
+
+        function pressRegPin(key) {
+            if (key === 'back') regPinBuffer = regPinBuffer.slice(0, -1);
+            else if (regPinBuffer.length < 4) regPinBuffer += key;
+            renderPinDots('reg-pin-dots', regPinBuffer.length);
+        }
+
+        function pickSuggestedHandle(handle) {
+            var shortName = String(handle || '').replace(/@rpay$/i, '');
+            $('reg-custom-id').value = shortName;
+            $('reg-suggestions-box').classList.add('hidden');
+            proceedToRegPin();
+        }
+
+        async function submitRegistration() {
+            if (regPinBuffer.length !== 4) return toast('Please enter a 4-digit PIN');
+            var name = $('reg-name').value.trim();
+            var phone = $('reg-phone').value.replace(/\D/g, '');
+            var dob = $('reg-dob').value;
+
+            try {
+                var res = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        upi_id: selectedUpi,
+                        name: name,
+                        pin: regPinBuffer,
+                        phone: phone,
+                        dob: dob,
+                        account_type: regAccountType
+                    })
+                });
+                var data = await res.json();
+
+                if (!data.success) {
+                    if (data.suggestions && data.suggestions.length > 0) {
+                        backToRegStep1();
+                        var listEl = $('reg-suggestions-list');
+                        var html = '';
+                        for (var i = 0; i < data.suggestions.length; i++) {
+                            var s = data.suggestions[i];
+                            html += '<button type="button" class="mini-btn" onclick="pickSuggestedHandle(\'' + escapeHTML(s) + '\')">' + escapeHTML(s) + '</button>';
+                        }
+                        listEl.innerHTML = html;
+                        $('reg-suggestions-box').classList.remove('hidden');
+                        return toast('That Kinex ID is taken. Pick an available ID.');
+                    }
+                    return toast(data.error || 'Registration failed');
+                }
+
+                toast('Account ready · K 500.00 bonus added!');
+                completeUserSessionStart(data.upi_id || selectedUpi, name, regAccountType);
+            } catch (e) {
+                toast('Network error during registration');
+            }
+        }
+
+        function completeUserSessionStart(upiId, name, accType) {
+            currentUser = String(upiId).trim().toLowerCase();
+            currentUserName = name || currentUser.replace(/@rpay$/i, '');
+            currentAccountType = accType || 'PERSONAL';
+            lastKnownBalance = null;
+
+            var initial = currentUserName.charAt(0).toUpperCase();
+            $('home-avatar').innerText = initial;
+            $('profile-avatar').innerText = initial;
+            $('home-user-name').innerText = currentUserName;
+            $('profile-name').innerText = currentUserName;
+            $('home-user-handle').innerText = currentUser;
+            $('profile-handle').innerText = currentUser;
+            $('profile-badge').innerText = 'KYC Verified · ' + (currentAccountType === 'MERCHANT' ? 'Merchant' : 'Personal') + ' Wallet';
+
+            $('auth-screen').classList.add('hidden');
+            $('boss-screen').classList.add('hidden');
+            $('main-app').classList.remove('hidden');
+
+            switchTab('home');
+            updateBalance();
+            loadHistory();
+            loadPeopleDirectory();
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            lastKnownBalance = null;
+            $('main-app').classList.add('hidden');
+            $('boss-screen').classList.add('hidden');
+            $('auth-screen').classList.remove('hidden');
+            showLoginScreen();
+            toast('Logged out safely');
+        }
+
+        /* ---- TAB NAVIGATION & UI ACTIONS ---- */
+        function switchTab(tabName) {
+            var views = ['home', 'people', 'passbook', 'profile'];
+            for (var i = 0; i < views.length; i++) {
+                var v = views[i];
+                $('view-' + v).classList.toggle('hidden', v !== tabName);
+                $('nav-' + v).classList.toggle('active', v === tabName);
+            }
+            if (tabName === 'home' || tabName === 'passbook') {
+                updateBalance();
+                loadHistory();
+            } else if (tabName === 'people') {
+                loadPeopleDirectory();
+            }
+        }
+
+        function toggleHideBalance() {
+            isBalanceHidden = !isBalanceHidden;
+            $('balance-display').innerText = isBalanceHidden ? '••••••' : fmt(currentBalance);
+        }
+
+        function copyMyKinexId() {
+            if (!currentUser) return;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(currentUser).catch(function(){});
+            }
+            toast('Kinex ID copied: ' + currentUser);
+        }
+
+        function checkNotifications() {
+            if (unreadNotificationText) {
+                var msg = unreadNotificationText;
+                unreadNotificationText = '';
+                $('notif-dot-indicator').classList.add('hidden');
+                return toast(msg);
+            }
+            toast('No new alerts');
+        }
+
+        function toggleThemeMode() {
+            var root = document.documentElement;
+            var isDark = root.getAttribute('data-theme') === 'dark';
+            var nextTheme = isDark ? 'light' : 'dark';
+            root.setAttribute('data-theme', nextTheme);
+            $('sw-dark').classList.toggle('on', nextTheme === 'dark');
+        }
+
+        function openModal(id) { $(id).classList.remove('hidden'); }
+        function closeModal(id) { $(id).classList.add('hidden'); }
+
+        /* ---- REAL-TIME BALANCE, PASSBOOK & DIRECTORY SYNC (BOTH USERS) ---- */
+        async function updateBalance() {
+            if (!currentUser || currentUser.toLowerCase() === 'boss0') return;
+            try {
+                var ts = new Date().getTime();
+                var res = await fetch('/balance/' + encodeURIComponent(currentUser) + '?t=' + ts, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                });
+                var data = await res.json();
+                if (data && data.balance !== undefined) {
+                    var newBal = parseFloat(data.balance);
+                    if (lastKnownBalance !== null && newBal > lastKnownBalance) {
+                        var diff = newBal - lastKnownBalance;
+                        unreadNotificationText = 'Received K ' + fmt(diff) + ' in your wallet!';
+                        $('notif-dot-indicator').classList.remove('hidden');
+                        toast(unreadNotificationText);
+                        loadHistory();
+                    }
+                    lastKnownBalance = newBal;
+                    currentBalance = newBal;
+                    if (!isBalanceHidden) {
+                        $('balance-display').innerText = fmt(newBal);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        async function loadHistory() {
+            if (!currentUser || currentUser.toLowerCase() === 'boss0') return;
+            try {
+                var ts = new Date().getTime();
+                var res = await fetch('/history/' + encodeURIComponent(currentUser) + '?t=' + ts, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                });
+                var data = await res.json();
+                cachedTransactions = Array.isArray(data) ? data : (data.transactions || []);
+                renderPassbookAndHome();
+            } catch (e) {}
+        }
+
+        async function loadPeopleDirectory() {
+            if (!currentUser) return;
+            try {
+                var ts = new Date().getTime();
+                var res = await fetch('/users?t=' + ts, {
+                    method: 'GET',
+                    cache: 'no-store'
+                });
+                var data = await res.json();
+                var list = Array.isArray(data) ? data : (data.users || []);
+                cachedContacts = [];
+                for (var i = 0; i < list.length; i++) {
+                    var u = list[i];
+                    if (String(u.upi_id).toLowerCase() !== currentUser.toLowerCase() && String(u.upi_id).toLowerCase() !== 'boss0') {
+                        cachedContacts.push(u);
+                    }
+                }
+                renderPeopleList(cachedContacts);
+            } catch (e) {}
+        }
+
+        function renderPeopleList(list) {
+            var box = $('people-directory-list');
+            if (!box) return;
+            if (!list || list.length === 0) {
+                box.innerHTML = '<p style="text-align:center; color:var(--muted); padding:20px 0;">No other verified users found yet.</p>';
+                return;
+            }
+            var html = '';
+            for (var i = 0; i < list.length; i++) {
+                var u = list[i];
+                var initial = String(u.name || u.upi_id || 'U').charAt(0).toUpperCase();
+                html += '<div class="list-row" data-search="' + escapeHTML((u.name + ' ' + u.upi_id).toLowerCase()) + '">' +
+                            '<div class="tx-badge">' + escapeHTML(initial) + '</div>' +
+                            '<div class="row-meta">' +
+                                '<b>' + escapeHTML(u.name || u.upi_id) + '</b>' +
+                                '<span>' + escapeHTML(u.upi_id) + '</span>' +
+                            '</div>' +
+                            '<button type="button" class="mini-btn" onclick="openScanPayScreen(\'' + escapeHTML(u.upi_id) + '\', null)">Pay</button>' +
+                        '</div>';
+            }
+            box.innerHTML = html;
+        }
+
+        function filterPeopleList(query) {
+            var q = String(query || '').toLowerCase().trim();
+            var rows = document.querySelectorAll('#people-directory-list .list-row');
+            for (var i = 0; i < rows.length; i++) {
+                var hay = rows[i].getAttribute('data-search') || '';
+                rows[i].classList.toggle('hidden', hay.indexOf(q) === -1);
+            }
+        }
+
+        function setPassbookFilter(flt) {
+            currentPassbookFilter = flt;
+            $('flt-all').classList.toggle('active', flt === 'all');
+            $('flt-in').classList.toggle('active', flt === 'in');
+            $('flt-out').classList.toggle('active', flt === 'out');
+            renderPassbookAndHome();
+        }
+
+        function renderPassbookAndHome() {
+            var myId = String(currentUser || '').toLowerCase();
+            var totalIn = 0;
+            var totalOut = 0;
+            var passbookHtml = '';
+            var recentHtml = '';
+            var recentCount = 0;
+
+            for (var i = 0; i < cachedTransactions.length; i++) {
+                var t = cachedTransactions[i];
+                var isIncoming = String(t.receiver || '').toLowerCase() === myId;
+                var amt = parseFloat(t.amount || 0);
+
+                if (isIncoming) totalIn += amt;
+                else totalOut += amt;
+
+                var otherParty = isIncoming ? t.sender : t.receiver;
+                if (String(otherParty).toLowerCase() === 'system@rpay') otherParty = 'Welcome Bonus';
+
+                var rowClass = isIncoming ? 'in' : 'out';
+                var arrow = isIncoming ? '↙' : '↗';
+                var sign = isIncoming ? '+ K ' : '− K ';
+                var dt = t.timestamp ? new Date(t.timestamp).toLocaleString() : 'Today';
+
+                var itemHtml = '<button type="button" class="list-row ' + rowClass + '" onclick="openTxDetail(' + i + ')">' +
+                                    '<span class="tx-badge">' + arrow + '</span>' +
+                                    '<span class="row-meta">' +
+                                        '<b>' + escapeHTML(otherParty) + '</b>' +
+                                        '<span>' + escapeHTML(dt) + '</span>' +
+                                    '</span>' +
+                                    '<span class="tx-amount">' + sign + fmt(amt) + '</span>' +
+                               '</button>';
+
+                if (recentCount < 4) {
+                    recentHtml += itemHtml;
+                    recentCount++;
+                }
+
+                if (currentPassbookFilter === 'in' && !isIncoming) continue;
+                if (currentPassbookFilter === 'out' && isIncoming) continue;
+                passbookHtml += itemHtml;
+            }
+
+            $('passbook-total-in').innerText = 'K ' + fmt(totalIn);
+            $('passbook-total-out').innerText = 'K ' + fmt(totalOut);
+
+            var emptyMsg = '<p style="text-align:center; color:var(--muted); padding:20px 0;">No transactions yet.</p>';
+            $('home-recent-list').innerHTML = recentHtml || emptyMsg;
+            $('passbook-full-list').innerHTML = passbookHtml || emptyMsg;
+        }
+
+        function openTxDetail(index) {
+            var t = cachedTransactions[index];
+            if (!t) return;
+            var myId = String(currentUser || '').toLowerCase();
+            var isIncoming = String(t.receiver || '').toLowerCase() === myId;
+            var otherParty = isIncoming ? t.sender : t.receiver;
+            var amt = parseFloat(t.amount || 0);
+            var ref = 'KX' + (10000000 + parseInt(t.id || index, 10));
+
+            $('tx-detail-type').innerText = isIncoming ? 'Received Kinex' : 'Sent Kinex';
+            $('tx-detail-amt').innerText = (isIncoming ? '+ K ' : '− K ') + fmt(amt);
+            $('tx-detail-amt').style.color = isIncoming ? 'var(--pos)' : 'var(--neg)';
+            $('tx-detail-party').innerText = otherParty;
+            $('tx-detail-time').innerText = t.timestamp ? new Date(t.timestamp).toLocaleString() : 'Today';
+            $('tx-detail-ref').innerText = ref;
+
+            var againBtn = $('tx-pay-again-btn');
+            if (String(otherParty).toLowerCase() === 'system@rpay') {
+                againBtn.disabled = true;
+            } else {
+                againBtn.disabled = false;
+                againBtn.onclick = function() {
+                    closeModal('txDetailModal');
+                    openScanPayScreen(otherParty, null);
+                };
+            }
+            openModal('txDetailModal');
+        }
+
+        /* ---- RECEIVE QR GENERATOR ---- */
+        function openReceiveQrModal() {
+            $('qr-req-amt').value = '';
+            updateReceiveQR();
+            openModal('qrModal');
+        }
+
+        function updateReceiveQR() {
+            if (!currentUser) return;
+            var reqAmt = parseFloat($('qr-req-amt').value || 0);
+            var qrData = currentUser;
+            if (isFinite(reqAmt) && reqAmt >= 1) {
+                var cleanAmt = Math.round(reqAmt * 100) / 100;
+                qrData = 'upi://pay?pa=' + encodeURIComponent(currentUser) + '&am=' + cleanAmt;
+                $('qr-upi-label').innerText = currentUser + ' • Requesting K ' + fmt(cleanAmt);
+            } else {
+                $('qr-upi-label').innerText = currentUser;
+            }
+            var box = $('qrcode');
+            box.innerHTML = '';
+            if (window.QRCode) {
+                new QRCode(box, { text: qrData, width: 200, height: 200 });
+            }
+        }
+
+        /* ---- PAYMENT EXECUTION & LOCKED AMOUNT SECURITY ---- */
+        function openScanPayScreen(upiId, lockedAmount) {
+            var cleanTarget = String(upiId || '').trim().toLowerCase();
+            if (!cleanTarget || cleanTarget.indexOf('@') === -1) {
+                return toast('Invalid Kinex ID format');
+            }
+            if (cleanTarget === currentUser.toLowerCase()) {
+                return toast('Security Block: You cannot pay your own Kinex ID');
+            }
+
+            currentScanReceiver = cleanTarget;
+            $('scan-target-upi').innerText = cleanTarget;
+            $('pay-balance-error').innerText = '';
+
+            if (lockedAmount !== null && lockedAmount !== undefined && lockedAmount !== '') {
+                var parsedAmt = Math.round(parseFloat(lockedAmount) * 100) / 100;
+                if (!isFinite(parsedAmt) || parsedAmt < 1) {
+                    return toast('Invalid QR Code: Amount must be at least K 1.00');
+                }
+                currentScanAmount = String(parsedAmt);
+                isScanAmountLocked = true;
+                $('scan-numpad-wrapper').classList.add('hidden');
+                $('locked-amt-notice').classList.remove('hidden');
+            } else {
+                currentScanAmount = '0';
+                isScanAmountLocked = false;
+                $('scan-numpad-wrapper').classList.remove('hidden');
+                $('locked-amt-notice').classList.add('hidden');
+            }
+
+            updateScanAmountUI();
+            $('scan-pay-screen').classList.remove('hidden');
+        }
+
+        function closeScanPay() {
+            isScanAmountLocked = false;
+            $('scan-pay-screen').classList.add('hidden');
+        }
+
+        function updateScanAmountUI() {
+            $('scan-amount-display').innerText = currentScanAmount;
+            var a = parseFloat(currentScanAmount || 0);
+            var errEl = $('pay-balance-error');
+            var btn = $('proceed-pay-btn');
+
+            if (a > currentBalance) {
+                errEl.innerText = 'Amount exceeds your balance (K ' + fmt(currentBalance) + ')';
+                btn.disabled = true;
+            } else if (a > 0 && (currentBalance - a) < 50) {
+                errEl.innerText = 'Minimum K 50.00 reserve must remain in your wallet';
+                btn.disabled = true;
+            } else {
+                errEl.innerText = '';
+                btn.disabled = (a < 1);
+            }
+        }
+
+        function numpad(val) {
+            if (isScanAmountLocked) return;
+            if (val === 'back') {
+                currentScanAmount = currentScanAmount.slice(0, -1);
+                if (currentScanAmount === '') currentScanAmount = '0';
+            } else if (val === '.') {
+                if (currentScanAmount.indexOf('.') === -1) currentScanAmount += '.';
+            } else {
+                if (currentScanAmount === '0') currentScanAmount = String(val);
+                else if (currentScanAmount.length < 7) currentScanAmount += String(val);
+            }
+            updateScanAmountUI();
+        }
+
+        function addQuickAmount(addVal) {
+            if (isScanAmountLocked) return;
+            var cur = parseFloat(currentScanAmount || 0);
+            currentScanAmount = String(Math.round((cur + addVal) * 100) / 100);
+            updateScanAmountUI();
+        }
+
+        function proceedToPin() {
+            var numericAmt = parseFloat(currentScanAmount);
+            if (!isFinite(numericAmt) || numericAmt < 1) {
+                return toast('Minimum transfer amount is K 1.00');
+            }
+            if (numericAmt > currentBalance - 50) {
+                return toast('Insufficient spendable balance (K 50 reserve required)');
+            }
+            payPinBuffer = '';
+            renderPinDots('pay-pin-dots', 0);
+            $('pin-confirm-amt').innerText = fmt(numericAmt);
+            $('pin-confirm-upi').innerText = currentScanReceiver;
+            openModal('pinConfirmModal');
+        }
+
+        function pressPayPin(key) {
+            if (key === 'back') payPinBuffer = payPinBuffer.slice(0, -1);
+            else if (payPinBuffer.length < 4) payPinBuffer += key;
+            renderPinDots('pay-pin-dots', payPinBuffer.length);
+            if (payPinBuffer.length === 4) {
+                setTimeout(executeScanPay, 180);
+            }
+        }
+
+        async function executeScanPay() {
+            if (isPayingMutex) return;
+            if (payPinBuffer.length !== 4) return toast('Enter your 4-digit PIN');
+
+            var finalAmount = Math.round(parseFloat(currentScanAmount) * 100) / 100;
+            var pinToSend = payPinBuffer;
+            payPinBuffer = '';
+
+            isPayingMutex = true;
+            closeModal('pinConfirmModal');
+            $('scan-pay-screen').classList.add('hidden');
+            $('loading-screen').classList.remove('hidden');
+
+            try {
+                var res = await fetch('/pay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sender: currentUser,
+                        receiver: currentScanReceiver,
+                        pin: pinToSend,
+                        amount: finalAmount
+                    })
+                });
+                var data = await res.json();
+
+                setTimeout(function() {
+                    isPayingMutex = false;
+                    $('loading-screen').classList.add('hidden');
+
+                    if (data.success) {
+                        if (syncChannel) syncChannel.postMessage({ type: 'TX_DONE', ts: new Date().getTime() });
+                        $('receipt-amount').innerText = 'K ' + fmt(finalAmount);
+                        $('receipt-receiver').innerText = currentScanReceiver;
+                        $('receipt-sender').innerText = currentUser;
+                        $('receipt-ref').innerText = data.ref || ('KX' + Math.floor(10000000 + Math.random() * 90000000));
+                        $('receipt-time').innerText = new Date().toLocaleString();
+                        $('success-screen').classList.remove('hidden');
+                        updateBalance();
+                        loadHistory();
+                    } else {
+                        toast('Payment Failed: ' + (data.error || 'Unknown error'));
+                    }
+                }, 900);
+            } catch (e) {
+                isPayingMutex = false;
+                $('loading-screen').classList.add('hidden');
+                toast('Network error processing payment');
+            }
+        }
+
+        function closeSuccess() {
+            $('success-screen').classList.add('hidden');
+            updateBalance();
+            loadHistory();
+        }
+
+        /* ---- TWO-STAGE NATIVE CAMERA APP QR SCANNER ---- */
+        var html5QrCode = null;
+        var currentCameraFacing = 'environment';
+        var isTorchOn = false;
+        var isScannerBusy = false;
+
+        function updateStandbyStatusLabel() {
+            var camName = currentCameraFacing === 'environment' ? 'Back Cam' : 'Front Cam';
+            var torchState = isTorchOn ? 'Torch ON ⚡' : 'Torch Off';
+            $('cam-status-lbl').innerText = camName + ' • ' + torchState;
+        }
+
+        async function startScanner() {
+            $('scannerModal').classList.remove('hidden');
+            $('cam-torch-btn').classList.remove('hidden');
+            $('cam-bottom-deck').classList.remove('hidden');
+            $('cam-standby-prompt').classList.remove('hidden');
+            $('cam-viewfinder').classList.add('hidden');
+            updateStandbyStatusLabel();
+        }
+
+        function switchCameraFacing() {
+            currentCameraFacing = (currentCameraFacing === 'environment') ? 'user' : 'environment';
+            if (currentCameraFacing === 'user') {
+                isTorchOn = false;
+                $('cam-torch-btn').classList.remove('active-torch');
+            }
+            updateStandbyStatusLabel();
+            toast(currentCameraFacing === 'user' ? 'Switched to Front Camera' : 'Switched to Back Camera');
+        }
+
+        async function toggleCameraTorch() {
+            if (currentCameraFacing === 'user') {
+                return toast('Flashlight is only available on the Back Camera');
+            }
+            isTorchOn = !isTorchOn;
+            $('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
+            updateStandbyStatusLabel();
+        }
+
+        async function activateLiveScanMode() {
+            if (isScannerBusy) return;
+            isScannerBusy = true;
+
+            $('cam-torch-btn').classList.add('hidden');
+            $('cam-bottom-deck').classList.add('hidden');
+            $('cam-standby-prompt').classList.add('hidden');
+            $('cam-viewfinder').classList.remove('hidden');
+            $('cam-status-lbl').innerText = 'Align QR code inside square';
+
+            if (!html5QrCode && window.Html5Qrcode) {
+                html5QrCode = new Html5Qrcode('reader');
+            }
+
+            try {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    await html5QrCode.stop();
+                }
+                await html5QrCode.start(
+                    { facingMode: currentCameraFacing },
+                    { fps: 12, qrbox: { width: 240, height: 240 } },
+                    function(decodedText) {
+                        handleDecodedQR(decodedText);
+                    },
+                    function() {}
+                );
+                if (isTorchOn && currentCameraFacing === 'environment') {
+                    try {
+                        await html5QrCode.applyVideoConstraints({ advanced: [{ torch: true }] });
+                    } catch (e) {}
+                }
+            } catch (err) {
+                toast('Camera access unavailable. Use Files to upload a QR image.');
+                await startScanner();
+            } finally {
+                isScannerBusy = false;
+            }
+        }
+
+        async function scanQrFromFile(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            $('cam-status-lbl').innerText = 'Reading image file...';
+            try {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    await html5QrCode.stop();
+                }
+                var fileScanner = new Html5Qrcode('file-qr-reader');
+                var decodedText = await fileScanner.scanFile(file, true);
+                fileScanner.clear();
+                event.target.value = '';
+                handleDecodedQR(decodedText);
+            } catch (err) {
+                event.target.value = '';
+                toast('No valid QR code found in photo');
+                updateStandbyStatusLabel();
+            }
+        }
+
+        async function stopScanner() {
+            try {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    await html5QrCode.stop();
+                }
+            } catch (e) {}
+            $('scannerModal').classList.add('hidden');
+        }
+
+        async function handleDecodedQR(decodedText) {
+            await stopScanner();
+            var raw = String(decodedText || '').trim();
+
+            if (raw.toLowerCase().indexOf('upi://pay') === 0) {
+                var queryString = raw.split('?')[1] || '';
+                var params = new URLSearchParams(queryString);
+                var pa = params.get('pa');
+                var am = params.get('am');
+                if (!pa || pa.indexOf('@') === -1) {
+                    return toast('Invalid QR Code: Missing recipient Kinex ID');
+                }
+                return openScanPayScreen(pa, am);
+            }
+
+            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(raw)) {
+                return openScanPayScreen(raw, null);
+            }
+
+            toast('Unrecognized QR Code. Scan a valid @rpay QR.');
+        }
+
+        /* ---- BOSS0 OPERATOR FUNCTIONS ---- */
+        async function loadBossDashboard() {
+            var secret = $('boss-master-secret').value;
+            try {
+                var res = await fetch('/admin/overview?t=' + new Date().getTime(), {
+                    headers: { 'x-admin-secret': secret }
+                });
+                var data = await res.json();
+                if (!data.success) return toast(data.error || 'Check Master Secret');
+
+                $('boss-maint-switch').classList.toggle('on', !!data.maintenance);
+
+                var uHtml = '';
+                for (var i = 0; i < data.users.length; i++) {
+                    var u = data.users[i];
+                    var isFrozen = u.status === 'FROZEN';
+                    uHtml += '<div class="list-row">' +
+                                '<div class="row-meta">' +
+                                    '<b>' + escapeHTML(u.name) + ' (' + escapeHTML(u.status) + ')</b>' +
+                                    '<span>' + escapeHTML(u.upi_id) + ' · K ' + fmt(u.balance) + '</span>' +
+                                '</div>' +
+                                '<button type="button" class="mini-btn" onclick="bossToggleFreeze(\'' + escapeHTML(u.upi_id) + '\', \'' + (isFrozen ? 'ACTIVE' : 'FROZEN') + '\')">' +
+                                    (isFrozen ? 'Unfreeze' : 'Freeze') +
+                                '</button>' +
+                             '</div>';
+                }
+                $('boss-users-list').innerHTML = uHtml || '<p class="sub-text">No users found</p>';
+
+                var tHtml = '';
+                for (var j = 0; j < data.transactions.length; j++) {
+                    var t = data.transactions[j];
+                    tHtml += '<div class="list-row">' +
+                                '<div class="row-meta">' +
+                                    '<b>' + escapeHTML(t.sender) + ' → ' + escapeHTML(t.receiver) + '</b>' +
+                                    '<span>K ' + fmt(t.amount) + ' · ID #' + t.id + '</span>' +
+                                '</div>' +
+                                '<button type="button" class="mini-btn" style="color:var(--neg);" onclick="bossClawback(' + t.id + ')">Reverse</button>' +
+                             '</div>';
+                }
+                $('boss-tx-list').innerHTML = tHtml || '<p class="sub-text">No transactions recorded</p>';
+            } catch (e) {
+                toast('Error loading Operator Console');
+            }
+        }
+
+        async function bossToggleMaintenance() {
+            var secret = $('boss-master-secret').value;
+            var res = await fetch('/admin/maintenance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret }
+            });
+            var data = await res.json();
+            if (data.success) {
+                $('boss-maint-switch').classList.toggle('on', !!data.maintenance);
+                toast(data.maintenance ? 'Maintenance Mode ENABLED' : 'Network Live');
+            } else {
+                toast(data.error || 'Failed');
+            }
+        }
+
+        async function bossToggleFreeze(upiId, newStatus) {
+            var secret = $('boss-master-secret').value;
+            var res = await fetch('/admin/status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+                body: JSON.stringify({ upi_id: upiId, status: newStatus })
+            });
+            var data = await res.json();
+            if (data.success) {
+                toast(upiId + ' set to ' + newStatus);
+                loadBossDashboard();
+            } else {
+                toast(data.error || 'Action failed');
+            }
+        }
+
+        async function bossAdjustBalance() {
+            var secret = $('boss-master-secret').value;
+            var target = $('boss-mint-user').value.trim();
+            var amt = parseFloat($('boss-mint-amt').value || 0);
+            if (!target || !amt) return toast('Enter target @rpay ID and amount');
+            var res = await fetch('/admin/adjust-balance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+                body: JSON.stringify({ upi_id: target, amount: amt })
+            });
+            var data = await res.json();
+            if (data.success) {
+                $('boss-mint-user').value = '';
+                $('boss-mint-amt').value = '';
+                toast('Balance updated');
+                loadBossDashboard();
+            } else {
+                toast(data.error || 'Failed');
+            }
+        }
+
+        async function bossClawback(txId) {
+            var secret = $('boss-master-secret').value;
+            var res = await fetch('/admin/clawback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+                body: JSON.stringify({ tx_id: txId })
+            });
+            var data = await res.json();
+            if (data.success) {
+                toast('Transaction reversed across both passbooks');
+                loadBossDashboard();
+            } else {
+                toast(data.error || 'Reversal failed');
+            }
+        }
+
+        /* ---- REAL-TIME DUAL-USER PASSBOOK POLLING ---- */
+        setInterval(function() {
+            if (!currentUser || currentUser.toLowerCase() === 'boss0') return;
+            if (isPayingMutex) return;
+            updateBalance();
+            loadHistory();
+        }, 2500);
+
+        window.addEventListener('focus', function() {
+            if (currentUser && currentUser.toLowerCase() !== 'boss0') {
+                updateBalance();
+                loadHistory();
+            }
+        });
+
+        /* ---- PWA SERVICE WORKER & INSTALL PROMPT ---- */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').catch(function() {});
+            });
+        }
+
+        var deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', function(e) {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            var banner = $('pwa-install-banner');
+            if (banner) banner.classList.remove('hidden');
+        });
+
+        async function installKinexApp() {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            var choice = await deferredInstallPrompt.userChoice;
+            if (choice && choice.outcome === 'accepted') {
+                $('pwa-install-banner').classList.add('hidden');
+            }
+            deferredInstallPrompt = null;
+        }
+    </script>
 </body>
 </html>

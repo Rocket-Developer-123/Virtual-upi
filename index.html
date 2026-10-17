@@ -1394,12 +1394,12 @@ function toggleAuth(view) {
         function updateStandbyStatusLabel() {
             const camName = currentCameraFacing === "environment" ? "Back Cam" : "Front Cam";
             const torchState = isTorchOn ? "Torch ON ⚡" : "Torch Off";
-            \$('cam-status-lbl').innerText = `${camName} • ${torchState}`;
+            $('cam-status-lbl').innerText = `${camName} • ${torchState}`;
         }
 
         // STAGE 1: Open the Camera Setup Screen (Does NOT start scanning yet)
         async function startScanner() {
-            \$('scannerModal').classList.remove('hidden');
+            $('scannerModal').classList.remove('hidden');
             
             // Show all buttons (Torch, Bottom Deck, Standby Prompt) and hide the Reticle Square
             $('cam-torch-btn').classList.remove('hidden');$('cam-bottom-deck').classList.remove('hidden');
@@ -1413,7 +1413,7 @@ function toggleAuth(view) {
             currentCameraFacing = (currentCameraFacing === "environment") ? "user" : "environment";
             if (currentCameraFacing === "user") {
                 isTorchOn = false; // Front camera doesn't use rear torch
-                \$('cam-torch-btn').classList.remove('active-torch');
+                $('cam-torch-btn').classList.remove('active-torch');
             }
             updateStandbyStatusLabel();
             toast(currentCameraFacing === "user" ? "Switched to Front Camera" : "Switched to Back Camera");
@@ -1425,7 +1425,7 @@ function toggleAuth(view) {
                 return toast("Flashlight is only available on the Back Camera.");
             }
             isTorchOn = !isTorchOn;
-            \$('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
+            $('cam-torch-btn').classList.toggle('active-torch', isTorchOn);
             updateStandbyStatusLabel();
 
             // If camera is already running, apply torch immediately
@@ -1434,7 +1434,7 @@ function toggleAuth(view) {
                     await html5QrCode.applyVideoConstraints({ advanced: [{ torch: isTorchOn }] });
                 } catch (e) {
                     isTorchOn = false;
-                    \$('cam-torch-btn').classList.remove('active-torch');
+                    $('cam-torch-btn').classList.remove('active-torch');
                     toast("Flashlight not supported on this device.");
                 }
             }
@@ -1448,7 +1448,7 @@ function toggleAuth(view) {
             if (navigator.vibrate) navigator.vibrate(40);
 
             // 1. Hide all icons EXCEPT the Back button, and show the alignment square in the middle
-            \$('cam-torch-btn').classList.add('hidden');
+            $('cam-torch-btn').classList.add('hidden');
             $('cam-bottom-deck').classList.add('hidden');$('cam-standby-prompt').classList.add('hidden');
             $('cam-viewfinder').classList.remove('hidden');$('cam-status-lbl').innerText = "Align QR code inside square";
 
@@ -1489,7 +1489,7 @@ function toggleAuth(view) {
         async function scanQrFromFile(event) {
             const file = event.target.files[0];
             if (!file) return;
-            \$('cam-status-lbl').innerText = "Reading image file...";
+            $('cam-status-lbl').innerText = "Reading image file...";
 
             try {
                 if (html5QrCode && html5QrCode.isScanning) {
@@ -1514,7 +1514,7 @@ function toggleAuth(view) {
                     await html5QrCode.stop();
                 }
             } catch (e) {}
-            \$('scannerModal').classList.add('hidden');
+            $('scannerModal').classList.add('hidden');
         }
 
         async function handleDecodedQR(decodedText) {
@@ -1537,7 +1537,7 @@ function toggleAuth(view) {
             }
 
             // Case 2: Direct Kinex Handle (e.g., user@rpay)
-            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\$/.test(raw)) {
+            if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(raw)) {
                 return openScanPayScreen(raw, null);
             }
 

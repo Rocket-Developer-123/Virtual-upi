@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- PWA App Icon & Fullscreen Configuration -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#04142A">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kinex">
     <title>RPAY | Kinex Network</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
@@ -206,7 +213,7 @@
         @media (min-width:520px){ body{background:var(--bg)} .app{box-shadow:0 0 0 1px var(--line)} }
     /* ---------- Native Camera App QR Scanner UI ---------- */
         .cam-scanner-overlay {
-            position: fixed; inset: 0; background: #000; z-index: 10550 !important;
+            position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; background: #000; z-index: 10550 !important;
             display: flex; flex-direction: column; justify-content: space-between; overflow: hidden;
         }
         #reader {
@@ -288,6 +295,17 @@
 
     <!-- AUTHENTICATION -->
     <div id="auth-screen" class="auth-container">
+        <!-- One-Tap App Install Banner (Appears automatically when installable) -->
+        <div id="pwa-install-banner" class="card hidden" style="margin-bottom: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--cyan); background: rgba(34, 211, 238, 0.08);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 20px;">📲</span>
+                <div>
+                    <div style="font-weight: 700; font-size: 13px; color: var(--text);">Install Kinex App</div>
+                    <div style="font-size: 11px; color: var(--muted);">Add to Home Screen for fast access</div>
+                </div>
+            </div>
+            <button type="button" class="btn-primary" style="width: auto; padding: 8px 14px; margin: 0; font-size: 12px;" onclick="installKinexApp()">Install</button>
+        </div>s
         <!-- LOGIN SECTION -->
         <div id="login-section" class="card">
             <h2>Kinex Network</h2>
@@ -1760,6 +1778,32 @@ window.addEventListener('DOMContentLoaded', () => {
         checkSystemNotices();
     }
 });
+
+/* ---- PWA SERVICE WORKER & ONE-TAP INSTALL ---- */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW setup:', err));
+            });
+        }
+
+        let deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            const banner = $('pwa-install-banner');
+            if (banner) banner.classList.remove('hidden');
+        });
+
+        async function installKinexApp() {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            if (outcome === 'accepted') {
+                const banner = $('pwa-install-banner');
+                if (banner) banner.classList.add('hidden');
+            }
+            deferredInstallPrompt = null;
+        }
         
     </script>
 </body>

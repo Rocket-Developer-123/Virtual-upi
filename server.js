@@ -35,7 +35,7 @@ app.post('/register', async (req, res) => {
         }
 
         // Anti-farming check: prevent multiple accounts with the same phone number
-        const phoneCheck = await pool.query('SELECT upi_id FROM accounts WHERE phone = $1', [phone]);
+        const phoneCheck = await pool.query('SELECT upi_id FROM accounts WHERE phone = \$1', [phone]);
         if (phoneCheck.rows.length > 0) {
             return res.status(400).json({ 
                 success: false, 
@@ -45,7 +45,7 @@ app.post('/register', async (req, res) => {
 
         // Clean and ensure single @rpay suffix
         let cleanHandle = (upi_id || '').toLowerCase().trim();
-        cleanHandle = cleanHandle.replace(/@rpay$/, '').replace(/[^a-z0-9._]/g, '');
+        cleanHandle = cleanHandle.replace(/@rpay\$/, '').replace(/[^a-z0-9._]/g, '');
 
         if (!cleanHandle) {
             cleanHandle = name.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -56,7 +56,7 @@ app.post('/register', async (req, res) => {
         cleanHandle = cleanHandle + '@rpay';
 
         // Check if chosen ID is already in the database
-        const check = await pool.query('SELECT upi_id FROM accounts WHERE upi_id = $1', [cleanHandle]);
+        const check = await pool.query('SELECT upi_id FROM accounts WHERE upi_id = \$1', [cleanHandle]);
         if (check.rows.length > 0) {
             const base = cleanHandle.replace('@rpay', '');
             const suggestions = [
@@ -83,14 +83,14 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     const { upi_id, pin } = req.body;
-    const result = await pool.query('SELECT name, balance, upi_id, status FROM accounts WHERE lower(upi_id) = lower($1) AND pin = $2', [upi_id, pin]);
+    const result = await pool.query('SELECT name, balance, upi_id, status FROM accounts WHERE lower(upi_id) = lower(\$1) AND pin = \$2', [upi_id, pin]);
     if (result.rows.length > 0) res.json({ success: true, user: result.rows[0] });
     else res.status(401).json({ success: false, error: "Invalid ID or PIN." });
 });
 
 app.post('/auth/change-pin', async (req, res) => {
     const { upi_id, old_pin, new_pin } = req.body;
-    const result = await pool.query('UPDATE accounts SET pin = $1 WHERE upi_id = $2 AND pin = $3 RETURNING *', [new_pin, upi_id, old_pin]);
+    const result = await pool.query('UPDATE accounts SET pin = \$1 WHERE upi_id = \$2 AND pin = \$3 RETURNING *', [new_pin, upi_id, old_pin]);
     if (result.rows.length > 0) res.json({ success: true });
     else res.status(401).json({ success: false, error: "Incorrect Current PIN." });
 });
@@ -104,7 +104,7 @@ app.post('/pay', async (req, res) => {
         if (globalMaintenanceMode) throw new Error("RPAY Network is currently under maintenance. Transfers are temporarily paused.");
 
         // 1. Check Sender Status
-        const auth = await client.query('SELECT balance, status FROM accounts WHERE lower(upi_id) = lower($1) AND pin = $2 FOR UPDATE', [sender, pin]);
+        const auth = await client.query('SELECT balance, status FROM accounts WHERE lower(upi_id) = lower(\$1) AND pin = \$2 FOR UPDATE', [sender, pin]);
         if (auth.rows.length === 0) throw new Error("Invalid PIN.");
         if (auth.rows[0].status === 'FROZEN') throw new Error("Your account is frozen.");
         // Anti-farming protection: maintain a minimum balance reserve of K 50
@@ -113,14 +113,14 @@ app.post('/pay', async (req, res) => {
         }
 
         // 2. Check Receiver Status
-        const receiverCheck = await client.query('SELECT status FROM accounts WHERE lower(upi_id) = lower($1) FOR UPDATE', [receiver]);
+        const receiverCheck = await client.query('SELECT status FROM accounts WHERE lower(upi_id) = lower(\$1) FOR UPDATE', [receiver]);
         if (receiverCheck.rows.length === 0) throw new Error("Receiver does not exist.");
         if (receiverCheck.rows[0].status === 'FROZEN') throw new Error("Receiver account is currently frozen and cannot accept funds.");
 
         // 3. Process Transfer
-        await client.query('UPDATE accounts SET balance = balance - $1 WHERE lower(upi_id) = lower($2)', [amount, sender]);
-        await client.query('UPDATE accounts SET balance = balance + $1 WHERE lower(upi_id) = lower($2)', [amount, receiver]);
-        await client.query('INSERT INTO transactions (sender, receiver, amount) VALUES ($1, $2, $3)', [sender, receiver, amount]);
+        await client.query('UPDATE accounts SET balance = balance - \$1 WHERE lower(upi_id) = lower(\$2)', [amount, sender]);
+        await client.query('UPDATE accounts SET balance = balance + \$1 WHERE lower(upi_id) = lower(\$2)', [amount, receiver]);
+        await client.query('INSERT INTO transactions (sender, receiver, amount) VALUES (\$1, \$2, \$3)', [sender, receiver, amount]);
         
         await client.query('COMMIT');
         res.json({ success: true });
@@ -135,13 +135,13 @@ app.post('/pay', async (req, res) => {
 // Force Cache-Control so the Passbook never shows blank/old data
 app.get('/history/:upi', async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    const result = await pool.query('SELECT * FROM transactions WHERE lower(sender) = lower($1) OR lower(receiver) = lower($1) ORDER BY created_at DESC', [req.params.upi]);
+    const result = await pool.query('SELECT * FROM transactions WHERE lower(sender) = lower(\$1) OR lower(receiver) = lower(\$1) ORDER BY created_at DESC', [req.params.upi]);
     res.json(result.rows);
 });
 
 app.get('/balance/:upi', async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    const result = await pool.query('SELECT balance FROM accounts WHERE lower(upi_id) = lower($1)', [req.params.upi]);
+    const result = await pool.query('SELECT balance FROM accounts WHERE lower(upi_id) = lower(\$1)', [req.params.upi]);
     if (result.rows.length > 0) {
         res.json(result.rows[0]);
     } else {
@@ -153,7 +153,7 @@ app.get('/balance/:upi', async (req, res) => {
 app.get('/directory/:upi', async (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     const result = await pool.query(
-        'SELECT name, upi_id FROM accounts WHERE upi_id != $1 AND upi_id != \'Boss0\' ORDER BY name ASC',
+        'SELECT name, upi_id FROM accounts WHERE upi_id != \$1 AND upi_id != \'Boss0\' ORDER BY name ASC',
         [req.params.upi]
     );
     res.json(result.rows);
@@ -174,7 +174,7 @@ const MASTER_SECRET = process.env.ADMIN_MASTER_SECRET || 'Rpay-master-55';
 
 async function verifyBoss(admin_id, admin_pin, requireSecret = false, master_secret = '') {
     if (admin_id !== 'Boss0') return { ok: false, error: 'Unauthorized user.' };
-    const res = await pool.query('SELECT pin FROM accounts WHERE upi_id = $1', ['Boss0']);
+    const res = await pool.query('SELECT pin FROM accounts WHERE upi_id = \$1', ['Boss0']);
     if (res.rows.length === 0 || res.rows[0].pin !== admin_pin) {
         return { ok: false, error: 'Invalid Admin Password.' };
     }

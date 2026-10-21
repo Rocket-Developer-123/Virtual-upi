@@ -889,6 +889,7 @@
 
         function logout() {
             currentUser = ""; currentPin = ""; currentName = ""; globalContacts = [];
+            currentBalanceVal = null; lastHistorySignature ="";
             
             localStorage.removeItem('rpay_currentUser');
             localStorage.removeItem('rpay_currentName');
@@ -1130,9 +1131,10 @@
             }
         }
 
-        /* ---- DASHBOARD DATA BINDING ---- */
+        /* ---- DASHBOARD DATA BINDING & AUTO-REFRESH ENGINE ---- */
         let hiddenBal = false;
-        let currentBalanceVal = 0;
+        let currentBalanceVal = null;
+        let lastHistorySignature = "";
         try { hiddenBal = localStorage.getItem('kinex-hide-balance') === '1'; } catch (e) {}
 
         function renderBalance(value) {
@@ -1141,16 +1143,22 @@
             eye.innerHTML = hiddenBal ? ICON_EYE : ICON_EYE_OFF;
             eye.setAttribute('aria-pressed', String(hiddenBal));
             eye.setAttribute('aria-label', hiddenBal ? 'Show balance' : 'Hide balance');
-            $('amountWrap').setAttribute('aria-label', hiddenBal ? 'Balance hidden' : `Balance K ${fmt(currentBalanceVal)}`);
+            $('amountWrap').setAttribute('aria-label', hiddenBal ? 'Balance hidden' : `Balance K ${fmt(value)}`);
         }
 
-        function countUp(targetBal) {
+        // Smoothly animates from oldBal to targetBal ONLY when the balance actually changes
+        function countUp(targetBal, oldBal = 0) {
             const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (reduce || hiddenBal) { renderBalance(targetBal); return; }
-            const start = performance.now(), dur = 900;
+            if (reduce || hiddenBal || oldBal === targetBal) {
+                renderBalance(targetBal);
+                return;
+            }
+            const start = performance.now(), dur = 750;
             (function tick(now) {
                 const p = Math.min((now - start) / dur, 1);
-                renderBalance(targetBal * (1 - Math.pow(1 - p, 3)));
+                const eased = 1 - Math.pow(1 - p, 3);
+                const current = oldBal + (targetBal - oldBal) * eased;
+                renderBalance(current);
                 if (p < 1) requestAnimationFrame(tick);
             })(start);
         }
@@ -1158,7 +1166,7 @@
         $('eye').addEventListener('click', () => {
             hiddenBal = !hiddenBal;
             try { localStorage.setItem('kinex-hide-balance', hiddenBal ? '1' : '0'); } catch (e) {}
-            renderBalance(currentBalanceVal);
+            renderBalance(currentBalanceVal || 0);
         });
 
         $('copy-id').addEventListener('click', async () => {
@@ -1167,83 +1175,144 @@
         });
 
         let busyBal = false;
-        async function updateBalance() {
+        async function updateBalance(isManual = false) {
+            if (!currentUser || currentUser.toLowerCase() === 'boss0') return;
             if (busyBal) return;
             busyBal = true;
-            $('balIco').classList.add('spin');
+
+            // Only show spinner if the user manually pressed the "Check Bal" button
+            if (isManual) {
+                $('balIco').classList.add('spin');$('amountWrap').classList.add('is-loading');
+            }
             
             try {
-                const res = await fetch('/balance/' + encodeURIComponent(currentUser));
+                const res = await fetch('/balance/' + encodeURIComponent(currentUser) + '?t=' + Date.now(), {
+                    cache: 'no-store'
+                });
                 const data = await res.json();
                 const fetchedBal = parseFloat(data.balance);
-                
-                setTimeout(() => {
-                    $('balIco').classList.remove('spin');
-                    const time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-                    $('asof').textContent = `Updated ${time}`;
-                    busyBal = false;
-                    
-                    if (currentBalanceVal !== fetchedBal || $('amount').textContent === '0.00') {
+
+                if (isManual) {
+                    setTimeout(() => {
+                        $('balIco').classList.remove('spin');$('amountWrap').classList.remove('is-loading');
+                        const time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                        $('asof').textContent = `Updated ${time}`;
+                        toast('Balance & Passbook up to date');
+                        const prev = currentBalanceVal !== null ? currentBalanceVal : 0;
                         currentBalanceVal = fetchedBal;
-                        countUp(currentBalanceVal);
+                        countUp(fetchedBal, prev);
+                        busyBal = false;
+                    }, 500);
+                } else {
+                    // Silent background check: ONLY animate & refresh passbook if balance actually changed!
+                    if (currentBalanceVal === null) {
+                        currentBalanceVal = fetchedBal;
+                        countUp(fetchedBal, 0);
+                        const time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                        $('asof').textContent = `Updated ${time}`;
+                    } else if (Math.abs(fetchedBal - currentBalanceVal) > 0.001) {
+                        const prevBal = currentBalanceVal;
+                        currentBalanceVal = fetchedBal;
+                        const time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+                        $('asof').textContent = `Updated ${time}`;
+
+                        // Animate from previous balance to new balance
+                        countUp(fetchedBal, prevBal);
+
+                        // If money was received, play chime, show toast, and refresh passbook immediately
+                        if (fetchedBal > prevBal) {
+                            const diff = fetchedBal - prevBal;
+                            toast(`Received +K ${fmt(diff)}!`);
+                        }
+                        await loadHistory(true);
                     }
-                }, 500);
+                    busyBal = false;
+                }
             } catch(e) {
                 busyBal = false;
-                $('balIco').classList.remove('spin');
+                if (isManual) {
+                    $('balIco').classList.remove('spin');$('amountWrap').classList.remove('is-loading');
+                }
             }
         }
 
-        async function loadHistory() {
-            const res = await fetch('/history/' + encodeURIComponent(currentUser));
-            const data = await res.json();
-            
-            const list = $('list');
-            if (data.length === 0) {
-                list.innerHTML = '<li class="empty"><b>No activity yet</b>Pay someone or scan a QR to make your first transfer.</li>';
-            } else {
-                list.innerHTML = data.slice(0, 4).map(a => {
-                    const incoming = a.receiver.toLowerCase() === currentUser.toLowerCase();
-                    const verb = incoming ? 'Received' : 'Sent';
-                    const sign = incoming ? '+' : '\u2212';
-                    const dir = incoming ? 'in' : 'out';
-                    const who = incoming ? a.sender : a.receiver;
-                    const dateStr = new Date(a.created_at || a.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                    
-                    return `<li class="row ${dir}">
-                        <span class="badge" aria-hidden="true">${incoming ? ICON_IN : ICON_OUT}</span>
-                        <div class="meta"><b>${escapeHTML(who)}</b><span>${verb} on ${dateStr}</span></div>
-                        <span class="amt" aria-label="${verb} K ${fmt(parseFloat(a.amount))}">${sign}K ${fmt(parseFloat(a.amount))}</span>
-                    </li>`;
+        async function loadHistory(forceRender = false) {
+            if (!currentUser || currentUser.toLowerCase() === 'boss0') return;
+            try {
+                const res = await fetch('/history/' + encodeURIComponent(currentUser) + '?t=' + Date.now(), {
+                    cache: 'no-store'
+                });
+                const data = await res.json();
+
+                // Build a signature of the latest transaction so we only redraw the DOM when new activity arrives
+                const topTx = data[0];
+                const newSig = `${data.length}_${topTx ? (topTx.id || topTx.created_at || topTx.amount) : 'empty'}`;
+                if (!forceRender && newSig === lastHistorySignature) return;
+                lastHistorySignature = newSig;
+
+                const list = $('list');
+                if (data.length === 0) {
+                    list.innerHTML = '<li class="empty"><b>No activity yet</b>Pay someone or scan a QR to make your first transfer.</li>';
+                } else {
+                    list.innerHTML = data.slice(0, 4).map(a => {
+                        const incoming = a.receiver.toLowerCase() === currentUser.toLowerCase();
+                        const verb = incoming ? 'Received' : 'Sent';
+                        const sign = incoming ? '+' : '\u2212';
+                        const dir = incoming ? 'in' : 'out';
+                        const who = incoming ? a.sender : a.receiver;
+                        const dateStr = new Date(a.created_at || a.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                        
+                        return `<li class="row ${dir}">
+                            <span class="badge" aria-hidden="true">${incoming ? ICON_IN : ICON_OUT}</span>
+                            <div class="meta"><b>${escapeHTML(who)}</b><span>${verb} on ${dateStr}</span></div>
+                            <span class="amt" aria-label="${verb} K ${fmt(parseFloat(a.amount))}">${sign}K ${fmt(parseFloat(a.amount))}</span>
+                        </li>`;
+                    }).join('');
+                }
+
+                $('full-history-list').innerHTML = data.length === 0 ? "<p>No records found.</p>" : data.map(t => {
+                    const isSender = t.sender.toLowerCase() === currentUser.toLowerCase();
+                    const safeTarget = escapeHTML(isSender ? t.receiver : t.sender);
+                    return `<div class="card" style="margin-bottom:0; padding:15px; display:flex; justify-content:space-between;">
+                        <div><div style="font-weight:600; font-size:14px;">${isSender ? "To: " : "From: "}${safeTarget}</div><div style="font-size:11px; color:var(--muted);">${new Date(t.created_at || t.timestamp).toLocaleDateString()}</div></div>
+                        <div style="font-weight:800; font-size:15px; color:${isSender ? 'var(--neg)' : 'var(--pos)'};">${isSender ? '- ' : '+ '}K ${fmt(parseFloat(t.amount))}</div>
+                    </div>`;
                 }).join('');
-            }
-
-            $('full-history-list').innerHTML = data.length === 0 ? "<p>No records found.</p>" : data.map(t => {
-                const isSender = t.sender.toLowerCase() === currentUser.toLowerCase();
-                const safeTarget = escapeHTML(isSender ? t.receiver : t.sender);
-                return `<div class="card" style="margin-bottom:0; padding:15px; display:flex; justify-content:space-between;">
-                    <div><div style="font-weight:600; font-size:14px;">${isSender ? "To: " : "From: "}${safeTarget}</div><div style="font-size:11px; color:var(--muted);">${new Date(t.created_at || t.timestamp).toLocaleDateString()}</div></div>
-                    <div style="font-weight:800; font-size:15px; color:${isSender ? 'var(--neg)' : 'var(--pos)'};">${isSender ? '- ' : '+ '}K ${fmt(parseFloat(t.amount))}</div>
-                </div>`;
-            }).join('');
+            } catch (e) {}
         }
 
-        // BACKGROUND REFRESH ONLY ON FOCUS (NO SETINTERVAL LOOP)
+        // SILENT REAL-TIME WATCHER (Only updates UI when a transaction actually happens)
+        setInterval(() => {
+            if (currentUser && currentUser.toLowerCase() !== 'boss0' && !isPayingMutex) {
+                updateBalance(false);
+                loadHistory(false);
+            }
+        }, 2500);
+
         window.addEventListener('focus', () => {
             if (currentUser && currentUser.toLowerCase() !== 'boss0') {
-                updateBalance(); loadHistory();
+                updateBalance(false);
+                loadHistory(false);
             }
         });
 
+        // Action routing for UI buttons
         document.addEventListener('click', e => {
             const btn = e.target.closest('[data-action]');
             if (!btn) return;
             const action = btn.dataset.action;
-            if (action === 'balance') { toast('Balance refreshed'); return updateBalance(); }
+            if (action === 'balance') {
+                updateBalance(true);
+                loadHistory(true);
+                return;
+            }
             if (action === 'home') return window.scrollTo({ top: 0, behavior: 'smooth' });
             if (action === 'pay') return openUnifiedPayModal();
             if (action === 'qr') return openModal('qrModal');
-            if (action === 'passbook') return openModal('historyModal');
+            if (action === 'passbook') {
+                loadHistory(true);
+                return openModal('historyModal');
+            }
             if (action === 'scan') return startScanner();
             if (action === 'contacts') return openUnifiedPayModal();
             if (action === 'bell') {
@@ -1266,12 +1335,6 @@
             }
             if (action === 'logout') return logout();
         });
-
-        let toastTimer;
-        function toast(msg) {
-            const t = $('toast'); t.textContent = msg; t.classList.add('show');
-            clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
-        }
 
         /* ---- CONTACTS LIST ---- */
         async function openUnifiedPayModal() {
@@ -1575,7 +1638,7 @@
             if (/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(raw)) return openScanPayScreen(raw, null);
             alert("Unrecognized QR Code. Please scan a valid Kinex Network (@rpay) QR.");
         }
-        
+
         function startPinChange() {
             $('profile-main').classList.add('hidden');
             $('profile-pin-flow').classList.remove('hidden');$('profile-old-pin-sec').classList.remove('hidden');

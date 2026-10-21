@@ -43,12 +43,12 @@ app.post('/register', async (req, res) => {
             });
         }
 
-        // Clean and ensure single @rpay suffix
-        let cleanHandle = (upi_id || '').toLowerCase().trim();
-        cleanHandle = cleanHandle.replace(/@rpay\$/, '').replace(/[^a-z0-9._]/g, '');
+        // Clean and ensure single @rpay suffix (Prevents namerpay@rpay bug)
+        let cleanHandle = String(upi_id || '').toLowerCase().trim();
+        cleanHandle = cleanHandle.split('@')[0].replace(/rpay$/i, '').replace(/[^a-z0-9._]/g, '');
 
         if (!cleanHandle) {
-            cleanHandle = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            cleanHandle = name.toLowerCase().split('@')[0].replace(/rpay$/i, '').replace(/[^a-z0-9]/g, '');
             if (!cleanHandle) cleanHandle = "user" + Math.floor(Math.random() * 9000 + 1000);
         }
         

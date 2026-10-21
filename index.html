@@ -961,7 +961,7 @@
             const name = $('reg-name').value.trim();
             const customInput = $('reg-custom-id');
             if (!customInput.dataset.manualEdited) {
-                customInput.value = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                customInput.value = name.toLowerCase().split('@')[0].replace(/rpay$/i, '').replace(/[^a-z0-9]/g, '');
             }
         }
 
@@ -986,13 +986,14 @@
             const dob = $('reg-dob').value;
             let rawHandle = $('reg-custom-id').value.trim().toLowerCase();
 
-            rawHandle = rawHandle.replace(/@rpay$/, '').replace(/[^a-z0-9._]/g, '');
+            // Strip everything from '@' onward and any trailing 'rpay' before cleaning characters
+            rawHandle = rawHandle.split('@')[0].replace(/rpay$/i, '').replace(/[^a-z0-9._]/g, '');
 
             if (!name) return alert("Please enter your Full Legal Name.");
             if (phone.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
             if (!dob) return alert("Please select your Date of Birth.");
             
-            if (!rawHandle) rawHandle = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (!rawHandle) rawHandle = name.toLowerCase().split('@')[0].replace(/rpay$/i, '').replace(/[^a-z0-9]/g, '');
             if (!rawHandle) rawHandle = "user" + Math.floor(Math.random() * 9000 + 1000);
 
             selectedUpi = rawHandle + '@rpay';
